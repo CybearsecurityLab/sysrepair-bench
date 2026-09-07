@@ -69,8 +69,11 @@ python -c 'import sysrepair_bench' || fail "harness still not importable after r
 
 say "verifying the shipped logs are readable"
 LOGS_OK=1
-python "$HERE/scripts/analysis/verify_logs.py"
-case $? in
+# `set -e` would abort here on any non-zero exit, including the benign
+# "logs absent" case, so capture the status instead of letting it propagate.
+rc=0
+python "$HERE/scripts/analysis/verify_logs.py" || rc=$?
+case $rc in
   0) : ;;                       # logs present and readable
   3) LOGS_OK=0 ;;               # logs absent: not an error, but not ready
   *) fail "shipped logs failed their integrity check" ;;
