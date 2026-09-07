@@ -42,13 +42,29 @@ def read_key(var: str) -> str:
     return ""
 
 
+def _run(argv: list[str], shell: bool = False) -> str:
+    try:
+        r = subprocess.run(" ".join(argv) if shell else argv, shell=shell,
+                           capture_output=True, text=True, timeout=90)
+        return r.stdout or ""
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
 def fetch(key: str) -> dict | None:
     # The CLI prints a region line before the JSON, so keep from the first brace.
-    try:
-        out = subprocess.run(["mmx", "quota", "show", "--api-key", key,
-                              "--output", "json"],
-                             capture_output=True, text=True, timeout=90).stdout
-    except (OSError, subprocess.TimeoutExpired):
+    #
+    # On Windows, mmx is often a scoop/npm SHIM (mmx.cmd or a .ps1 wrapper) that
+    # a bare exec cannot resolve, so subprocess reports nothing while the same
+    # command works from a shell. Resolve the real path first, then fall back to
+    # a shell invocation. Reported by the peer, whose key read fine from the
+    # shell and returned "no usable response" here.
+    argv = ["quota", "show", "--api-key", key, "--output", "json"]
+    exe = shutil.which("mmx") or "mmx"
+    out = _run([exe] + argv)
+    if "{" not in out:
+        out = _run(["mmx"] + argv, shell=True)
+    if "{" not in out:
         return None
     i = out.find("{")
     if i < 0:

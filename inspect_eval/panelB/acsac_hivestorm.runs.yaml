@@ -71,3 +71,32 @@ presets:
       - hivestorm/scenario-11-win-dc-dns
       - hivestorm/scenario-13-ad-dc-win2019
       - hivestorm/scenario-14-freebsd13
+
+  # Qwen3.5-9B hivestorm on DELTA at the model's full declared context.
+  #
+  # Hivestorm is zero-day-only multi-vulnerability hosts: the worst case for
+  # context in the corpus, and the reason this arm sat at n=1. Delta's 4xA40
+  # serves 262144 with --max-num-seqs 4, so it is the right machine for it
+  # rather than sharing the 2xL40 over a relayed mesh link.
+  #
+  # 21858271 is on gpuA40x4-PREEMPT and can die without notice. SR_EVAL_SET=1
+  # is mandatory here so a preemption resumes rather than restarts, and
+  # min_context makes preflight refuse if a later job comes back truncated.
+  acsac_hs_9b_delta:
+    model: openai/Qwen/Qwen3.5-9B
+    base_url: http://127.0.0.1:8010/v1
+    api_key: ${DELTA_HS_KEY}
+    min_context: 262144
+    max_connections: 4
+    # Same seven exclusions as acsac_hs_9b. Five Windows containers, one
+    # Windows VM and one FreeBSD VM cannot run on a Linux host, and they do NOT
+    # skip: the leg dies the moment it reaches one (it went down on
+    # "[automatedlab] Bringing up hs13-dc01"). Nine Linux containers remain.
+    exclude:
+      - hivestorm/scenario-03-win10
+      - hivestorm/scenario-04-win2019
+      - hivestorm/scenario-05-win2016
+      - hivestorm/scenario-08-win-iis
+      - hivestorm/scenario-11-win-dc-dns
+      - hivestorm/scenario-13-ad-dc-win2019
+      - hivestorm/scenario-14-freebsd13
