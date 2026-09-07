@@ -48,7 +48,7 @@
   },
   "@type": "sc:Dataset",
   "name": "SysRepair-Bench",
-  "description": "SysRepair-Bench is a reproducible benchmark of 313 Dockerized and virtual-machine scenarios for evaluating autonomous agents on real-world system-administration vulnerability remediation. Each scenario bundles (a) a launcher (Dockerfile or Vagrantfile) that boots a vulnerable target, (b) a natural-language threat description (threat.md or task.md.tmpl) covering severity, CVE/CWE references, affected service, and remediation hints, and (c) a verifier (verify.sh / verify.ps1 / verify-poc.sh / verify-service.ps1) that programmatically scores both vulnerability neutralization and service availability after the agent acts. The dataset is organized into suites (meta2, meta3-ubuntu, meta3-windows, meta4, meta4-ad-vm, ccdc, vulnhub, hivestorm) covering Linux containers, Windows containers, and Vagrant-managed Linux / Windows VMs.",
+  "description": "SysRepair-Bench is a reproducible benchmark of 313 Dockerized and virtual-machine scenarios for evaluating autonomous agents on real-world system-administration vulnerability remediation. Each scenario bundles (a) a launcher (a Dockerfile, or a Hyper-V lab definition for VM scenarios) that boots a vulnerable target, (b) a natural-language threat description (threat.md or task.md.tmpl) covering severity, CVE/CWE references, and the affected service, and (c) a verifier (verify.sh / verify.ps1 / verify-poc.sh / verify-service.ps1) that programmatically scores both vulnerability neutralization and service availability after the agent acts. The dataset is organized into suites (meta2, meta3-ubuntu, meta3-windows, meta4, meta4-ad-vm, ccdc, vulnhub, hivestorm) covering Linux containers, Windows containers, and Hyper-V-managed Windows Server and FreeBSD VMs.",
   "conformsTo": "http://mlcommons.org/croissant/1.0",
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "url": "https://anonymous.4open.science/r/sysrepair-bench-425F/",
@@ -75,7 +75,7 @@
   },
   "citeAs": "@inproceedings{sysrepairbench2026, title = {SysRepair-Bench: A Benchmark for AI Agents' Ability to Remediate Real-World System Vulnerabilities}, author = {Anonymous Authors}, booktitle = {NeurIPS 2026 Datasets and Benchmarks Track (under review)}, year = {2026}, url = {https://anonymous.4open.science/r/sysrepair-bench-425F/}, note = {Double-blind submission #789}}",
   "isLiveDataset": false,
-  "rai:dataCollection": "All 313 scenarios were hand-authored by the SysRepair-Bench authors based on publicly disclosed Common Vulnerabilities and Exposures (CVE) records, Common Weakness Enumeration (CWE) categories, and public vendor advisories. For each target vulnerability the authors wrote (a) a launcher (Dockerfile or Vagrantfile) that boots a deliberately vulnerable target, (b) an English threat description (threat.md or task.md.tmpl) referencing the public CVE/CWE identifiers and citing the corresponding vendor or NVD documentation, and (c) a verifier script (verify.sh / verify.ps1 / verify-poc.sh / verify-service.ps1) that programmatically checks both vulnerability neutralization and continued service availability after agent action. No third-party machine-learning datasets were ingested. No human-subjects data was collected at any stage.",
+  "rai:dataCollection": "Of the 313 scenarios, 137 were hand-authored by the SysRepair-Bench authors and 176 were derived from public defensive corpora (Metasploitable 2 and 3, VulnHub community VMs, published CCDC and Hivestorm materials). The authored scenarios are based on publicly disclosed Common Vulnerabilities and Exposures (CVE) records, Common Weakness Enumeration (CWE) categories, and public vendor advisories. For each target vulnerability the authors wrote (a) a launcher (a Dockerfile, or a Hyper-V lab definition for VM scenarios) that boots a deliberately vulnerable target, (b) an English threat description (threat.md or task.md.tmpl) referencing the public CVE/CWE identifiers and citing the corresponding vendor or NVD documentation, and (c) a verifier script (verify.sh / verify.ps1 / verify-poc.sh / verify-service.ps1) that programmatically checks both vulnerability neutralization and continued service availability after agent action. No third-party machine-learning datasets were ingested. No human-subjects data was collected at any stage.",
   "rai:dataCollectionType": "Manual authoring from public security disclosures",
   "rai:dataCollectionTimeframe": {
     "@type": "sc:DateTime",
@@ -93,7 +93,7 @@
   "rai:dataPreprocessingImpactsOnDataLabels": "Not applicable. Ground-truth signals are produced at evaluation time by per-scenario verifier scripts, not by static labels.",
   "rai:dataUseCases": "Intended uses: (1) evaluating autonomous agent systems on real-world vulnerability remediation, (2) measuring the trade-off between vulnerability neutralization and preserved service availability, (3) studying agent reasoning about compensating controls when source patching is constrained, (4) ablating agent solver strategies (ReAct, Reflexion, Plan-and-Solve, LATS) and the value of report-informed vs. zero-day variants, and (5) detecting regressions in agent system administration capability over time. Explicitly out-of-scope uses: training systems to generate novel zero-day exploits, weaponizing the included payloads against systems the user does not own or have written authorization to test, and any production deployment of un-remediated scenarios outside an isolated lab.",
   "rai:dataBiases": "The scenario corpus is biased toward Linux operating systems (approximately 80% of scenarios target Linux containers or Linux VMs; ~20% target Windows). Coverage is biased toward CVEs disclosed between 2010 and 2026 with public proof-of-concept availability — silently-patched or vendor-private vulnerabilities are under-represented. Threat documents are English-only. Severity skews toward High and Critical because those are the disclosures that motivated authoring. The hivestorm suite emphasizes free-roam hardening rather than single-CVE remediation, so single-CVE-trained agents may under-perform there.",
-  "rai:dataLimitations": "Verifiers are heuristic: they check vulnerability exploitability via a representative proof-of-concept and service availability via a representative health probe, not exhaustive reachability. Agents may pass a verifier without addressing every variant of a vulnerability class. Scenarios marked as 'compensating-control eligible' (39 of 313) accept mitigations (network isolation, privilege restriction) that the underlying CVE record would not consider a true fix. Host-kernel-coupled scenarios (selected meta4 entries; meta4-ad-vm; hivestorm/scenario-13-ad-dc-win2019) require a vulnerable host kernel or Vagrant-managed VM and cannot be reproduced inside arbitrary cloud containers. Some scenarios are intentionally excluded from the official baseline run sets (see inspect_eval/runs.yaml) where the environment dependency is too strict.",
+  "rai:dataLimitations": "Verifiers are heuristic: they check vulnerability exploitability via a representative proof-of-concept and service availability via a representative health probe, not exhaustive reachability. Agents may pass a verifier without addressing every variant of a vulnerability class. Scenarios marked as 'compensating-control eligible' (48 of 313) accept mitigations (network isolation, privilege restriction) that the underlying CVE record would not consider a true fix. Host-kernel-coupled scenarios (selected meta4 entries; meta4-ad-vm; hivestorm/scenario-13-ad-dc-win2019) require a vulnerable host kernel or a Hyper-V-managed VM and cannot be reproduced inside arbitrary cloud containers. Some scenarios are intentionally excluded from the official baseline run sets (see inspect_eval/runs.yaml) where the environment dependency is too strict.",
   "rai:dataSocialImpact": "All scenarios depict already-publicly-disclosed vulnerabilities; the dataset adds no new offensive capability that is not already documented in the corresponding public CVE records. The intended impact is defensive: enabling more rigorous evaluation of agent systems that remediate, harden, and respond to incidents on behalf of system administrators. The authors acknowledge the dual-use nature of any security research artifact: an agent trained or evaluated on remediation tasks could in principle be repurposed for offensive workflows. Mitigations: (a) the dataset does not include novel zero-day vulnerabilities; (b) all exploit payloads are minimal proof-of-concepts at the level already published in vendor advisories; (c) scenarios are designed to be run in isolated sandboxes, not against live infrastructure; (d) the CC-BY-4.0 license requires attribution but does not authorize unlawful use, and applicable computer-misuse laws continue to apply.",
   "rai:personalSensitiveInformation": "The dataset contains no personally identifiable information (PII), no protected health information (PHI), no financial records, and no human-subjects data. Any usernames, hostnames, or IP addresses present in scenario fixtures are synthetic placeholders (e.g., admin / 127.0.0.1 / example.local).",
   "rai:dataReleaseMaintenancePlan": "Best-effort maintenance with no service-level agreement. Versioned releases are tagged in the source repository; bug reports and remediation-strategy corrections are accepted via the repository's issue tracker. During the NeurIPS 2026 double-blind review window the dataset is mirrored at the anonymized URL only; upon acceptance, the de-anonymized canonical URL and contact channel will replace the anonymous mirror. No commitment is made to backport fixes to prior tagged releases.",
@@ -102,16 +102,16 @@
       "@type": "cr:FileObject",
       "@id": "scenarios-manifest",
       "name": "scenarios.jsonl",
-      "description": "Per-scenario manifest: one JSON object per scenario describing suite, path, kind (linux-container | windows-container | vagrant-vm), launcher file, verifier file, threat document, and extracted CVE/CWE/severity/CVSS metadata. Records are sorted by scenario_id for deterministic ordering.",
+      "description": "Per-scenario manifest: one JSON object per scenario describing suite, path, kind (linux-container | windows-container | windows-vm | freebsd-vm), launcher file, verifier file, threat document, and extracted CVE/CWE/severity/CVSS metadata. Records are sorted by scenario_id for deterministic ordering.",
       "contentUrl": "scenarios.jsonl",
       "encodingFormat": "application/jsonlines",
-      "sha256": "16bc248e6af1548e57f3c3bf7d487aca548927394c866a654bae50eadc3b6c81"
+      "sha256": "654da7f2243b6bda460237bcf83d1b1f39f6578ea46abe4ab3a2f07e04351f8d"
     },
     {
       "@type": "cr:FileSet",
       "@id": "scenario-bundles",
       "name": "scenario-bundles",
-      "description": "Per-scenario source bundles. Each scenario directory contains a launcher (Dockerfile or Vagrantfile), an English threat document (threat.md or task.md.tmpl), and a verifier script (verify.sh on Linux, verify.ps1 on Windows). Some scenarios include additional fixtures (entrypoints, seed scripts, sample exploit payloads).",
+      "description": "Per-scenario source bundles. Each scenario directory contains a launcher (a Dockerfile, or a Hyper-V lab definition for VM scenarios), an English threat document (threat.md or task.md.tmpl), and a verifier script (verify.sh on Linux, verify.ps1 on Windows). Some scenarios include additional fixtures (entrypoints, seed scripts, sample exploit payloads).",
       "encodingFormat": "inode/directory",
       "includes": [
         "ccdc/scenario-*/**",
@@ -151,7 +151,7 @@
       "description": "Top-level README with setup, suite descriptions, and reproduction instructions.",
       "contentUrl": "README.md",
       "encodingFormat": "text/markdown",
-      "sha256": "9de2cc4b0dd7fac2ef6f6cd0766b05dff779cc2cc229f99d9d7630c8b155a6c7"
+      "sha256": "4cb60ca31f744cd7d3180676c20781ac88e0cf6ca40fed8f0e6701f8390bcd01"
     }
   ],
   "recordSet": [
@@ -201,7 +201,7 @@
           "@type": "cr:Field",
           "@id": "scenarios/kind",
           "name": "kind",
-          "description": "Execution environment for the scenario. One of: linux-container, windows-container, vagrant-vm, windows-vm.",
+          "description": "Execution environment for the scenario. One of: linux-container, windows-container, windows-vm, freebsd-vm.",
           "dataType": "sc:Text",
           "source": {
             "fileObject": {"@id": "scenarios-manifest"},
@@ -212,7 +212,7 @@
           "@type": "cr:Field",
           "@id": "scenarios/launch_file",
           "name": "launch_file",
-          "description": "Filename of the launcher inside the scenario directory. Typically 'Dockerfile' for container scenarios or 'Vagrantfile' for VM scenarios.",
+          "description": "Filename of the launcher inside the scenario directory. Typically 'Dockerfile' for container scenarios; VM scenarios are provisioned from their lab definition instead.",
           "dataType": "sc:Text",
           "source": {
             "fileObject": {"@id": "scenarios-manifest"},
