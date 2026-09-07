@@ -1,0 +1,47 @@
+# ACSAC-2026 rebuttal baseline grid: 3 models (2 families) x 5 solvers.
+# Models: MiniMax-M2.7 (MiniMax family), Qwen3.5-9B + Qwen3.5-35B-A3B (Qwen family).
+# Start ccdc+vulnhub (rebuttal-priority suites), both info conditions, 1 epoch (fold more later).
+# seeds:5 gives pass@1..5 in one pass. Write rebuttal as 5-epoch protocol; run 1 epoch at a time.
+defaults:
+  seeds: [5]
+  epochs: 1
+  solvers: [basic, react, reflexion, plan_and_solve, lats]
+  benchmarks: [ccdc, vulnhub]
+  modes: [day1, zero_day]
+  max_connections: 4
+  fail_on_error: 0.95   # tolerate watchdog-killed slow-sample errors; do NOT abort the whole run
+  retry_on_error: 1
+  bash_timeout: 180
+  verify_timeout: 360
+  message_limit: 0
+  token_limit: 0
+  time_limit: 1800
+  working_limit: 1800
+  hang_kill_seconds: 5400   # time_limit*(retry_on_error+2)=1800*3; default max(2*tl,1800)=3600 == worst-case healthy silent window -> force-exits healthy samples
+  preflight: true
+  # Interrupt hanging model calls so a slow zero-day API response can't outlive
+  # the sandbox watchdog (1980s) -> was thrashing/killing the MiniMax runs.
+  model_max_retries: 5
+  model_timeout: 300
+  model_attempt_timeout: 300
+  model_client_timeout: 360
+presets:
+  # I run this locally (2x L40 serving Qwen3.5-9B on :8100)
+  acsac_qwen9b:
+    model: openai/Qwen/Qwen3.5-9B
+    base_url: http://localhost:8100/v1
+    api_key: vllm
+    benchmarks: [ccdc]   # peer runs 9B/vulnhub on Delta:8002; avoid double-run
+  # Peer runs this on Delta (serve Qwen3.5-35B-A3B, tunnel to :8001)
+  acsac_qwen35b:
+    model: openai/Qwen/Qwen3.5-35B-A3B
+    base_url: http://localhost:8001/v1
+    api_key: vllm
+  # Peer runs this (MiniMax API, rate-limited)
+  acsac_minimax:
+    model: openai/MiniMax-M2.7
+    base_url: https://api.minimax.io/v1
+    api_key: ${MINIMAX_API_KEY}
+    request_limit: 15000
+    request_window: 18000
+    max_connections: 4

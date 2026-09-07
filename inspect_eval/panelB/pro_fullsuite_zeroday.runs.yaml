@@ -1,0 +1,30 @@
+defaults:
+  seeds: [5]
+  epochs: 3
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.25
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  preflight: true
+  model_max_retries: 10
+  model_timeout: 240
+  model_attempt_timeout: 120
+  model_client_timeout: 240
+presets:
+  pro_fs_zeroday:
+    model: openai/deepseek-v4-pro
+    base_url: ${DEEPSEEK_BASE_URL}
+    api_key: ${DEEPSEEK_API_KEY}
+    benchmarks: [vulnhub, ccdc, meta3/ubuntu, meta4]
+    exclude: [meta4/scenario-19, meta4/scenario-21, meta4/scenario-22, meta4/scenario-117]
+    solvers: [react]
+    seeds: 5
+    epochs: 3
+    max_connections: 6
+    modes: [zero_day]

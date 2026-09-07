@@ -1,0 +1,52 @@
+# Second, narrower gap-fill for the Qwen3.5-122B day1 leg: THREE episodes.
+#
+# The 23-scenario gapfill (qwen122b_gapfill) produced zero scored episodes in
+# 90 minutes and 16 sample errors, every one of them on a meta4 scenario. The
+# non-meta4 gaps never errored, so they are split out here rather than left
+# hostage to whatever is wrong with meta4 under this model.
+#
+# These three episodes complete two whole cells:
+#   ccdc/scenario-11        epoch 1 missing -> ccdc reaches 50/50
+#   meta3/ubuntu/scenario-04 epoch 3 missing -> meta3-ubuntu reaches 19/19
+#   meta3/ubuntu/scenario-15 epoch 3 missing -> meta3-ubuntu reaches 19/19
+#
+# sr-modern (meta4) needs 42 further episodes and is deliberately NOT in scope:
+# it is the part that is failing, and mixing it in risks tripping fail_on_error
+# and losing these three with it.
+#
+# Defaults are copied verbatim from the parent leg so these episodes are
+# protocol-identical to the ones they join. Only max_connections differs, and it
+# affects throughput, not validity.
+defaults:
+  seeds: [5]
+  epochs: 3
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.5
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  preflight: true
+  model_max_retries: 10
+  model_timeout: 420
+  model_attempt_timeout: 300
+  model_client_timeout: 480
+presets:
+  qwen122b_gapfill2:
+    model: openai/qwen3.5-122b
+    base_url: http://localhost:8001/v1
+    api_key: ${DELTA_VLLM_KEY}
+    benchmarks: [ccdc, meta3/ubuntu]
+    scenarios:
+      - ccdc/scenario-11
+      - meta3/ubuntu/scenario-04
+      - meta3/ubuntu/scenario-15
+    solvers: [react]
+    seeds: 5
+    epochs: 3
+    max_connections: 3
+    modes: [day1]

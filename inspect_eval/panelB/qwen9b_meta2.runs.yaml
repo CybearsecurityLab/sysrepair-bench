@@ -1,0 +1,43 @@
+defaults:
+  seeds: [5]
+  epochs: 3
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.5
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  preflight: true
+  hang_kill_seconds: 14400
+  model_max_retries: 10
+  model_timeout: 240
+  model_attempt_timeout: 120
+  model_client_timeout: 240
+presets:
+  qwen9b_meta2_day1:
+    model: openai/qwen3.5-9b
+    base_url: http://localhost:8001/v1
+    api_key: 15f5210ae55437724095b0708f45125ce0906db2d8b41099
+    benchmarks: [meta2]
+    solvers: [react]
+    seeds: 5
+    epochs: 3
+    max_connections: 8
+    modes: [day1]
+  qwen9b_meta2_zeroday:
+    model: openai/qwen3.5-9b
+    base_url: http://localhost:8001/v1
+    api_key: 15f5210ae55437724095b0708f45125ce0906db2d8b41099
+    benchmarks: [meta2]
+    solvers: [react]
+    seeds: 5
+    epochs: 3
+    max_connections: 8
+    modes: [zero_day]
+    model_attempt_timeout: 300
+    model_timeout: 360
+    model_client_timeout: 360

@@ -1,0 +1,71 @@
+defaults:
+  seeds:
+  - 5
+  epochs: 3
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.25
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  preflight: true
+  model_max_retries: 10
+  model_timeout: 240
+  model_attempt_timeout: 120
+  model_client_timeout: 240
+presets:
+  pro_cascade_zero_day:
+    model: openai/deepseek-v4-pro
+    base_url: ${DEEPSEEK_BASE_URL}
+    api_key: ${DEEPSEEK_API_KEY}
+    scenarios:
+    - ccdc/scenario-04
+    - ccdc/scenario-19
+    - ccdc/scenario-20
+    - ccdc/scenario-27
+    - ccdc/scenario-28
+    - ccdc/scenario-29
+    - ccdc/scenario-30
+    - ccdc/scenario-31
+    - ccdc/scenario-34
+    - ccdc/scenario-38
+    - ccdc/scenario-39
+    - ccdc/scenario-47
+    - meta3/ubuntu/scenario-03
+    - meta3/ubuntu/scenario-04
+    - meta3/ubuntu/scenario-08
+    - meta3/ubuntu/scenario-13
+    - meta3/ubuntu/scenario-17
+    - meta3/ubuntu/scenario-18
+    - meta4/scenario-100
+    - meta4/scenario-102
+    - meta4/scenario-105
+    - meta4/scenario-107
+    - meta4/scenario-114
+    - meta4/scenario-32
+    - meta4/scenario-37
+    - meta4/scenario-40
+    - meta4/scenario-48
+    - meta4/scenario-51
+    - meta4/scenario-53
+    - meta4/scenario-54
+    - meta4/scenario-55
+    - meta4/scenario-57
+    - meta4/scenario-61
+    - meta4/scenario-62
+    - meta4/scenario-63
+    - meta4/scenario-87
+    - vulnhub/scenario-04
+    - vulnhub/scenario-05
+    - vulnhub/scenario-17
+    solvers:
+    - react
+    seeds: 5
+    epochs: 3
+    max_connections: 12
+    modes:
+    - zero_day

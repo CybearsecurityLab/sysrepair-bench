@@ -1,0 +1,72 @@
+# Targeted gap-fill for the Qwen3.5-122B day1 leg.
+#
+# The leg ended with status=success at 711/756 because eval_set treats a task
+# whose samples all resolved (pass, fail or terminal error) as complete. Re-running
+# the day1 preset therefore exits in two seconds with "Completed all tasks
+# successfully" and fills nothing, so the gaps need their own preset.
+#
+# 45 episodes across 23 scenarios: 10 meta4 scenarios never ran at all
+# (29,37,38,51,54,55,75,77,79,99) and 13 stopped short of three epochs. meta2
+# (40/40) and vulnhub (30/30) are already complete and were folded from the main
+# leg; this run is what ccdc, meta3-ubuntu and sr-modern need.
+#
+# Note four of the never-ran scenarios (38,75,77,79) sit in the rancher/k3s block
+# that has historically failed to grade. If they come back ungraded again that is
+# the known harness issue, not this preset.
+#
+# max_connections is 4, not the leg's 8: the local box is concurrently running the
+# 35B zero_day leg at ~39 containers, and a service container that loses its
+# startup race under that pressure fails the scenario outright.
+defaults:
+  seeds: [5]
+  epochs: 3
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.5
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  preflight: true
+  model_max_retries: 10
+  model_timeout: 420
+  model_attempt_timeout: 300
+  model_client_timeout: 480
+presets:
+  qwen122b_gapfill:
+    model: openai/qwen3.5-122b
+    base_url: http://localhost:8001/v1
+    api_key: ${DELTA_VLLM_KEY}
+    benchmarks: [ccdc, meta3/ubuntu, meta4]
+    scenarios:
+      - meta4/scenario-29
+      - meta4/scenario-37
+      - meta4/scenario-38
+      - meta4/scenario-51
+      - meta4/scenario-54
+      - meta4/scenario-55
+      - meta4/scenario-75
+      - meta4/scenario-77
+      - meta4/scenario-79
+      - meta4/scenario-99
+      - meta4/scenario-06
+      - meta4/scenario-112
+      - meta4/scenario-25
+      - meta4/scenario-41
+      - meta4/scenario-50
+      - meta4/scenario-61
+      - meta4/scenario-67
+      - meta4/scenario-73
+      - meta4/scenario-78
+      - meta4/scenario-86
+      - ccdc/scenario-11
+      - meta3/ubuntu/scenario-04
+      - meta3/ubuntu/scenario-15
+    solvers: [react]
+    seeds: 5
+    epochs: 3
+    max_connections: 4
+    modes: [day1]

@@ -1,0 +1,45 @@
+# ACSAC Qwen3.5-9B on DELTA (job 21850308, 4xA40, -dp 4), tunnelled to :8001.
+#
+# The preset name is DELIBERATELY identical to the one in acsac_full.runs.yaml.
+# run.py derives the eval_set dir as ./logs_es/{preset}_{solver}_{mode}_k{k},
+# so sharing the name puts Delta and the local L40s in ONE eval_set namespace:
+# whichever finishes a leg first, the other sees it complete and skips it.
+#
+# SAFETY: the two workers MUST hold DISJOINT solver lists. Local currently owns
+# [react, basic, reflexion] and is on basic; this file owns the tail,
+# [plan_and_solve, lats], which local has not started.
+#
+# Budgets are copied from acsac_full.runs.yaml VERBATIM. tab:headline compares
+# these cells directly against the locally-served ones, and unequal budgets
+# would make that comparison meaningless.
+#
+# NOTE ON PREEMPTION: this job is on gpuA40x4-preempt, so it can be killed at
+# any time. That is survivable because SR_EVAL_SET=1 resumes, but a dead
+# endpoint silently converts every later sample into a written error, so the
+# launcher watches the endpoint and stops rather than letting the leg drain.
+defaults:
+  seeds: [5]
+  epochs: 1
+  modes: [day1, zero_day]
+  fail_on_error: 0.95
+  retry_on_error: 1
+  bash_timeout: 180
+  verify_timeout: 360
+  message_limit: 0
+  token_limit: 0
+  time_limit: 7200
+  working_limit: 5400
+  hang_kill_seconds: 21600
+  preflight: true
+  model_max_retries: 5
+  model_timeout: 300
+  model_attempt_timeout: 300
+  model_client_timeout: 360
+presets:
+  acsac_9b_full:
+    model: openai/Qwen/Qwen3.5-9B
+    base_url: http://127.0.0.1:8001/v1
+    api_key: ${DELTA_VLLM_KEY}
+    benchmarks: [ccdc, meta2, meta3/ubuntu, vulnhub, meta4, meta4/ad-vm]
+    solvers: [plan_and_solve, lats]
+    max_connections: 8

@@ -1,0 +1,26 @@
+defaults:
+  seeds: [5]
+  epochs: 3
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.5
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  preflight: true
+  model_max_retries: 10
+  model_timeout: 240
+  model_attempt_timeout: 300
+  model_client_timeout: 360
+presets:
+  qwen27b_local_zeroday:
+    model: openai/Qwen/Qwen3.5-27B
+    base_url: http://localhost:8100/v1
+    api_key: vllm
+    benchmarks: [meta2]
+    solvers: [react]
+    seeds: 5
+    epochs: 3
+    max_connections: 8
+    modes: [zero_day]

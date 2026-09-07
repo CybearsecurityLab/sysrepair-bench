@@ -1,0 +1,30 @@
+defaults:
+  seeds: [5]
+  epochs: 3
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.5
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  preflight: true
+  model_max_retries: 10
+  model_timeout: 240
+  model_attempt_timeout: 120
+  model_client_timeout: 240
+presets:
+  kimi_meta2:
+    model: openai/k3
+    base_url: ${KIMI_BASE_URL}
+    api_key: ${KIMI_API_KEY}
+    benchmarks: [meta2]
+    scenarios: [meta2/scenario-31, meta2/scenario-32, meta2/scenario-33, meta2/scenario-34, meta2/scenario-35, meta2/scenario-36, meta2/scenario-37, meta2/scenario-38, meta2/scenario-39, meta2/scenario-40]
+    solvers: [react]
+    seeds: 5
+    epochs: 3
+    max_connections: 4
+    modes: [day1]

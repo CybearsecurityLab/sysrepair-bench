@@ -1,0 +1,67 @@
+# Qwen3.5-122B day1 sr-modern gap-fill: the 20 meta4 scenarios still short of
+# three epochs, 42 episodes.
+#
+# Run CONCURRENTLY with the 35B zero_day leg, deliberately, reversing the earlier
+# serialise-first plan. squeue shows Delta job 21665519 expires 2026-09-02T19:12:21
+# while the 35B leg needs ~32h at 15 ep/h, so waiting for a quiet box would let the
+# allocation expire idle and lose this cell entirely. Attempting it costs only GPU
+# time that is otherwise forfeit.
+#
+# Expect failures: every previous attempt at these scenarios errored while a second
+# leg was running (working median 33s against total median 803s, mechanism
+# unidentified). fail_on_error 0.5 may abort the run. That is an acceptable trade
+# against a guaranteed loss.
+#
+# Defaults copied verbatim from the parent leg so the episodes are
+# protocol-identical. Only max_connections differs, matching the 3 that worked for
+# the ccdc/ubuntu gap-fill.
+defaults:
+  seeds: [5]
+  epochs: 3
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.5
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  preflight: true
+  model_max_retries: 10
+  model_timeout: 420
+  model_attempt_timeout: 300
+  model_client_timeout: 480
+presets:
+  qwen122b_meta4:
+    model: openai/qwen3.5-122b
+    base_url: http://localhost:8001/v1
+    api_key: ${DELTA_VLLM_KEY}
+    benchmarks: [meta4]
+    scenarios:
+      - meta4/scenario-06
+      - meta4/scenario-25
+      - meta4/scenario-29
+      - meta4/scenario-37
+      - meta4/scenario-38
+      - meta4/scenario-41
+      - meta4/scenario-50
+      - meta4/scenario-51
+      - meta4/scenario-54
+      - meta4/scenario-55
+      - meta4/scenario-61
+      - meta4/scenario-67
+      - meta4/scenario-73
+      - meta4/scenario-75
+      - meta4/scenario-77
+      - meta4/scenario-78
+      - meta4/scenario-79
+      - meta4/scenario-86
+      - meta4/scenario-99
+      - meta4/scenario-112
+    solvers: [react]
+    seeds: 5
+    epochs: 3
+    max_connections: 3
+    modes: [day1]

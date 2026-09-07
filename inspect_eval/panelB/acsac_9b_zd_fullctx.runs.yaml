@@ -1,0 +1,40 @@
+# Qwen3.5-9B zero-day, re-measured at the model's FULL declared context.
+#
+# WHY THIS EXISTS: the previous zero-day legs were served at 32768 against a
+# model declaring 262144. Zero-day episodes carry no briefing, so the agent
+# explores longer, the transcript passes 32k and the request dies. Measured
+# loss: react 169/276 (61.2%), reflexion 136/276 (49.3%), against 8.3%/4.0%/1.2%
+# on day-1. The loss is difficulty-correlated, so excluding it biases pass rates
+# UP and the cells are invalid rather than merely incomplete. They are
+# quarantined under logs-quarantine/ctx32768/.
+#
+# The preset name is deliberately NEW so eval_set starts a fresh namespace
+# rather than resuming into the quarantined dirs.
+#
+# min_context makes preflight refuse to launch if the server is ever back at a
+# truncated context, which is the whole failure this re-run exists to undo.
+
+defaults:
+  seeds: [5]
+  epochs: 1
+  modes: [zero_day]
+  time_limit: 7200
+  bash_timeout: 180
+  verify_timeout: 360
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  request_window: 18000
+
+presets:
+  acsac_9b_zd_fullctx:
+    model: openai/Qwen/Qwen3.5-9B
+    base_url: http://localhost:8100/v1
+    api_key: vllm
+    min_context: 262144
+    benchmarks: [ccdc, meta2, meta3/ubuntu, vulnhub, meta4]
+    solvers: [react, reflexion, basic]
+    modes: [zero_day]
+    # The server reports "Maximum concurrency for 262,144 tokens per request:
+    # 7.50x" and is served with --max-num-seqs 6. Stay under both.
+    max_connections: 6
