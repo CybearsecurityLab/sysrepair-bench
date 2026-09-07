@@ -66,7 +66,10 @@ def main() -> int:
     lines += ["\t".join(r) for r in rows]
     for model in sorted(norms):
         v = norms[model]
-        lines.append("\t".join([model, "MEAN", "-", f"n={len(v)}",
+        # The count belongs in the row's identity, not in a numeric column: the
+        # comparator parses every value column as a float, so "n=13" sitting in
+        # points_max crashed it.
+        lines.append("\t".join([model, f"MEAN (n={len(v)})", "-", "-",
                                 f"{100*sum(v)/len(v):.1f}"]))
     text = "\n".join(lines)
     print(text)

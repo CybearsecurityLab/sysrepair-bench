@@ -20,5 +20,5 @@ qwen3.5-9b	hivestorm/scenario-09-ubuntu-nginx-phpbb	-	-	-
 qwen3.5-9b	hivestorm/scenario-12-centos7-lamp	-	-	-
 qwen3.5-9b	hivestorm/scenario-15-docker-host	-	-	-
 qwen3.5-9b	hivestorm/scenario-16-nginx-phpfpm	-	-	-
-minimax-m2.7	MEAN	-	n=13	50.9
-qwen3.5-9b	MEAN	-	n=1	32.7
+minimax-m2.7	MEAN (n=13)	-	-	50.9
+qwen3.5-9b	MEAN (n=1)	-	-	32.7
