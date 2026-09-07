@@ -24,7 +24,11 @@ def main() -> int:
     if not root.exists():
         print(f"SKIP: no log directory at {root}")
         print("      Claims 1, 2, 3 and 5 need it. Fetch the log archive named in README.txt.")
-        return 0
+        # Exit 3, not 0. "Absent" is not "verified": returning 0 let install.sh
+        # go on to announce that all five claims were runnable, directly under a
+        # message saying the logs were missing. 3 distinguishes absent logs from
+        # a genuine integrity failure, which stays 1.
+        return 3
 
     try:
         import sysrepair_bench  # noqa: F401

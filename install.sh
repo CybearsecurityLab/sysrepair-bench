@@ -69,7 +69,12 @@ python -c 'import sysrepair_bench' || fail "harness still not importable after r
 
 say "verifying the shipped logs are readable"
 LOGS_OK=1
-python "$HERE/scripts/analysis/verify_logs.py" || LOGS_OK=0
+python "$HERE/scripts/analysis/verify_logs.py"
+case $? in
+  0) : ;;                       # logs present and readable
+  3) LOGS_OK=0 ;;               # logs absent: not an error, but not ready
+  *) fail "shipped logs failed their integrity check" ;;
+esac
 
 if [ "$FULL" -eq 1 ]; then
   say "full tier: checking docker"
