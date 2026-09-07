@@ -1,0 +1,14 @@
+Evaluator access
+================
+
+The claims that matter for the Reproducible badge (1, 2, 3, 5) need no access to
+author hardware. They run from the shipped logs on a stock Python environment.
+
+Claim 4 in scaled mode needs only a Docker host and an API key for one hosted
+model. Evaluators who prefer not to use their own credentials, or who want the
+full-scale GPU configuration, may request temporary access to author hardware
+through the HotCRP thread for this submission. We will supply an SSH endpoint,
+a scoped account, and a time-boxed API key for the evaluation period.
+
+We commit to being reachable through HotCRP for the whole evaluation window,
+including the kick-the-tires period.

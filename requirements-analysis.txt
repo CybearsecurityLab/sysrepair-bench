@@ -1,0 +1,18 @@
+# Logs-only tier: everything needed to recompute every table in the paper from
+# the shipped evaluation logs. No solver, no Docker, no GPU, no credentials.
+#
+# inspect-ai is required to READ the logs at all, not to run anything: the .eval
+# format is its serialisation, and the harness registers a custom sandbox
+# provider that the logs reference by name.
+inspect-ai>=0.3.60
+
+# Imported by the harness modules the analysis path pulls in (sysrepair_bench
+# .passk and friends). These are easy to miss because inspect-ai does not
+# require them, so a fresh install fails only when a claim actually runs.
+tabulate
+pyyaml
+numpy
+python-dotenv
+
+# Used by the cost/accuracy figure regeneration.
+matplotlib

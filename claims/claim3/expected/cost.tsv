@@ -1,0 +1,3 @@
+solver	successes	n	tok_per_success	usd_per_success	total_tokens
+basic	37	50	570428	0.060	21105850
+react	26	30	146080	0.026	3798083

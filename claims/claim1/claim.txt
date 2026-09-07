@@ -1,0 +1,50 @@
+CLAIM 1 -- Headline accuracy: pass@K by solver and information condition
+=========================================================================
+
+PAPER LOCATION
+  Section "Results / Accuracy"; Table "tab:headline".
+
+THE CLAIM UNDER TEST
+  Across six solver architectures and three models, remediation accuracy is
+  high when the scenario briefing is supplied (Day-1) and collapses when it is
+  withheld (Zero-Day). The collapse is the paper's central finding: the binding
+  constraint is locating the fault, not executing the repair.
+
+  Two structural sub-claims are also tested here, because they are what a
+  reader would most want checked:
+    (a) every Zero-Day cell is far below its Day-1 counterpart for the same
+        (model, solver), and
+    (b) Plan-and-Solve and LATS collapse to 0.0 at Zero-Day, which is a
+        qualitative claim about solver architecture rather than a small
+        numeric difference.
+
+WHAT run.sh DOES
+  Recomputes the whole table from the evaluation logs shipped in
+  artifact/logs/, using artifact/analysis/make_headline.py, and diffs the
+  result against expected/headline.tsv.
+
+  It prints the DENOMINATOR next to every cell. This is deliberate. A
+  percentage alone cannot be verified, and in our own auditing the
+  overwhelming majority of disagreements between a published number and a
+  recomputation were population differences -- a cell computed over a
+  different set of episodes -- rather than arithmetic errors.
+
+REQUIREMENTS
+  NO-CREDENTIALS. NO-GPU. NO-DOCKER.
+  Python 3.11+ and the logs-only tier of install.sh.
+
+RUNTIME
+  About 10 minutes, dominated by reading the log files.
+
+WHAT SUCCESS LOOKS LIKE
+  run.sh exits 0 and reports no differing cells. Any cell that differs is
+  printed with its recomputed value, its expected value, and both
+  denominators.
+
+HONEST SCOPE
+  This claim reproduces the published STATISTICS from the published RUNS. It
+  does not re-execute the solvers. Re-running the grid is claim 4's scaled
+  mode for a single cell; at paper scale it is tens of thousands of
+  container-backed episodes and is not reproducible in an evaluation window.
+  Cells for which no log survives are listed in expected/COVERAGE.md and are
+  reported by run.sh as NOT REPRODUCIBLE rather than silently skipped.

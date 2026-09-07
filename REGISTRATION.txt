@@ -1,0 +1,77 @@
+ACSAC 2026 -- Artifact Registration
+Deadline: September 9, 11:59pm AoE
+
+PAPER TITLE
+  SysRepair: Autonomous Remediation of Running Systems
+
+ARTIFACT ABSTRACT
+
+We submit both SOFTWARE and DATA.
+
+The software is the SysRepair benchmark and evaluation harness: 313 containerised
+scenarios across seven suites, a dual-objective execution oracle, six solver
+implementations (ReAct, Reflexion, Plan-and-Solve, LATS, an Agentless-style
+baseline, and the NeuroPlan neural-symbolic planner), and the analysis scripts
+that produce every table in the paper. Source code is submitted, not binaries.
+
+The data is the complete set of evaluation logs underlying the reported numbers:
+per-episode records containing the solver transcript, every submit attempt, the
+oracle's per-check verdicts, and token accounting. These support recomputation of
+the published statistics without re-executing any model.
+
+WHICH PARTS OF THE PAPER
+
+  Section "Results / Accuracy", Table tab:headline
+      pass@K by solver, model and information condition.
+  Section "Results", Table tab:hivestorm
+      continuous scoring on the 16 Hivestorm scenarios, zero-day only.
+  Section "Results / Cost and efficiency", Table tab:cost and Figure fig:cost-acc
+      tokens and dollars per success; the accuracy-cost frontier.
+  Section "Results / Verifiability", Table tab:nsplan
+      the NeuroPlan pipeline on the 50-scenario ccdc suite.
+  Section "Results / Failure-mode analysis"
+      the distribution of failure modes by condition.
+
+Each appears as claims/claimN/ with a claim statement, a run script, and
+reference output.
+
+REQUIREMENTS AND DEPENDENCIES
+
+  OS: Linux with a Docker daemon able to start privileged containers. Scenario
+      targets are Linux containers; one suite (meta3/windows, 21 scenarios)
+      requires a Docker engine in Windows-container mode and is evaluated on a
+      separate host.
+  Python 3.11+.
+  Hardware: four of the five claims need NO GPU and NO credentials -- they
+      recompute published statistics from the submitted logs on any machine.
+      Live re-execution of the open-weight models needs two 48 GB-class
+      accelerators; the hosted model needs only an API key.
+  Third-party: Docker, the inspect-ai evaluation framework, vLLM for local
+      serving, and Fast Downward for the planning component.
+
+SCALE AND EXPECTED RUNTIME
+
+The full evaluation grid is six solvers against three models over 313 scenarios
+in two information conditions, which is tens of thousands of container-backed
+episodes and is not reproducible inside an evaluation window. Every claim
+therefore ships a scaled-down mode exercising the identical code path:
+
+  claim1  ~10 min   logs only
+  claim2  ~2 min    logs only
+  claim3  ~5 min    logs only
+  claim4  ~45 min   Docker + one API key (scaled); 8-12 h at full scale
+  claim5  ~10 min   logs only
+
+DATA SIZE, FORMAT AND SCHEMA
+
+Evaluation logs are inspect-ai .eval files, one per (model, solver, condition)
+cell, each holding per-episode records. Total on the order of a few GB
+compressed. Because this exceeds what belongs in a git repository, the logs are
+distributed as a separate archive alongside the code repository, and the
+artifact README gives the retrieval URL. The code repository alone is small
+enough to clone directly.
+
+LICENSE
+  Code and scenarios: Apache-2.0. Logs and derived data: CC-BY-4.0. Third-party
+  scenario content retains its upstream license, recorded per suite in
+  artifact/scenarios/PROVENANCE.md.

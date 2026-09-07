@@ -1,0 +1,40 @@
+Why this artifact is not fully runnable on shared public infrastructure
+======================================================================
+
+Two requirements exceed what SPHERE, Chameleon, CloudLab, FABRIC, or Colab
+provide in a default allocation.
+
+1. PRIVILEGED CONTAINER EXECUTION
+
+Each scenario boots a container running a real vulnerable service, and the
+solver acts on it through a bash tool: editing configuration under /etc,
+restarting daemons, changing firewall state, and managing packages and accounts.
+The oracle then re-runs the exploit check and per-service availability probes
+against that live host. This needs a working Docker daemon with the ability to
+start privileged containers and bind service ports inside a private network
+namespace. Notebook platforms without a Docker daemon cannot run any scenario.
+
+2. LOCAL GPU FOR THE OPEN-WEIGHT MODELS
+
+Two of the three evaluated models (Qwen3.5-9B, Qwen3.5-35B-A3B) are served
+locally with vLLM rather than through an API. Qwen3.5-35B-A3B needs roughly 67 GB
+of weights across two 48 GB-class accelerators. The third model is hosted and
+needs only an API key.
+
+WHAT THIS MEANS FOR AN EVALUATOR
+
+Claims 1, 2, 3 and 5 need NEITHER a GPU NOR credentials: they recompute the
+published statistics from the evaluation logs shipped in artifact/logs/, and run
+on any machine with Python. This is the majority of the paper's quantitative
+content and it is fully reproducible on public infrastructure.
+
+Claim 4 executes scenarios live and therefore needs Docker. Its scaled mode runs
+on a single CPU host against a hosted model with an API key, no GPU required.
+Its full mode needs the GPU described above.
+
+CHAMELEON IS THE BEST FIT if live execution is wanted: a bare-metal instance
+gives a real Docker daemon, and its GPU node types cover the open-weight models.
+CloudLab bare-metal works equally well for the CPU-only path.
+
+Remote access to author hardware can be arranged for evaluators who need the
+full-scale GPU path; see infrastructure/access.

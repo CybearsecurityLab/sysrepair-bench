@@ -148,3 +148,5 @@ RECOVERED_minimax_baseline/
 inspect_eval/scratchpad/*
 !inspect_eval/scratchpad/*.py
 !inspect_eval/scratchpad/*.sh
+claims/*/observed*.tsv
+logs/

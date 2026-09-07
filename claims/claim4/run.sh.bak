@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Claim 4: NeuroPlan verifiability on ccdc.
+#
+#   SCALE=scaled (default)  5 representative scenarios live, plus an audit-chain
+#                           check over all 50 from the shipped run records
+#   SCALE=full              all 50 live
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$HERE/../.." && pwd)"
+VENV="$ROOT/.venv"
+SCALE="${SCALE:-scaled}"
+OUT="${OUT:-$HERE/nsplan_out}"
+
+[ -d "$VENV" ] || { echo "ERROR: run ./install.sh --full first"; exit 2; }
+command -v docker >/dev/null || { echo "ERROR: docker required for claim 4"; exit 2; }
+docker info >/dev/null 2>&1 || { echo "ERROR: docker daemon not reachable"; exit 2; }
+# shellcheck disable=SC1091
+. "$VENV/bin/activate"
+
+if [ -z "${MINIMAX_API_KEY:-}${OPENAI_API_KEY:-}" ]; then
+  echo "ERROR: claim 4 needs one hosted-model key for the state-lifting step."
+  echo "       export MINIMAX_API_KEY=...   (or OPENAI_API_KEY + OPENAI_BASE_URL)"
+  exit 2
+fi
+
+# The five scaled scenarios are chosen to cover all four pipeline dispositions
+# (validate-fail, plan-fail, execute-fail, success) rather than to be easy, so a
+# passing scaled run exercises every branch including both refusal paths.
+SCALED_SCENARIOS="scenario-01,scenario-07,scenario-19,scenario-30,scenario-44"
+
+echo "[claim4] audit chain over all 50 recorded runs (no execution)"
+python "$ROOT/artifact/analysis/verify_nsplan_chain.py" \
+  --runs "$ROOT/artifact/nsplan_runs" \
+  --expected "$HERE/expected/dispositions.tsv"
+
+echo
+if [ "$SCALE" = "full" ]; then
+  echo "[claim4] live pipeline, ALL 50 ccdc scenarios (8-12 h)"
+  python "$ROOT/artifact/nsplan/run_pipeline.py" --collection ccdc --output-dir "$OUT"
+else
+  echo "[claim4] live pipeline, 5 scenarios covering all four dispositions"
+  python "$ROOT/artifact/nsplan/run_pipeline.py" --collection ccdc \
+    --scenarios "$SCALED_SCENARIOS" --output-dir "$OUT"
+fi
+
+echo
+echo "[claim4] classifying observed dispositions"
+python "$ROOT/artifact/analysis/nsplan_dispositions.py" \
+  --runs "$OUT" --out "$HERE/observed_dispositions.tsv"
+
+echo
+python "$ROOT/artifact/analysis/compare_tables.py" \
+  --expected "$HERE/expected/dispositions.tsv" \
+  --observed "$HERE/observed_dispositions.tsv" --tolerance 0.0

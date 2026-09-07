@@ -1,0 +1,40 @@
+CLAIM 2 -- Hivestorm: continuous scoring under zero-day only
+============================================================
+
+PAPER LOCATION
+  Section "Results"; Table "tab:hivestorm".
+
+THE CLAIM UNDER TEST
+  On the 16 Hivestorm scenarios, evaluated zero-day only because they carry no
+  per-scenario briefing, ReAct attains the reported normalised score. Score is
+  the cumulative points awarded at run end, normalised to the per-scenario
+  maximum and averaged across the 16 scenarios.
+
+  Hivestorm is scored differently from every other suite in the paper and this
+  claim exists to make that difference auditable. The other suites use the
+  binary dual-objective oracle; Hivestorm uses a continuous, incrementally
+  awarded score, and its scorer accepts multiple invocations during one run.
+  A reader checking the paper should be able to see that the numbers in
+  tab:hivestorm are not comparable to the pass@K cells in tab:headline, and
+  run.sh makes that concrete by reporting both the raw points and the
+  normalisation denominator per scenario.
+
+WHAT run.sh DOES
+  Recomputes the per-scenario normalised scores and their mean from the shipped
+  Hivestorm logs, and diffs against expected/hivestorm.tsv.
+
+REQUIREMENTS
+  NO-CREDENTIALS. NO-GPU. NO-DOCKER.
+
+RUNTIME
+  Under 2 minutes; Hivestorm is 16 scenarios at one run each.
+
+WHAT SUCCESS LOOKS LIKE
+  run.sh exits 0 and every per-scenario score matches.
+
+HONEST SCOPE
+  The paper reports a SINGLE run per Hivestorm scenario, not an epoch-replicated
+  cell, so there is no interval attached to these numbers and none is claimed.
+  A re-execution would not be expected to reproduce them exactly, which is
+  precisely why this claim recomputes from the shipped logs rather than
+  re-running.

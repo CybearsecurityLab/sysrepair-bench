@@ -1,0 +1,65 @@
+CLAIM 4 -- NeuroPlan stage decomposition on vulnhub
+===================================================
+
+PAPER LOCATION
+  Section "Results / Pre-execution reviewability"; Table "tab:nsplan", vulnhub
+  row. Pipeline detail in the appendix sections on domain generation,
+  enrichment, validation and planning.
+
+THE CLAIM UNDER TEST
+  On the 30-scenario vulnhub suite the NeuroPlan pipeline validates on 0.97 of
+  scenarios, returns a plan on 0.93, and passes the dual-objective oracle on
+  0.23, at a mean plan length of 1.8 operators and about 82K tokens per success.
+
+  The claim that matters is not the headline percentage but the FAILURE
+  STRUCTURE. Validation and planning losses are refusals: the pipeline halts
+  with a structured outcome before any change reaches the host. Only the
+  execute-fail bucket modifies the target. That is the paper's argument for
+  change-controlled deployment, and it is checkable here: run.sh reports the
+  disposition of every scenario and warns if any refusal-bucket scenario carries
+  a nonzero plan length, which would mean something was lowered and possibly run.
+
+  vulnhub is also the suite where the pipeline does WORST, and it is included
+  for that reason. Validation and planning hold up while execution collapses to
+  0.23, and the short mean plan length (1.8 operators, against 41.4 on ccdc)
+  localises the cause: domains mined too coarsely admit short plans that satisfy
+  the modelled goal without closing the vulnerability on the host. A reader
+  should be able to confirm that the failure is at execution and not in the
+  symbolic machinery, which is exactly what the per-stage columns show.
+
+WHAT run.sh DOES
+  Default: recomputes the whole stage decomposition from the shipped logs in
+  artifact/nsplan_logs/logs_final30 and diffs it against
+  expected/dispositions.tsv at zero tolerance.
+  LIVE=1: additionally re-runs the pipeline on three scenarios spanning
+  plan-fail, execute-fail and success.
+
+REQUIREMENTS
+  Default mode: NO-CREDENTIALS. NO-GPU. NO-DOCKER. Install with ./install.sh
+  LIVE=1: Docker, plus ONE hosted-model API key for the state-lifting step
+  (MINIMAX_API_KEY, or OPENAI_API_KEY with OPENAI_BASE_URL).
+  Install with ./install.sh --full
+
+RUNTIME
+  Default: under 2 minutes.
+  LIVE=1: about 45 minutes including container builds.
+
+WHAT SUCCESS LOOKS LIKE
+  run.sh exits 0, every per-scenario disposition matches, the summary row
+  reproduces 0.97 / 0.93 / 0.23 with mean plan length 1.8, and no
+  refusal-bucket scenario carries a plan length.
+
+HONEST SCOPE
+  The default mode recomputes rather than re-executes, and that is the honest
+  reproducible unit: the pipeline is stochastic at the lifting step, which is an
+  LLM call, so a live re-run may move a scenario between adjacent dispositions.
+  Treat a bucket change under LIVE=1 as expected variance rather than a defect.
+
+  The 0.23 figure is a single-run measurement over 30 scenarios and carries the
+  interval implied by that n; a 95% Clopper-Pearson interval on 7/30 runs from
+  about 0.10 to 0.42, so this claim does not support fine distinctions.
+
+  SCOPE LIMIT: this claim covers the vulnhub row only. tab:nsplan also reports a
+  ccdc row (0.96 / 0.88 / 0.76, |pi| 41.4, 442K tokens per success, n=50). The
+  ccdc end-to-end run records are not included in this artifact, so that row is
+  not reproducible from what ships here and we do not claim it is.
