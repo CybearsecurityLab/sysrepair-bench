@@ -30,6 +30,15 @@ URL never changes when runs switch between day1 and zero_day:
       model: openai/Qwen3.5-35B-A3B
       base_url: http://10.0.0.5:8001/v1
       api_key: vllm
+      min_context: 262144
+
+``min_context`` is the smallest served context the preset will accept. Preflight
+reads ``max_model_len`` from the endpoint and refuses to launch below it. Set it
+to the model's declared ``max_position_embeddings``. A server capped below that
+does not fail loudly: individual episodes die with "maximum context length is
+N" while the run continues, and because a harder scenario explores longer and
+overflows sooner, the survivors are the easy episodes and the cell's pass rate
+is biased UP rather than merely incomplete.
 """
 
 from __future__ import annotations
@@ -457,6 +466,49 @@ def _preflight_endpoint(cfg: dict) -> None:
         ) from last_err
     print(f"[preflight] {short} @ {url_shown}: ok"
           + (f" (after {attempt} attempts)" if attempt > 1 else ""))
+
+    # Served context length. A server capped below the model's declared context
+    # does not fail loudly: episodes that outgrow the cap die individually with
+    # "maximum context length is N", the run keeps going, and the cell looks
+    # merely incomplete. It is not. The loss is difficulty-correlated, because a
+    # harder scenario explores longer and produces a longer transcript, so the
+    # survivors are the easy episodes and the pass rate is biased UP. One 9B
+    # zero-day leg lost 169 of 276 episodes that way and had to be discarded
+    # entirely. Always record what was served, and refuse to launch when a
+    # preset declares the minimum it needs and the server is below it.
+    served_ctx = None
+    try:
+        for m in client.models.list().data:
+            if m.id == short or short.endswith(m.id) or m.id.endswith(short):
+                served_ctx = getattr(m, "max_model_len", None)
+                break
+    except Exception as e:  # noqa: BLE001 - advisory only
+        print(f"[preflight] could not read served context ({e.__class__.__name__})")
+
+    min_ctx = cfg.get("min_context")
+    if served_ctx:
+        print(f"[preflight] {short}: served context {served_ctx}"
+              + (f" (preset requires >= {min_ctx})" if min_ctx else ""))
+        if min_ctx and int(served_ctx) < int(min_ctx):
+            raise SystemExit(
+                f"[preflight] Served context is below what this preset requires.\n"
+                f"           model:    {short}\n"
+                f"           base_url: {url_shown}\n"
+                f"           served:   {served_ctx}\n"
+                f"           required: {min_ctx}\n"
+                f"\n"
+                f"           Refusing to launch. A truncated context is not a\n"
+                f"           throughput knob: it changes which episodes can\n"
+                f"           finish, so it changes the population and silently\n"
+                f"           invalidates the cell. If it will not fit, reduce\n"
+                f"           --max-num-seqs rather than --max-model-len; KV cache\n"
+                f"           is (context x sequences), so the trade is neutral.\n"
+                f"           Drop 'min_context' from the preset only if you\n"
+                f"           intend to publish a cell measured at {served_ctx}."
+            )
+    elif min_ctx:
+        print(f"[preflight] WARNING: preset requires context >= {min_ctx} but the "
+              f"server did not report max_model_len; cannot verify.")
 
 
 def _hyperv_host_config(vm_dir: Path) -> dict | None:

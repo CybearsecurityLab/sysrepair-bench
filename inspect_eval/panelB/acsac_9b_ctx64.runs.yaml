@@ -1,0 +1,61 @@
+# Qwen3.5-9B re-run at a CORRECTED CONTEXT LENGTH (65536), on Delta job
+# 21858271 (4xA40, tensor-parallel 4), tunnelled to :8002.
+#
+# WHY THIS EXISTS. The 32768-context cells are not measurable. Census of the
+# original legs, ad-vm excluded:
+#     react     zero_day   84/256 scored, 169 lost to "maximum context length"
+#     reflexion zero_day  112/256 scored, 136 lost the same way
+#     react     day1      225/256 scored,  23 lost
+# The loss is difficulty-correlated by construction (no threat.md -> longer
+# exploration -> longer transcript -> overflow), so the survivors are the easy
+# episodes and excluding the failures biases pass rates UP. Bounding 9B react
+# zero_day pass@5 between "exclude" and "count as failure" gives ccdc 89.5 vs
+# 34.7 against a published 31: a 55-point band, and meta3-ubuntu falls to n=2.
+#
+# THE PRESET NAME IS DELIBERATELY NEW. run.py derives the eval_set dir from the
+# preset name, so `acsac_9b_ctx64` writes to fresh dirs and the original
+# `acsac_9b_full` cells are preserved untouched for comparison. This is a
+# separate population, not a repair of the old one, and must be reported as
+# such: a cell regenerated at a corrected context length, not a swapped number.
+#
+# BOTH ARMS ARE HERE ON PURPOSE. The discovery cliff is a day1-vs-zero_day
+# comparison, so running only zero_day at 65536 would leave day1 at 32768 and
+# recreate exactly the confound already documented for the 35B row (day1 at
+# 262144, zero_day at 32768). Both arms must share one context or the cliff
+# measures the serving config instead of the model.
+#
+# meta4/ad-vm is excluded: Windows AD targets do not run on this host.
+#
+# Every other budget key is copied VERBATIM from acsac_full.runs.yaml. Context
+# length is not a task key, but the budgets are, and changing them would fork
+# the cell for a second reason on top of the context change.
+defaults:
+  seeds: [5]
+  epochs: 1
+  modes: [day1, zero_day]
+  fail_on_error: 0.95
+  retry_on_error: 1
+  bash_timeout: 180
+  verify_timeout: 360
+  message_limit: 0
+  token_limit: 0
+  time_limit: 7200
+  working_limit: 5400
+  hang_kill_seconds: 21600
+  preflight: true
+  model_max_retries: 5
+  model_timeout: 300
+  model_attempt_timeout: 300
+  model_client_timeout: 360
+presets:
+  acsac_9b_ctx64:
+    model: openai/Qwen/Qwen3.5-9B
+    base_url: http://127.0.0.1:8002/v1
+    api_key: ${DELTA_CTX64_KEY}
+    min_context: 262144   # refuse to run against a truncated server
+    benchmarks: [ccdc, meta2, meta3/ubuntu, vulnhub, meta4]
+    # Reportable solvers only. plan_and_solve and lats are deliberately omitted:
+    # they contribute the 0% cells, which the context fix does not change, and
+    # including them would roughly double the wall-clock for no added evidence.
+    solvers: [react, basic, reflexion]
+    max_connections: 8
