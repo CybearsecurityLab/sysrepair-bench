@@ -22,12 +22,18 @@ echo "[serve] starting vLLM for $MODEL (tp=$TP) on :8100 ..."
 docker run -d --name pbvllm --gpus all --shm-size 24g \
   -v /home/resbears/.cache/huggingface:/root/.cache/huggingface \
   -e HF_TOKEN="$HF_TOKEN" -e HUGGING_FACE_HUB_TOKEN="$HF_TOKEN" \
-  # Bind to LOOPBACK only. `-p 8100:8000` publishes on 0.0.0.0, which put the
-  # endpoint on the LAN guarded by nothing but the placeholder api_key: a peer
-  # box on the same subnet answered Test-NetConnection on 8100. Sharing the
-  # server with another machine does NOT need a wider bind, because an ssh -R
-  # forward connects from this box to 127.0.0.1.
-  -p 127.0.0.1:8100:8000 \
+  # Bind NARROWLY. `-p 8100:8000` publishes on 0.0.0.0, which put the endpoint on
+  # the LAN guarded by nothing but the placeholder api_key: a box on the same
+  # subnet answered Test-NetConnection on 8100.
+  #
+  # BIND_ADDR picks the one interface that may reach it. Default 127.0.0.1 is
+  # right for local use and for an `ssh -R` forward, which connects from this
+  # box to loopback. To share over a Tailscale mesh, set BIND_ADDR to THIS
+  # host's tailscale address (100.x.y.z) so the mesh can reach it and no other
+  # network can:
+  #     BIND_ADDR=$(tailscale ip -4) MAX_LEN=262144 MAX_SEQS=6 panelB/serve.sh <model> 2
+  # Never set it to 0.0.0.0 to "make it work"; that is the exposure above.
+  -p ${BIND_ADDR:-127.0.0.1}:8100:8000 \
   vllm/vllm-openai:latest \
   --model "$MODEL" --served-model-name "$MODEL" \
   --tensor-parallel-size "$TP" --gpu-memory-utilization 0.92 \
