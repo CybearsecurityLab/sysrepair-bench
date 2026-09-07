@@ -22,7 +22,12 @@ echo "[serve] starting vLLM for $MODEL (tp=$TP) on :8100 ..."
 docker run -d --name pbvllm --gpus all --shm-size 24g \
   -v /home/resbears/.cache/huggingface:/root/.cache/huggingface \
   -e HF_TOKEN="$HF_TOKEN" -e HUGGING_FACE_HUB_TOKEN="$HF_TOKEN" \
-  -p 8100:8000 \
+  # Bind to LOOPBACK only. `-p 8100:8000` publishes on 0.0.0.0, which put the
+  # endpoint on the LAN guarded by nothing but the placeholder api_key: a peer
+  # box on the same subnet answered Test-NetConnection on 8100. Sharing the
+  # server with another machine does NOT need a wider bind, because an ssh -R
+  # forward connects from this box to 127.0.0.1.
+  -p 127.0.0.1:8100:8000 \
   vllm/vllm-openai:latest \
   --model "$MODEL" --served-model-name "$MODEL" \
   --tensor-parallel-size "$TP" --gpu-memory-utilization 0.92 \
