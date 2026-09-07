@@ -53,3 +53,10 @@ curl --path-as-is \
 # 2. Log in as admin with an empty password over the secure-admin REST API
 curl -u admin: "http://<target>:4848/management/domain"
 ```
+
+## Constraints
+- This is a compensating-control scenario: no fixed GlassFish build exists, and
+  decommissioning the server or migrating to another application server is out of
+  scope. `domain1` must remain installed at `C:\glassfish4` and keep serving
+  applications on port 8080.
+- The admin realm's `admin` account must not be removed.

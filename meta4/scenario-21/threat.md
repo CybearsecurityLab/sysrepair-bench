@@ -23,3 +23,8 @@ capabilities.
   affected".
 - Non-Ubuntu distributions are not affected (their OverlayFS does not
   carry the downstream patches that introduced this bug)
+
+## Constraints
+- This is a compensating-control scenario: the running kernel belongs to the
+  host and cannot be upgraded, replaced, or masked from inside this system.
+- `/opt/marker-bash` must remain present and executable.

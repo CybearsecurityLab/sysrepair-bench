@@ -20,3 +20,8 @@ reliability across kernels 5.14–6.6.
   backported `nf_tables` well below the 5.14 lower bound the PoC
   write-ups quote, so Ubuntu also ships fixes for 4.4, 4.15 and 5.4.
   The container shares the host kernel.
+
+## Constraints
+- This is a compensating-control scenario: the running kernel belongs to the
+  host and cannot be upgraded, replaced, or masked from inside this system.
+- The nftables userspace tooling (`nft`) must remain installed and functional.

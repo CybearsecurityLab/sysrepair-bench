@@ -36,5 +36,5 @@ Next.js is exposed directly on port 3000 with no upstream proxy to strip
 attacker-controlled headers before they reach the Node.js process.
 
 ## Constraints
-- Upgrading Next.js must not be the sole measure relied on if the
-  application must remain on an older Next.js version.
+- This is a compensating-control scenario: upgrading Next.js does not on its
+  own satisfy it. A compensating control must be in place.

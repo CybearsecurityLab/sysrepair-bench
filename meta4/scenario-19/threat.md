@@ -23,3 +23,8 @@ PoC reference).
 ## Affected Service
 - **Vulnerable kernels:** Linux 5.8 through 5.16.10 / 5.15.25 / 5.10.102
 - **Host kernel is authoritative** (reported by `uname -r`)
+
+## Constraints
+- This is a compensating-control scenario: the running kernel belongs to the
+  host and cannot be upgraded, replaced, or masked from inside this system.
+- The SUID marker binary `/opt/suid-marker` must remain present and functional.

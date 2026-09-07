@@ -32,5 +32,5 @@ The `ssh:daemon(2222, [...])` call is reachable from any IP — no network-level
 restriction is in place to limit who can initiate an SSH handshake.
 
 ## Constraints
-- Upgrading Erlang/OTP must not be the sole measure relied on when an
-  immediate OTP upgrade is not feasible.
+- This is a compensating-control scenario: upgrading Erlang/OTP does not on
+  its own satisfy it. A compensating control must be in place.

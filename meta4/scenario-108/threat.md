@@ -34,5 +34,5 @@ Langflow (or this simulation) is exposed directly on port 7860 with no
 authentication layer in front of the `/api/v1/run` endpoint.
 
 ## Constraints
-- Upgrading Langflow must not be the sole measure relied on when an
-  immediate upgrade path is unavailable.
+- This is a compensating-control scenario: upgrading Langflow does not on its
+  own satisfy it. A compensating control must be in place.
