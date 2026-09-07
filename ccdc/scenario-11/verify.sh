@@ -120,11 +120,65 @@ else
 fi
 
 # --- Regression check: testdb must still be accessible ---
-RESULT=$(mysql -u root -e "SELECT COUNT(*) FROM testdb.items;" 2>/dev/null | tail -1)
-if [[ "$RESULT" -ge 1 ]] 2>/dev/null; then
-    record_reg testdb_accessible 1
+#
+# WAS BROKEN: this was a bare `mysql -u root`, which hard-requires passwordless
+# root. Setting a root password is ordinary, defensible hardening — the
+# runtime_auth_enforced PoC above explicitly PASSES that state — yet it made
+# this command fail and scored the agent as having destroyed the database. The
+# check is about DATA AVAILABILITY, not about which credential state the box
+# ends in (cf. scenario-25, whose redis probe reads the configured password and
+# uses it when set). Credential sources are tried in order; each is shipped by
+# the image or created by the agent, never guessed:
+#   1. root over the unix socket — covers auth_socket, empty-password and
+#      skip-grant states, and picks up /root/.my.cnf if the agent stored the
+#      new password there;
+#   2. the package maintenance account via /etc/mysql/debian.cnf, which this
+#      image ships as auth_socket with authentication_string=root, so the OS
+#      root user may always use it;
+#   3. if BOTH attempts die with a client authentication denial (ERROR
+#      1045/1698) — a response only a live, auth-enforcing mysqld can give —
+#      testdb is verified on disk instead: the items tablespace must still be
+#      present, non-empty, in the datadir.
+# A dead daemon (ERROR 2002/2003), a dropped database (ERROR 1049) or a dropped
+# table still FAIL: none of those reaches a passing tier.
+_try_testdb() {   # $@ = mysql client args; sets TESTDB_COUNT / TESTDB_ERR
+    local out
+    out=$(mysql "$@" -N --batch -e "SELECT COUNT(*) FROM testdb.items;" 2>&1)
+    if [ $? -eq 0 ]; then
+        TESTDB_COUNT=$(printf '%s\n' "$out" | tail -1); TESTDB_ERR=""
+        return 0
+    fi
+    TESTDB_COUNT=""; TESTDB_ERR="$out"
+    return 1
+}
+_auth_denied() {  # $1 = mysql client error text
+    printf '%s' "$1" | grep -qE 'ERROR (1045|1698)|Access denied for user'
+}
+
+TESTDB_COUNT=""; TESTDB_ERR=""; ROOT_ERR=""; CRED_NOTE="read as root over the unix socket"
+if ! _try_testdb -u root; then
+    ROOT_ERR="$TESTDB_ERR"
+    if [ -r /etc/mysql/debian.cnf ] && _try_testdb --defaults-file=/etc/mysql/debian.cnf; then
+        CRED_NOTE="root login requires a password; read via the debian.cnf maintenance account"
+    fi
+fi
+if [ -n "$TESTDB_COUNT" ]; then
+    if [ "$TESTDB_COUNT" -ge 1 ] 2>/dev/null; then
+        record_reg testdb_accessible 1 "$CRED_NOTE"
+    else
+        record_reg testdb_accessible 0 "testdb.items is reachable but empty (count='$TESTDB_COUNT')"
+    fi
+elif _auth_denied "$ROOT_ERR" && _auth_denied "$TESTDB_ERR"; then
+    DATADIR=$(grep -rhE '^[[:space:]]*datadir[[:space:]]*=' /etc/mysql/ 2>/dev/null | tail -1 \
+        | sed -e 's/^[^=]*=[[:space:]]*//' -e 's/[[:space:]]*$//')
+    [ -n "$DATADIR" ] && [ -d "$DATADIR" ] || DATADIR=/var/lib/mysql
+    if [ -s "$DATADIR/testdb/items.ibd" ]; then
+        record_reg testdb_accessible 1 "every local credential is password-protected (auth enforced by a live mysqld); testdb.items verified on disk in $DATADIR"
+    else
+        record_reg testdb_accessible 0 "auth is enforced and $DATADIR/testdb/items.ibd is missing - testdb appears dropped"
+    fi
 else
-    record_reg testdb_accessible 0 "testdb is not accessible or has no data"
+    record_reg testdb_accessible 0 "testdb is not accessible: ${TESTDB_ERR:-${ROOT_ERR:-unknown error}}"
 fi
 
 verify_finish
