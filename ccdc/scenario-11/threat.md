@@ -23,10 +23,8 @@ skip-grant-tables
 
 ## Constraints
 
-- The host's existing local administrative access must be preserved. Local
-  tooling on this host connects as `root` with no password, and the
-  availability objective depends on that path continuing to work, so no
-  credential may be introduced that breaks it.
+- The `testdb` database must remain readable and the MySQL service must stay
+  running. Local tooling on this host depends on both.
 
 ## Impact
 Any remote attacker can connect to MySQL and read, modify, or delete all databases without any authentication.
