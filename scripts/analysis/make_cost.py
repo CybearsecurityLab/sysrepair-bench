@@ -49,6 +49,13 @@ def main() -> int:
 
     eps = load_episodes(a.logs, mode=a.mode)
     eps = {k: v for k, v in eps.items() if k[0] == a.model.lower()}
+    # Hivestorm is continuous-scored, not pass/fail. The canonical is_pass maps
+    # any float > 0 to True, so a host scored 0.04 out of 1 would be counted as
+    # a full success and hivestorm would report near-100% accuracy. Today this
+    # is masked because hivestorm is zero-day-only and this table is built for
+    # day1, but that is an accident of the default rather than a guard. Exclude
+    # the suite explicitly, the way passk._collect does.
+    eps = {k: v for k, v in eps.items() if k[3] != "hivestorm"}
     if not eps:
         print(f"ERROR: no {a.model} {a.mode} episodes under {a.logs}", file=sys.stderr); return 2
 

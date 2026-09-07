@@ -34,7 +34,14 @@ def load(logdir: Path):
 
     cells = collections.defaultdict(dict)
     seen = set()
+    # Quarantined trees hold runs that are invalid rather than incomplete, and
+    # this walk recurses from a caller-supplied root, so exclude them here too.
+    def _quarantined(path):
+        return any("quarantine" in part.lower() for part in path.parts)
+
     for d in [logdir] + [x for x in logdir.rglob("*") if x.is_dir()]:
+        if _quarantined(d):
+            continue
         try:
             logs = list_eval_logs(str(d))
         except Exception:
@@ -48,6 +55,13 @@ def load(logdir: Path):
                 h = read_eval_log(i.name, header_only=True)
                 log = read_eval_log(i.name, header_only=False)
             except Exception:
+                continue
+            # Only sysrepair episodes. The bundle also carries NeuroPlan runs
+            # (task neurosymbolic_bench), which have no solver task-arg. Without
+            # this they were folded into the headline table as a solver named
+            # "?" sitting alongside react and basic, which is a different system
+            # being reported as an LLM solver row.
+            if "sysrepair" not in (h.eval.task or ""):
                 continue
             ta = h.eval.task_args or {}
             model = str(h.eval.model).split("/")[-1].lower()

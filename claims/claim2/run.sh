@@ -21,4 +21,5 @@ echo "[claim2] comparing against expected/hivestorm.tsv"
 python "$ROOT/scripts/analysis/compare_tables.py" \
   --expected "$HERE/expected/hivestorm.tsv" \
   --observed "$HERE/observed.tsv" \
+  --key-cols 2 --unpaired \
   --tolerance 0.05
