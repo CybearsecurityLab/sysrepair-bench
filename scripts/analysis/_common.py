@@ -44,7 +44,18 @@ def load_episodes(logdir: Path, solver=None, mode=None):
     from sysrepair_bench.passk import _is_not_applicable_sample
 
     best, seen = {}, set()
+    # Quarantined trees are excluded unconditionally. They hold runs that are
+    # not merely incomplete but invalid (see logs-quarantine/*/README.md), and
+    # this function recurses, so a caller pointed one level too high would
+    # otherwise fold them back in silently. Same failure shape as deduping on
+    # the full path instead of the basename: the wrong run wins and nothing
+    # announces it.
+    def _quarantined(path):
+        return any("quarantine" in part.lower() for part in path.parts)
+
     for d in [logdir] + [p for p in logdir.rglob("*") if p.is_dir()]:
+        if _quarantined(d):
+            continue
         try:
             logs = list_eval_logs(str(d))
         except Exception:
