@@ -11,7 +11,6 @@ Two SSH misconfigurations are present:
 
 2. **High MaxAuthTries**: `MaxAuthTries 30` allows up to 30 authentication
    attempts per connection, greatly facilitating brute-force password attacks.
-   The recommended maximum is 4-6 attempts.
 
 ## CWE Classification
 

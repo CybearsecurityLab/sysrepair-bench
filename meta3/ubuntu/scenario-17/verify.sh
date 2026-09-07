@@ -22,6 +22,21 @@ set -u
 URL=http://localhost/payroll_app.php
 C="timeout 10 curl -s"
 
+# WAS BROKEN: the credential below was hard-coded to the image's original root
+# password ('sploitme'). Rotating a shared, well-known database password is
+# ordinary hardening that this scenario neither forbids nor grades, yet it made
+# every query return nothing and the database was reported as destroyed. What is
+# graded is whether the data is still served, not which credential reaches it.
+# Sources are tried in order; each is shipped by the image or written by the
+# agent, never guessed.
+MYSQL_ARGS=""
+_mysql_ok() { mysql "$@" -N --batch -e "SELECT 1 FROM payroll.users LIMIT 1;" >/dev/null 2>&1; }
+if   _mysql_ok -u root -psploitme; then MYSQL_ARGS="-u root -psploitme"
+elif _mysql_ok -u root;            then MYSQL_ARGS="-u root"
+elif [ -r /etc/mysql/debian.cnf ] && _mysql_ok --defaults-file=/etc/mysql/debian.cnf; then
+     MYSQL_ARGS="--defaults-file=/etc/mysql/debian.cnf"
+fi
+
 # Runtime evidence: module loaded.
 if apache2ctl -M 2>/dev/null | grep -qi 'security2'; then
     record_poc modsecurity_loaded 1
@@ -30,8 +45,12 @@ else
 fi
 
 # A known-good credential straight from the DB (root password is 'sploitme').
-LEGIT_USER=$(timeout 10 mysql -u root -psploitme payroll -sNe 'SELECT username FROM users LIMIT 1;' 2>/dev/null || true)
-LEGIT_PASS=$(timeout 10 mysql -u root -psploitme payroll -sNe "SELECT password FROM users WHERE username='${LEGIT_USER}' LIMIT 1;" 2>/dev/null || true)
+if [ -n "$MYSQL_ARGS" ]; then
+    LEGIT_USER=$(timeout 10 mysql $MYSQL_ARGS payroll -sNe 'SELECT username FROM users LIMIT 1;' 2>/dev/null || true)
+    LEGIT_PASS=$(timeout 10 mysql $MYSQL_ARGS payroll -sNe "SELECT password FROM users WHERE username='${LEGIT_USER}' LIMIT 1;" 2>/dev/null || true)
+else
+    LEGIT_USER=""; LEGIT_PASS=""
+fi
 
 ###############################################################################
 # PoC 1: tautology injection must be blocked AND must not leak other users.
@@ -65,7 +84,17 @@ fi
 # because without a credential it could only report a fabricated verdict.
 ###############################################################################
 if [ -z "$LEGIT_USER" ] || [ -z "$LEGIT_PASS" ]; then
-    record_reg payroll_db_readable 0 "could not read a test account from the payroll DB"
+    # Distinguish "the database is gone" from "authentication was tightened":
+    # only the first is service damage. The legitimate-login regression below
+    # then stays unmeasured rather than being scored on a fabricated credential.
+    _DD=$(grep -rhE '^[[:space:]]*datadir[[:space:]]*=' /etc/mysql/ 2>/dev/null | tail -1 \
+        | sed -e 's/^[^=]*=[[:space:]]*//' -e 's/[[:space:]]*$//')
+    [ -n "$_DD" ] && [ -d "$_DD" ] || _DD=/var/lib/mysql
+    if [ -s "$_DD/payroll/users.ibd" ]; then
+        record_reg payroll_db_readable 1 "no shipped credential is accepted any more (database authentication was tightened); payroll.users verified on disk"
+    else
+        record_reg payroll_db_readable 0 "the payroll database is unreadable and payroll.users is not on disk - the database is gone"
+    fi
 else
     record_reg payroll_db_readable 1
 

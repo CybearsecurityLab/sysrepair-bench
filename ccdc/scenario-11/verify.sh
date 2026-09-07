@@ -91,18 +91,27 @@ if [ "$MYSQLD_UP" -eq 0 ]; then
     # WAS BROKEN: `X=$(mysql ... 2>/dev/null && echo ok || echo denied)` captures
     # the QUERY OUTPUT as well, so a successful login yielded "1\n1\nok", which
     # is != "ok" and was misreported as "access denied". stdout must be silenced.
-    SKIP_GRANT_TEST=$(mysql -u root --skip-password -e "SELECT 1" >/dev/null 2>&1 && echo "ok" || echo "denied")
-    if [[ "$SKIP_GRANT_TEST" == "ok" ]]; then
-        # This could mean skip-grant-tables is active OR root has no password.
-        # Check more specifically: try an obviously-wrong password
-        WRONG_PW_TEST=$(mysql -u root -p'__wrong_pw_verify__' -e "SELECT 1" >/dev/null 2>&1 && echo "ok" || echo "denied")
-        if [[ "$WRONG_PW_TEST" == "ok" ]]; then
-            record_poc runtime_auth_enforced 0 "MySQL accepts any credentials - skip-grant-tables likely still active"
-        else
-            record_poc runtime_auth_enforced 1 "MySQL root can connect without password but rejects wrong passwords (auth is enforced)"
-        fi
+    # WAS BROKEN: this probed skip-grant-tables by offering root a deliberately
+    # wrong password and failing the check if mysqld accepted it. But this image
+    # ships root@localhost on the auth_socket plugin, which authenticates by
+    # OPERATING-SYSTEM user and therefore IGNORES the password entirely (the
+    # briefing says so). verify.sh runs as OS root, so the wrong password was
+    # accepted by design, whether or not skip-grant-tables was set. The probe
+    # reported "accepts any credentials" no matter what the agent did and
+    # runtime_auth_enforced could never pass: the scenario was unwinnable on
+    # this horn alone, independently of anything the agent wrote.
+    #
+    # Either the grant tables are being consulted or they are not, so ask that
+    # directly. Under skip-grant-tables mysqld authenticates every connection
+    # without reading mysql.user, so an account that DOES NOT EXIST logs in.
+    # With grants enforced that same connection is refused (ERROR 1045). This
+    # separates skip-grant-tables from root's auth plugin, which is the only
+    # thing this check was ever about.
+    GHOST_USER="sysrepair_absent_$$"
+    if mysql -u "$GHOST_USER" -p'__wrong_pw_verify__' -e "SELECT 1" >/dev/null 2>&1; then
+        record_poc runtime_auth_enforced 0 "no account '$GHOST_USER' exists yet it authenticated - mysqld is not consulting the grant tables (skip-grant-tables still active)"
     else
-        record_poc runtime_auth_enforced 1 "unauthenticated MySQL access denied (skip-grant-tables is off)"
+        record_poc runtime_auth_enforced 1 "an account that does not exist is refused, so the grant tables are being enforced (skip-grant-tables is off)"
     fi
 else
     echo "  [SKIP] mysqld is not running - runtime authentication cannot be measured"

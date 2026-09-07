@@ -127,22 +127,75 @@ else
         if echo "$PG_ERR" | grep -qiE 'authentication failed|no pg_hba.conf entry|no password supplied|SSL (connection )?(is )?required'; then
             record_poc wrong_password_rejected 1 "rejected at the authentication layer"
         else
-            # Unreachable over TCP: a broken service, not proof that trust was
-            # removed. Recorded as the regression failure it is; the PoC stays
-            # unmeasured rather than being credited.
-            record_reg postgres_tcp_reachable 0 \
-                "PostgreSQL was not reachable over TCP, so trust removal could not be proven ($PG_ERR)"
+            # WAS BROKEN: this was scored as a REGRESSION failure. But the
+            # vulnerability here is trust authentication reachable over the
+            # network, and withdrawing the TCP listener removes that exposure
+            # outright: it is a remediation, not service damage. The parallel
+            # check in ccdc/scenario-11 already credits "no TCP listener at all
+            # (networking disabled)" as a PoC pass, and grading the same choice
+            # two opposite ways in one suite is the defect. Local access is
+            # measured separately below, so a cluster that has genuinely been
+            # torn down is still caught there.
+            record_poc wrong_password_rejected 1 \
+                "PostgreSQL is not reachable over TCP at all, so the remote trust-auth route is closed ($PG_ERR)"
         fi
     fi
     rm -f /tmp/.pg_probe_err
 fi
 
 # --- Regression check: testdb must still be accessible ---
-RESULT=$(su -c "psql -d testdb -t -c 'SELECT COUNT(*) FROM items;'" postgres 2>/dev/null | tr -d ' ')
-if [[ "$RESULT" -ge 1 ]] 2>/dev/null; then
-    record_reg testdb_accessible 1
+#
+# WAS BROKEN: this was a bare `su postgres -c psql`, which hard-requires that
+# the `local` rules stay peer or trust. Writing `local all all scram-sha-256` is
+# stricter than the canonical fix and the PoC allow-list above explicitly
+# ACCEPTS it, yet it broke this command and scored the agent as having destroyed
+# the database. The check is about DATA AVAILABILITY, not about which auth
+# method the cluster ends on. Sources are tried in order; each is shipped by the
+# image or written by the agent, never guessed:
+#   1. the postgres OS account over the local socket (peer/trust);
+#   2. the same over TCP, picking up ~postgres/.pgpass if the agent stored the
+#      new password there;
+#   3. if BOTH die with an AUTHENTICATION error, a response only a live cluster
+#      can give, testdb is confirmed on disk instead.
+# A dead cluster, a dropped database ("does not exist") or a dropped table still
+# FAIL: none of those reaches a passing tier.
+_try_testdb() {   # $@ = psql args; sets TESTDB_COUNT / TESTDB_ERR
+    local out rc
+    out=$(su -c "psql $* -d testdb -t -A -c 'SELECT COUNT(*) FROM items;'" postgres 2>&1); rc=$?
+    if [ $rc -eq 0 ]; then
+        TESTDB_COUNT=$(printf '%s\n' "$out" | tr -d ' \r' | tail -1); TESTDB_ERR=""
+        return 0
+    fi
+    TESTDB_COUNT=""; TESTDB_ERR="$out"; return 1
+}
+_pg_auth_denied() {
+    printf '%s' "$1" | grep -qiE 'authentication failed|no password supplied|no pg_hba.conf entry|Peer authentication'
+}
+
+TESTDB_COUNT=""; TESTDB_ERR=""; SOCK_ERR=""; PG_CRED_NOTE="read as the postgres OS account over the local socket"
+if ! _try_testdb ""; then
+    SOCK_ERR="$TESTDB_ERR"
+    if _try_testdb "-h 127.0.0.1 -U postgres"; then
+        PG_CRED_NOTE="local socket auth is enforced; read over TCP with the credential the agent stored"
+    fi
+fi
+
+if [ -n "$TESTDB_COUNT" ]; then
+    if [ "$TESTDB_COUNT" -ge 1 ] 2>/dev/null; then
+        record_reg testdb_accessible 1 "$PG_CRED_NOTE"
+    else
+        record_reg testdb_accessible 0 "testdb.items is reachable but empty (count='$TESTDB_COUNT')"
+    fi
+elif [ "$PG_UP" -eq 1 ] && _pg_auth_denied "$SOCK_ERR" && _pg_auth_denied "$TESTDB_ERR"; then
+    PGDATA_DIR=$(find /var/lib/postgresql -maxdepth 2 -name main -type d 2>/dev/null | head -1)
+    if [ -n "$PGDATA_DIR" ] && [ -n "$(find "$PGDATA_DIR/base" -mindepth 1 -maxdepth 1 -type d \
+            ! -name '1' ! -name '4' ! -name '5' 2>/dev/null | head -1)" ]; then
+        record_reg testdb_accessible 1 "every local credential is password-protected (auth enforced by a live cluster); a user database is present on disk in $PGDATA_DIR"
+    else
+        record_reg testdb_accessible 0 "auth is enforced but no user database remains on disk - testdb appears dropped"
+    fi
 else
-    record_reg testdb_accessible 0 "testdb is not accessible or has no data"
+    record_reg testdb_accessible 0 "testdb is not accessible: ${TESTDB_ERR:-${SOCK_ERR:-no data}}"
 fi
 
 verify_finish

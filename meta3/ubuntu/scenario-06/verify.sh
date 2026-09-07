@@ -22,7 +22,23 @@
 # library and set this, so the agent-writable /tmp path is never read.
 [ -n "${_SYSREPAIR_VERIFYLIB_LOADED:-}" ] || . "${SYSREPAIR_VERIFYLIB:-/tmp/verifylib.sh}"
 
-MYSQL="mysql -u root -psploitme"
+
+# WAS BROKEN: the credential below was hard-coded to the image's original root
+# password ('sploitme'). Rotating a shared, well-known database password is
+# ordinary hardening that this scenario neither forbids nor grades, yet it made
+# every query return nothing and the database was reported as destroyed. What is
+# graded is whether the data is still served, not which credential reaches it.
+# Sources are tried in order; each is shipped by the image or written by the
+# agent, never guessed.
+MYSQL_ARGS=""
+_mysql_ok() { mysql "$@" -N --batch -e "SELECT 1 FROM drupal.users LIMIT 1;" >/dev/null 2>&1; }
+if   _mysql_ok -u root -psploitme; then MYSQL_ARGS="-u root -psploitme"
+elif _mysql_ok -u root;            then MYSQL_ARGS="-u root"
+elif [ -r /etc/mysql/debian.cnf ] && _mysql_ok --defaults-file=/etc/mysql/debian.cnf; then
+     MYSQL_ARGS="--defaults-file=/etc/mysql/debian.cnf"
+fi
+
+MYSQL="mysql ${MYSQL_ARGS:--u root -psploitme}"
 Q(){ $MYSQL drupal -sNe "$1" 2>/dev/null || true; }
 
 # --- Regression: the DB must be reachable ---
@@ -33,7 +49,14 @@ Q(){ $MYSQL drupal -sNe "$1" 2>/dev/null || true; }
 # measured.
 BEFORE=$(Q "SELECT name FROM users WHERE uid=1;")
 if [ -z "$BEFORE" ]; then
-    record_reg drupal_db_readable 0 "cannot read Drupal users table (DB down or creds wrong)"
+    _DD=$(grep -rhE '^[[:space:]]*datadir[[:space:]]*=' /etc/mysql/ 2>/dev/null | tail -1 \
+        | sed -e 's/^[^=]*=[[:space:]]*//' -e 's/[[:space:]]*$//')
+    [ -n "$_DD" ] && [ -d "$_DD" ] || _DD=/var/lib/mysql
+    if [ -s "$_DD/drupal/users.ibd" ]; then
+        record_reg drupal_db_readable 1 "no shipped credential is accepted any more (database authentication was tightened); drupal.users verified on disk"
+    else
+        record_reg drupal_db_readable 0 "cannot read the Drupal users table and drupal.users is not on disk - the database is gone"
+    fi
 else
     record_reg drupal_db_readable 1
 fi
@@ -55,7 +78,13 @@ AFTER=$(Q "SELECT name FROM users WHERE uid=1;")
 restore_uid1
 trap - EXIT INT TERM
 
-if [ "$AFTER" = "$SENTINEL" ]; then
+# WAS BROKEN: an unreadable users table made AFTER empty, which is not equal to
+# the sentinel, so "the database is unreachable" was credited as "the injection
+# was blocked". Tearing the database down therefore bought a security pass. The
+# PoC is now only decided when the probe could actually observe the table.
+if [ -z "$BEFORE" ]; then
+    record_poc drupalgeddon_sqli_blocked 0 "the users table could not be read, so the injection could not be observed and no remediation is credited"
+elif [ "$AFTER" = "$SENTINEL" ]; then
     record_poc drupalgeddon_sqli_blocked 0 "Drupalgeddon injection succeeded -- uid=1 was renamed via SQLi"
 else
     record_poc drupalgeddon_sqli_blocked 1
