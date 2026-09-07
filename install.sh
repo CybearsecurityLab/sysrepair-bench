@@ -68,7 +68,8 @@ printf '%s\n' "$HERE/inspect_eval" > "$SITE/sysrepair_harness.pth"
 python -c 'import sysrepair_bench' || fail "harness still not importable after registering it"
 
 say "verifying the shipped logs are readable"
-python "$HERE/scripts/analysis/verify_logs.py" || fail "shipped logs failed their integrity check"
+LOGS_OK=1
+python "$HERE/scripts/analysis/verify_logs.py" || LOGS_OK=0
 
 if [ "$FULL" -eq 1 ]; then
   say "full tier: checking docker"
@@ -86,7 +87,14 @@ if [ "$FULL" -eq 1 ]; then
     || fail "base image build failed; check that the docker daemon is reachable"
   say "full tier ready. Claim 4 needs an API key: see claims/claim4/claim.txt"
 else
+  if [ "$LOGS_OK" = "1" ]; then
   say "logs-only tier ready. All five claims are runnable now."
+else
+  say "environment ready, but the evaluation logs are NOT present."
+  say "Claims 1, 2, 3 and 5 reproduce tables FROM those logs and cannot run"
+  say "until you fetch them. Unpack the archive named in README.txt into"
+  say "$HERE/logs, or point LOGS at wherever you put it."
+fi
   say "To re-run scenarios live (claim 4 with LIVE=1), use: ./install.sh --full"
 fi
 

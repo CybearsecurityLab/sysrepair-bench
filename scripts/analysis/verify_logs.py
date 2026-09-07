@@ -18,7 +18,9 @@ from pathlib import Path
 
 
 def main() -> int:
-    root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parents[1] / "logs"
+    # parents[2] is the repo root: this file lives in scripts/analysis/.
+    # parents[1] would be scripts/, which is where it looked before.
+    root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parents[2] / "logs"
     if not root.exists():
         print(f"SKIP: no log directory at {root}")
         print("      Claims 1, 2, 3 and 5 need it. Fetch the log archive named in README.txt.")
