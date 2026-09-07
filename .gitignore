@@ -1,6 +1,5 @@
 # AI agents
-.claude/*
-!.claude/settings.json
+.claude/
 .claude-*/
 CLAUDE.md
 CLAUDE.local.md
