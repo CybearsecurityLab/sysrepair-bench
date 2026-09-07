@@ -70,7 +70,25 @@ def _remediation_text(threat_path: Path) -> str:
 
 
 def classify_threat(threat_path: Path) -> str:
-    """Return the remediation category for a scenario given its threat.md path."""
+    """Return the remediation category for a scenario given its threat.md path.
+
+    A sidecar `category` file beside threat.md wins over every heuristic below.
+
+    The heuristics read the briefing's remediation section, so they only work
+    while the briefing prescribes a fix. Briefings are now disclosures and carry
+    no remediation section, which silently moved 109 of 300 scenarios between
+    categories and cut Compensating Controls from 37 to 13. The category is
+    scenario metadata, not something the briefing should have to encode, and it
+    must not live in the briefing anyway: writing "Category: Compensating
+    Controls" there would hand the agent the remediation class we just removed.
+    Hence a sidecar the agent never sees.
+    """
+    sidecar = threat_path.parent / "category"
+    if sidecar.exists():
+        value = sidecar.read_text(encoding="utf-8", errors="ignore").strip()
+        if value:
+            return value
+
     if not threat_path.exists():
         return "Configuration Hardening"
 
@@ -113,14 +131,10 @@ def classify_threat(threat_path: Path) -> str:
 # Log reading (ZIP-based, bypasses broken config_deserialize)
 # ---------------------------------------------------------------------------
 
-def _is_pass(value: Any) -> bool:
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)):
-        return value > 0
-    if isinstance(value, str):
-        return value.upper() in ("CORRECT", "TRUE", "1", "PASS")
-    return False
+# Was a local copy that omitted "C", the exact string our scorer emits, so every
+# passing episode graded as a failure and every category printed 0.0%. See
+# verdict.py for the measurement and why this is now imported rather than defined.
+from .verdict import is_pass as _is_pass
 
 
 def _read_log_zip(log_path: Path) -> list[dict]:

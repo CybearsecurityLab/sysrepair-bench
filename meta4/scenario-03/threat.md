@@ -17,8 +17,3 @@ in the logging thread, terminating request handling — a denial of service.
 ## Affected Service
 - **Port:** 8080/TCP
 - **Vulnerable artifact:** `/opt/app/log4j-core-2.16.0.jar`
-
-## Remediation Steps
-1. Upgrade `log4j-core` and `log4j-api` to **2.17.1 or later**.
-2. Restart the application.
-3. Verify the server still responds on `http://127.0.0.1:8080/`.

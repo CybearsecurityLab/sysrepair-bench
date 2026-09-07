@@ -17,17 +17,14 @@ This entry exists in both `/etc/crontab` (system crontab) and `/var/spool/cron/c
 - **Data Exfiltration**: An attacker with root shell access can steal any data on the system.
 - **Stealth**: Crontab backdoors are often overlooked during manual security reviews.
 
-## What Needs to Be Fixed
-1. Remove the malicious reverse shell crontab entries from `/etc/crontab`.
-2. Remove the malicious entries from `/var/spool/cron/crontabs/root`.
-3. Audit all crontab files (`/etc/cron.d/`, `/etc/cron.daily/`, etc.) for suspicious entries.
-4. Preserve legitimate cron jobs (e.g., the apt-get update job).
-5. Ensure the cron service still functions correctly for legitimate scheduled tasks.
+## Constraints
+- Legitimate cron jobs (e.g., the apt-get update job) must be preserved.
+- The cron service must keep working for legitimate scheduled tasks.
 
 ## Affected Files
 - `/etc/crontab` -- system-wide crontab with malicious entry
 - `/var/spool/cron/crontabs/root` -- root's user crontab with malicious entry
 
 ## Source Reference
-- TAMU `audit_cron.sh` -- audits crontab entries for suspicious commands
-- TAMU `harden_cron.sh` -- hardens cron configuration
+- TAMU `audit_cron.sh`
+- TAMU `harden_cron.sh`

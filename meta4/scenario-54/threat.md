@@ -43,29 +43,3 @@ options {
     allow-recursion { any; };
 };
 ```
-
-## Remediation Steps
-1. Restrict recursive queries to trusted sources only — replace the vulnerable
-   `allow-recursion` ACL:
-   ```
-   options {
-       recursion yes;
-       allow-recursion { localhost; localnets; };
-   };
-   ```
-2. If this server is an authoritative-only server (not a resolver), disable
-   recursion entirely:
-   ```
-   options {
-       recursion no;
-   };
-   ```
-3. Reload BIND after the change:
-   ```
-   rndc reload
-   ```
-4. Verify with an external query — it must return REFUSED:
-   ```
-   dig @<server-ip> google.com
-   # Expected: status: REFUSED
-   ```

@@ -24,11 +24,3 @@ This mirrors both the Metasploitable 1 and Stapler VulnHub VMs.
 <user username="admin" password="admin" roles="manager-gui,admin-gui"/>
 <user username="tomcat" password="tomcat" roles="manager-gui"/>
 ```
-
-## Remediation Steps
-1. Change all passwords in tomcat-users.xml to strong, random strings
-2. Restrict Manager to localhost in META-INF/context.xml:
-   ```xml
-   <Valve className="org.apache.catalina.valves.RemoteAddrValve" allow="127\.0\.0\.1"/>
-   ```
-3. Restart Tomcat

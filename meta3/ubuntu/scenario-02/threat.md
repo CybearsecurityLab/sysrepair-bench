@@ -43,27 +43,4 @@ key**, so a client can complete host authentication against a 1024-bit DSA key.
 > **Platform note.** This image runs **OpenSSH 6.6.1p1** (Ubuntu 14.04). `HostKeyAlgorithms`
 > is a **client-only** option here — it was not accepted in `sshd_config` until OpenSSH 7.0.
 > Adding `HostKeyAlgorithms ...` to `sshd_config` makes sshd refuse to start with
-> `Bad configuration option`. Do **not** add it. The fix is to stop serving the DSA host
-> key, not to write an algorithm allowlist.
-
-## Remediation Steps
-1. Remove the DSA host key so sshd can no longer offer it, and remove the matching
-   `HostKey` line from `/etc/ssh/sshd_config`:
-   ```
-   rm -f /etc/ssh/ssh_host_dsa_key /etc/ssh/ssh_host_dsa_key.pub
-   sed -i '/ssh_host_dsa_key/d' /etc/ssh/sshd_config
-   ```
-   Ensure a modern host key is still present (RSA and/or Ed25519 — `ssh-keygen -A`
-   generates any that are missing) so the service keeps working.
-2. Validate the config and restart sshd (or let a new connection pick up the removed key —
-   sshd re-opens the host-key files per connection, so removing the DSA key takes effect
-   immediately):
-   ```
-   sshd -t && /etc/init.d/ssh restart
-   ```
-3. Confirm: a connection forcing `ssh-dss` must fail to negotiate a host key, while a
-   normal connection must still reach authentication:
-   ```
-   ssh -oHostKeyAlgorithms=ssh-dss -p 22 localhost       # must fail (no common host key)
-   ssh -p 22 localhost                                    # must still reach auth
-   ```
+> `Bad configuration option`.

@@ -25,12 +25,3 @@ OWASP's crAPI teaching app:
 ## Affected Service
 - **Port:** 8888/TCP
 - **Code:** `/app/app.py` — `get_video`, `update_profile`
-
-## Remediation Steps
-1. In `get_video`, compare the video's `owner_id` to the current user's
-   `id` (from `current_user()`). Return `403 Forbidden` when they differ.
-2. In `update_profile`, build the update dict from a server-controlled
-   allow-list (e.g. `{"email"}`) and drop any other keys.
-3. Regression: `GET /videos/1` with `X-User: alice` must still return
-   alice's video; `POST /profile` with `{"email":"new@x"}` as alice
-   must still succeed.

@@ -10,13 +10,10 @@ A telnet server is installed and running, providing remote shell access over an 
 telnetd (via xinetd)
 
 ## Issue
-Telnet transmits all data including authentication credentials in plaintext. It should be replaced with SSH.
+Telnet transmits all data including authentication credentials in plaintext.
 
-## Expected Remediation
-1. Stop and disable the telnet service
-2. Remove telnet server packages (`apt-get remove --purge telnetd xinetd`)
-3. Ensure SSH server is installed and running as a secure replacement
-4. Verify remote access is still possible via SSH
+## Constraints
+- Remote access to the host must remain possible via SSH.
 
 ## Impact
 Any network eavesdropper can capture login credentials and session data. Telnet has no encryption, no host verification, and no integrity checking.

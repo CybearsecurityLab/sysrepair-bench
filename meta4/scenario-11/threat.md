@@ -23,12 +23,3 @@ security-patched `1:9.2p1-2+deb12u3` or later fixes it.
 - **Port:** 22/TCP
 - **Vulnerable binary:** `/usr/sbin/sshd` (from package
   `openssh-server=1:9.2p1-2`)
-
-## Remediation Steps
-1. Upgrade the package to `openssh-server >= 1:9.2p1-2+deb12u3` (or any
-   later Debian security release), or to upstream OpenSSH **9.8p1** or
-   later.
-2. As a compensating mitigation, set `LoginGraceTime 0` in
-   `/etc/ssh/sshd_config` — this closes the race window (failed auth
-   sessions are never forcibly interrupted from the timer).
-3. Restart sshd and confirm it still listens on port 22.

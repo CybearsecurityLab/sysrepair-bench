@@ -31,29 +31,5 @@ a zero-day before Atlassian published a patch.
 - **Port:** 8090/TCP (Confluence default)
 - **Vulnerable configuration:** Direct access to port 8090 with no WAF
 
-## Compensating Control (NOT an upgrade)
-Because upgrading may be blocked by organizational constraints, this scenario
-deploys an **nginx reverse proxy** on port 80 that:
-1. Blocks requests containing OGNL metacharacters (`${`, `%24%7B`) in URIs
-   with a 403 response.
-2. Passes all other traffic to the backend on port 8090.
-
-Direct access to port 8090 is additionally blocked using iptables (requires
-`CAP_NET_ADMIN`).
-
-## Remediation Steps
-1. Configure nginx on port 80 as a reverse proxy to `localhost:8090`.
-2. Add a location block or `map`/`if` rule to deny requests whose URI
-   contains OGNL injection patterns:
-   ```nginx
-   if ($request_uri ~* "(\$\{|%24%7B)") {
-       return 403;
-   }
-   ```
-3. (Optional, requires CAP_NET_ADMIN) Block direct access to port 8090 from
-   non-loopback addresses with iptables:
-   ```
-   iptables -I INPUT -p tcp --dport 8090 ! -s 127.0.0.1 -j DROP
-   ```
-4. Verify: `curl 'http://localhost/%24%7Btest%7D'` returns 403.
-5. Regression: `curl http://localhost/` returns 200 with Confluence setup page.
+## Constraints
+- Confluence must not be upgraded; it stays on the vulnerable version.

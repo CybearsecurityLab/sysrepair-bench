@@ -17,9 +17,6 @@ PostgreSQL
 listen_addresses = '*'
 ```
 
-## Expected Remediation
-Set `listen_addresses = 'localhost'` in `postgresql.conf` to restrict PostgreSQL to local connections only. Reload PostgreSQL.
-
 ## Impact
 When PostgreSQL listens on all interfaces, it accepts connections from any network host. If pg_hba.conf allows remote connections (even with password auth), the attack surface is significantly increased.
 

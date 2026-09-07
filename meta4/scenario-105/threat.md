@@ -35,17 +35,6 @@ The server returns the protected resource with HTTP 200 instead of the expected
 Next.js is exposed directly on port 3000 with no upstream proxy to strip
 attacker-controlled headers before they reach the Node.js process.
 
-## Remediation (Compensating Control)
-Deploy an nginx reverse proxy in front of Next.js that strips the
-`x-middleware-subrequest` header from every inbound request:
-
-```nginx
-proxy_set_header x-middleware-subrequest "";
-```
-
-This prevents the header from reaching Next.js regardless of what the client
-sends. nginx should listen on port 80 and forward to Next.js on localhost:3000.
-
-**Do NOT rely solely on upgrading** if the application must remain on an older
-Next.js version. The header-stripping proxy is an effective compensating
-control for environments where an immediate upgrade is not possible.
+## Constraints
+- Upgrading Next.js must not be the sole measure relied on if the
+  application must remain on an older Next.js version.

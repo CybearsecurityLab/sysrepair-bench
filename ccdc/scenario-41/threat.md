@@ -10,14 +10,12 @@ The SUID (Set User ID) bit has been set on the `python3` and `perl` interpreter 
 - **Privilege Escalation**: Any local user can gain full root access to the system.
 - **Complete System Compromise**: Attackers with any level of shell access can escalate to root, read/modify any file, install backdoors, or pivot to other systems.
 
-## What Needs to Be Fixed
-1. Remove the SUID bit from all python3 and perl interpreter binaries (`chmod u-s`).
-2. Ensure the interpreters still function correctly for normal (non-privileged) use.
-3. Audit the system for any other interpreters or binaries with unnecessary SUID bits.
+## Constraints
+- The python3 and perl interpreters must keep working for normal (non-privileged) use.
 
 ## Affected Files
 - `/usr/bin/python3*`
 - `/usr/bin/perl`
 
 ## Source Reference
-- TAMU `check_suid.sh` -- audits binaries with SUID bits set
+- TAMU `check_suid.sh`

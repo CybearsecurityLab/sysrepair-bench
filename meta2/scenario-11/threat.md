@@ -28,34 +28,3 @@ Alias /dav /var/www/dav
 ```
 
 The `Dav On` directive enables WebDAV methods (PUT, DELETE, MKCOL, COPY, MOVE, PROPFIND, etc.) and no `AuthType`, `AuthUserFile`, or `Require` directives are present, meaning no authentication is required.
-
-## Remediation Steps
-1. **Option A -- Disable WebDAV entirely** (recommended if not needed):
-   ```bash
-   a2dismod dav dav_fs
-   rm /etc/apache2/sites-enabled/dav
-   apache2ctl restart
-   ```
-2. **Option B -- Add authentication to the WebDAV directory:**
-   ```apache
-   <Directory /var/www/dav>
-       Dav On
-       AuthType Basic
-       AuthName "WebDAV Restricted"
-       AuthUserFile /etc/apache2/webdav.passwd
-       Require valid-user
-   </Directory>
-   ```
-   Then create the password file:
-   ```bash
-   htpasswd -c /etc/apache2/webdav.passwd davuser
-   apache2ctl restart
-   ```
-3. **Option C -- Restrict dangerous methods:**
-   ```apache
-   <Directory /var/www/dav>
-       <LimitExcept GET HEAD OPTIONS>
-           Deny from all
-       </LimitExcept>
-   </Directory>
-   ```

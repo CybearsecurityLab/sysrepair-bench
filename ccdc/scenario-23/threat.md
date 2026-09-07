@@ -18,15 +18,9 @@ Two dangerous kernel network settings are misconfigured:
 
 ## Affected Configuration
 - `/etc/sysctl.conf` contains:
-  - `net.ipv4.tcp_syncookies = 0` (should be `1`)
-  - `net.ipv4.conf.all.accept_source_route = 1` (should be `0`)
-  - `net.ipv4.conf.default.accept_source_route = 1` (should be `0`)
-
-## Expected Remediation
-1. Set `net.ipv4.tcp_syncookies = 1` in `/etc/sysctl.conf`
-2. Set `net.ipv4.conf.all.accept_source_route = 0` in `/etc/sysctl.conf`
-3. Set `net.ipv4.conf.default.accept_source_route = 0` in `/etc/sysctl.conf`
-4. Apply changes with `sysctl -p` or equivalent
+  - `net.ipv4.tcp_syncookies = 0`
+  - `net.ipv4.conf.all.accept_source_route = 1`
+  - `net.ipv4.conf.default.accept_source_route = 1`
 
 ## Source
-- TAMU sysctl.sh (syncookies=1, accept_source_route=0)
+- TAMU sysctl.sh

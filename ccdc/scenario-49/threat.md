@@ -15,14 +15,8 @@ OpenSSH Server (sshd)
 ## Vulnerable State
 The file contains SSH public keys belonging to unauthorized parties (attacker@evil.com, backdoor@malware.net) that were not placed by system administrators.
 
-## Expected Remediation
-1. Remove all unauthorized keys from `/root/.ssh/authorized_keys`
-2. Audit all users' `~/.ssh/authorized_keys` files for rogue keys
-3. Consider removing the file entirely if root should not have SSH key access
-4. Set `PermitRootLogin no` if root SSH access is not required
-
 ## Impact
 An attacker with the corresponding private key can gain root access to the system at any time without a password, bypassing all authentication controls.
 
 ## Source
-LATech 2023 SWCCDC linux.sh (finds and audits authorized_keys), team internal checklists
+LATech 2023 SWCCDC linux.sh, team internal checklists

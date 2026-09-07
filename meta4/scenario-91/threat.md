@@ -30,20 +30,5 @@ GET /public/plugins/alertlist/../../../../etc/passwd HTTP/1.1
 - Grafana 8.3.0 — path traversal sequences not sanitised in plugin static handler
 - No authentication required for the `/public/` endpoint tree
 
-## Remediation Steps (Compensating Controls — do NOT upgrade)
-1. Place an nginx reverse proxy in front of Grafana on port 3000. Configure a
-   `location` block for `/public/plugins/` that rejects any request containing
-   `..` (encoded or literal):
-   ```nginx
-   location ~ /public/plugins/.*\.\. {
-       return 400;
-   }
-   ```
-2. Disable all unused plugins in `/etc/grafana/grafana.ini` by listing only
-   required plugins under `[plugins]` and setting
-   `allow_loading_unsigned_plugins =` to an empty value.
-3. Verify the traversal path now returns HTTP 400 or 404 rather than file content:
-   ```
-   curl -v http://localhost:3000/public/plugins/alertlist/../../../../etc/passwd
-   ```
-4. Confirm Grafana UI still loads normally at `http://localhost:3000`.
+## Constraints
+- Grafana must not be upgraded to a patched version.

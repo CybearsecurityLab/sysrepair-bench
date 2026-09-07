@@ -28,27 +28,3 @@ Without `--allow`, distccd accepts connections from all IP addresses. An attacke
 ```
 DIST00000001ARGC00000008ARGV00000002shARGV00000002-cARGV00000006whoamiARGV00000...
 ```
-
-## Remediation Steps
-1. **Option A -- Restrict access with --allow** (if distcc is needed):
-   ```bash
-   # Stop the current distccd process
-   killall distccd
-   # Restart with access restrictions
-   distccd --daemon --no-detach --user distccd --port 3632 --log-stderr --allow 127.0.0.1
-   ```
-   Only allow trusted IP addresses or subnets (e.g., `--allow 10.0.0.0/24`).
-
-2. **Option B -- Stop and disable distccd** (recommended if not needed):
-   ```bash
-   killall distccd
-   # Remove from startup
-   update-rc.d distcc disable
-   ```
-
-3. **Option C -- Use firewall rules to restrict access:**
-   ```bash
-   iptables -A INPUT -p tcp --dport 3632 ! -s 127.0.0.1 -j DROP
-   ```
-
-4. Regardless of the option chosen, verify that distccd is not accepting remote commands from untrusted hosts.

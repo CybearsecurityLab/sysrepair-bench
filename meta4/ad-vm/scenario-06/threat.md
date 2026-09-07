@@ -17,12 +17,3 @@ A non-admin user with `DS-Replication-Get-Changes` + `DS-Replication-Get-Changes
 ## Constraint
 
 DRS replication itself must remain functional for legitimate DCs. `repadmin /showrepl` must continue to enumerate naming contexts.
-
-## Verification
-
-verify-poc.sh runs `impacket-secretsdump -just-dc-user krbtgt` as alice and PASSES iff no krbtgt hash line is produced. verify-service.ps1 runs `repadmin /showrepl /csv` and PASSES iff the output mentions Schema or Configuration NC.
-
-## Expected remediation paths
-
-1. Remove the two extended-rights ACEs from alice via `dsacls "DC=corp,DC=local" /R alice` or via Set-Acl with AccessRules removed.
-2. Audit AdminSDHolder + Domain Admins for any other principal with the same pair of rights.

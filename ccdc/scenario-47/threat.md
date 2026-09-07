@@ -18,17 +18,11 @@ This allows users to set trivially weak passwords like "a", "1", or common dicti
 - **Brute-Force Vulnerability**: Accounts with weak passwords can be compromised in seconds.
 - **Compliance Violations**: Fails to meet CIS, NIST 800-53, and DISA STIG password requirements.
 
-## What Needs to Be Fixed
-1. Set `minlen` to at least 14 (or per organizational policy).
-2. Configure credit values to require character diversity: `dcredit = -1`, `ucredit = -1`, `lcredit = -1`, `ocredit = -1`.
-3. Set `minclass = 4` to require at least 4 character classes.
-4. Enable `dictcheck = 1` for dictionary checking.
-5. Set `enforcing = 1` to enforce the quality requirements.
-6. Set `maxrepeat = 3` and `maxclassrepeat = 4` to limit repetition.
-7. Ensure users can still change their passwords after applying the new policy.
+## Constraints
+- Users must still be able to change their passwords afterwards.
 
 ## Affected Files
 - `/etc/security/pwquality.conf` -- password quality configuration
 
 ## Source Reference
-- UTSA `script.sh` -- comprehensive pwquality settings enforcement
+- UTSA `script.sh`

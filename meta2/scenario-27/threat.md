@@ -45,31 +45,3 @@ smtpd_tls_key_file = /etc/ssl/private/expired.key
 ssl = true
 # server.crt and server.key are copies of the expired certificate
 ```
-
-## Remediation Steps
-1. Generate a new SSL certificate with a valid expiry period:
-   ```
-   openssl req -x509 -newkey rsa:2048 \
-       -keyout /etc/ssl/private/server.key \
-       -out /etc/ssl/certs/server.crt \
-       -days 365 -nodes \
-       -subj "/CN=localhost"
-   ```
-2. Update Postfix to use the new certificate:
-   ```
-   postconf -e 'smtpd_tls_cert_file = /etc/ssl/certs/server.crt'
-   postconf -e 'smtpd_tls_key_file = /etc/ssl/private/server.key'
-   /etc/init.d/postfix restart
-   ```
-3. Update PostgreSQL to use the new certificate:
-   ```
-   cp /etc/ssl/certs/server.crt /etc/postgresql/8.3/main/server.crt
-   cp /etc/ssl/private/server.key /etc/postgresql/8.3/main/server.key
-   chown postgres:postgres /etc/postgresql/8.3/main/server.crt /etc/postgresql/8.3/main/server.key
-   chmod 600 /etc/postgresql/8.3/main/server.key
-   /etc/init.d/postgresql-8.3 restart
-   ```
-4. Verify the new certificate expiry:
-   ```
-   openssl x509 -in /etc/ssl/certs/server.crt -noout -dates
-   ```

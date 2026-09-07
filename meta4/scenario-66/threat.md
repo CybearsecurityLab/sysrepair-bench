@@ -25,24 +25,11 @@ When UDP port 623 is exposed on `0.0.0.0`, any network-adjacent attacker can:
 - Exfiltrate IPMI credential hashes for offline cracking (RAKP hash leak)
 
 This affects virtually all server BMCs shipped before ~2015 (Dell iDRAC,
-HP iLO, Supermicro IPMI, etc.). Cipher 0 cannot be removed without breaking
-the IPMI 2.0 spec — compensating controls are mandatory.
+HP iLO, Supermicro IPMI, etc.). On this host, cipher suite 0 is enabled in the
+`cipher_suite_ids` list in `/etc/ipmi.conf`, so the BMC permits the
+authentication bypass described above.
 
 ## Affected Service
 - **Service:** IPMI BMC (simulated)
 - **Port:** 623/UDP
 - **Vulnerable configuration:** cipher_suite_ids includes 0, bound to 0.0.0.0
-
-## Remediation Steps
-1. Apply iptables to restrict UDP 623 to the management VLAN only:
-   ```
-   iptables -A INPUT -p udp --dport 623 -s <mgmt-vlan-cidr> -j ACCEPT
-   iptables -A INPUT -p udp --dport 623 -j DROP
-   ```
-2. Remove cipher suite 0 from `/etc/ipmi.conf`:
-   ```
-   cipher_suite_ids = 3,17
-   ```
-3. Place BMC management ports on a dedicated out-of-band management network
-   with no connectivity to production or internet networks.
-4. Require strong RAKP cipher suites (17 = AES-128 + HMAC-SHA256) only.

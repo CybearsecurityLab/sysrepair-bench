@@ -46,33 +46,3 @@ the DNS port.
 ```
 
 No `acl` block to deny external sources.
-
-## Remediation Steps
-1. Add an `acl` plugin block to deny external sources and allow only trusted
-   subnets:
-   ```
-   . {
-       acl {
-           allow net 127.0.0.0/8
-           allow net 10.0.0.0/8
-           allow net 172.16.0.0/12
-           allow net 192.168.0.0/16
-           block
-       }
-       forward . 1.1.1.1 8.8.8.8
-       cache
-       log
-       errors
-   }
-   ```
-
-2. Reload CoreDNS with the updated Corefile:
-   ```
-   kill -SIGUSR1 <coredns-pid>
-   ```
-
-3. Verify that external queries are blocked while internal queries succeed:
-   ```
-   dig @<server-ip> local.test A   # should be blocked or REFUSED for external
-   dig @127.0.0.1 local.test A     # should return 10.0.0.1
-   ```

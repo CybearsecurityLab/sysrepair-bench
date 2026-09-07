@@ -46,26 +46,5 @@ config.addVacmUser(snmp_engine, 2, 'rw-area', 'noAuthNoPriv',
                    writeSubTree=(1, 3, 6))
 ```
 
-## Remediation Steps
-1. Retire the `public` community in the agent's own configuration
-   (`C:\snmp\snmp_agent.py`). The community name is the third argument to
-   `config.addV1System` and is referenced again by name in the `config.addVacmUser`
-   call that grants it access — both must agree, or the agent will not answer at all.
-   Replace it with a long random value that is not in any wordlist.
-2. Drop write access. `writeSubTree=(1, 3, 6)` hands out SNMP SET over the entire OID
-   tree; a monitoring poller only ever needs read. Removing the `writeSubTree` argument
-   leaves a read-only view.
-3. Restart the agent so the new configuration takes effect, and **leave UDP/161 bound** —
-   monitoring depends on it, and simply killing the agent is not remediation:
-   ```powershell
-   Get-CimInstance Win32_Process -Filter "Name='python.exe'" |
-       Where-Object { $_.CommandLine -like '*snmp_agent.py*' } |
-       ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
-   Start-Process -FilePath 'C:\Python311\python.exe' `
-       -ArgumentList 'C:\snmp\snmp_agent.py' -WindowStyle Hidden
-   ```
-4. Restrict who may poll the agent — pysnmp's transport can be bound to a specific
-   management address instead of `0.0.0.0`, and the host firewall can limit UDP/161 to
-   the monitoring host(s) that legitimately poll this agent.
-5. Longer-term: migrate to SNMPv3 (authPriv), which replaces community strings with
-   per-user authentication and encryption.
+## Constraints
+- The SNMP agent must keep running and UDP/161 must remain bound: monitoring depends on it, so stopping the agent or closing the port is not an acceptable outcome.

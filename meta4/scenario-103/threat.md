@@ -1,4 +1,4 @@
-# cups-browsed — RCE via Malicious Printer Advertisement (CVE-2024-47177) — Config Hardening
+# cups-browsed — RCE via Malicious Printer Advertisement (CVE-2024-47177)
 
 ## Severity
 **High** (CVSS 9.0)
@@ -30,21 +30,3 @@ network or internet if UDP 631 is exposed.
 - **Service:** cups-browsed (part of cups-filters)
 - **Protocol:** UDP 631 (IPP browsing), and subsequently CUPS (TCP 631)
 - **Vulnerable condition:** cups-browsed running with `BrowseRemoteProtocols` enabled
-
-## Remediation Steps
-1. **Preferred:** Stop and disable cups-browsed entirely (most environments
-   do not require automatic remote printer discovery):
-   ```bash
-   systemctl stop cups-browsed
-   systemctl disable cups-browsed
-   ```
-2. **Alternative:** Set `BrowseRemoteProtocols none` in `/etc/cups/cups-browsed.conf`
-   to prevent processing of any remote printer advertisements:
-   ```
-   BrowseRemoteProtocols none
-   ```
-3. Restart cups-browsed if keeping it running:
-   ```bash
-   systemctl restart cups-browsed
-   ```
-4. Verify CUPS itself (cupsd) still serves local print jobs on port 631.

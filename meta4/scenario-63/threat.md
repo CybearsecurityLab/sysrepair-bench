@@ -30,28 +30,5 @@ mail server and fires every time the victim opens or previews the email.
   emails without stripping potentially malicious SVG elements
 - No Content-Security-Policy header is set by default
 
-## Remediation Steps (Compensating Controls — no upgrade)
-1. Add a `Content-Security-Policy` response header in Apache configuration to
-   block inline script execution. In `/etc/apache2/sites-available/000-default.conf`
-   or a `.htaccess` file in the Roundcube document root:
-   ```
-   Header always set Content-Security-Policy "default-src 'self'; script-src 'self'"
-   ```
-   Ensure `mod_headers` is enabled:
-   ```
-   a2enmod headers
-   ```
-2. Configure Roundcube to strip SVG and other dangerous HTML elements by
-   setting in `/var/www/html/config/config.inc.php`:
-   ```php
-   $config['htmleditor'] = 0;
-   $config['show_images'] = 0;
-   ```
-3. Reload Apache to apply header changes:
-   ```
-   apache2ctl graceful
-   ```
-4. Verify the CSP header is present in responses:
-   ```
-   curl -I http://localhost/ | grep -i content-security-policy
-   ```
+## Constraints
+- Roundcube must not be upgraded to a patched version.

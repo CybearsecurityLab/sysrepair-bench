@@ -32,19 +32,3 @@ manipulating service registrations.
 ## Vulnerable Configuration
 - `acl.enabled = false` — no token enforcement on any API endpoint
 - `acl.default_policy` not set to `"deny"` — unauthenticated requests allowed
-
-## Remediation Steps
-1. Set `acl { enabled = true, default_policy = "deny" }` in `consul.hcl`.
-2. Bootstrap the ACL system to obtain the initial management token:
-   ```
-   consul acl bootstrap
-   ```
-3. Create scoped tokens for each service and operator role with the minimum
-   required policies.
-4. Set `CONSUL_HTTP_TOKEN` (or pass `-token`) in all Consul CLI calls and
-   client agent configurations.
-5. Verify that an anonymous request returns HTTP 403:
-   ```
-   curl -s -o /dev/null -w "%{http_code}" http://localhost:8500/v1/kv/test
-   # Expected: 403
-   ```

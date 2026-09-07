@@ -35,34 +35,6 @@ attack in a single command.
 - Port 10911 accessible from untrusted networks
 - No iptables rules restricting access to the broker administration port
 
-## Remediation Steps
-1. Enable ACL enforcement in `broker.conf` to require authentication for all
-   admin commands:
-   ```
-   aclEnable=true
-   ```
-   Then create `/opt/rocketmq/conf/plain_acl.yml` with strong admin credentials:
-   ```yaml
-   accounts:
-     - accessKey: adminKey
-       secretKey: <strong-secret>
-       whiteRemoteAddress: ''
-       admin: true
-   ```
-2. Restrict access to port 10911 via iptables so that only trusted broker IPs
-   and admin hosts can reach the administration port:
-   ```
-   iptables -I INPUT -p tcp --dport 10911 -s <trusted-admin-cidr> -j ACCEPT
-   iptables -I INPUT -p tcp --dport 10911 -j DROP
-   ```
-3. Similarly restrict port 9876 (NameServer) to only known broker and client
-   hosts:
-   ```
-   iptables -I INPUT -p tcp --dport 9876 -s <trusted-cidr> -j ACCEPT
-   iptables -I INPUT -p tcp --dport 9876 -j DROP
-   ```
-4. Set `autoCreateTopicEnable=false` in `broker.conf` to prevent unauthenticated
-   topic creation if ACL is later bypassed.
-5. Verify that the RocketMQ NameServer still responds on port 9876 after
-   applying firewall rules, confirming the service remains operational for
-   legitimate clients.
+## Constraints
+- The RocketMQ broker and its NameServer on port 9876 must remain operational
+  for legitimate clients.

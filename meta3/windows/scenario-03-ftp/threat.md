@@ -53,20 +53,3 @@ Name (localhost:user): anonymous
 ftp> put payload.exe          # succeeds
 ```
 
-## Remediation Steps
-1. Disable anonymous authentication on `MetaFTP`:
-   ```powershell
-   Set-WebConfigurationProperty -Filter '/system.ftpServer/security/authentication/anonymousAuthentication' `
-       -PSPath 'IIS:\Sites\MetaFTP' -Name enabled -Value $false
-   ```
-2. Remove the anonymous allow rule:
-   ```powershell
-   Clear-WebConfiguration -Filter '/system.ftpServer/security/authorization' -PSPath 'IIS:\Sites\MetaFTP'
-   ```
-3. Re-enable basic (or preferably IIS Manager) authentication and add a scoped allow
-   rule for a named, least-privilege account. Require FTP over TLS
-   (`/system.ftpServer/security/ssl @controlChannelPolicy="SslRequire"`).
-4. Restart the service:
-   ```powershell
-   Restart-Service ftpsvc
-   ```

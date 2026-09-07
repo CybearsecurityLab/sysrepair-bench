@@ -23,13 +23,3 @@ capabilities.
   affected".
 - Non-Ubuntu distributions are not affected (their OverlayFS does not
   carry the downstream patches that introduced this bug)
-
-## Remediation Steps
-1. Upgrade the host kernel to a patched Ubuntu release:
-   `apt-get update && apt-get install -y linux-image-generic` and
-   reboot. Fixed kernels: 5.15.0-177-generic / 5.19.0-50-generic /
-   6.2.0-26-generic or later.
-2. Compensating control: disable user namespaces
-   (`kernel.unprivileged_userns_clone=0` in sysctl), which prevents the
-   unprivileged OverlayFS mount required by the exploit.
-3. Verify `/opt/marker-bash` still executes.

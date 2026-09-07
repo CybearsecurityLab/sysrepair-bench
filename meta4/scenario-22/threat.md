@@ -19,14 +19,4 @@ reliability across kernels 5.14–6.6.
   backports to 5.15.149 / 6.1.76 / 6.6.15 / 6.7.3. Distributions
   backported `nf_tables` well below the 5.14 lower bound the PoC
   write-ups quote, so Ubuntu also ships fixes for 4.4, 4.15 and 5.4.
-  The container shares the host kernel — remediation is a host upgrade.
-
-## Remediation Steps
-1. **Patch**: upgrade the host kernel to one carrying the
-   `c1592a89942e` / `f1ed10264ed6` fix — upstream 6.7+, or stable
-   backports in 5.15.149+ / 6.1.76+ / 6.6.15+.
-2. **Compensating control**: set
-   `kernel.unprivileged_userns_clone=0` (sysctl). This blocks the
-   user-namespace creation that the exploit relies on to gain
-   `CAP_NET_ADMIN` over its own netfilter tables.
-3. Verify `nft list tables` still works (even if empty).
+  The container shares the host kernel.

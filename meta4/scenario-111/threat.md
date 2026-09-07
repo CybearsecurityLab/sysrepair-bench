@@ -30,19 +30,3 @@ victim's address.
 2. Memcached replies with a ~750 KB response to the spoofed victim IP.
 3. With thousands of open Memcached nodes, the victim receives multi-Tbps
    traffic — saturating uplinks and causing service outages.
-
-## Remediation Steps
-1. Start Memcached with `-U 0` to disable the UDP listener entirely:
-   ```
-   memcached -u memcache -U 0 -l 127.0.0.1
-   ```
-2. Also bind to loopback (`-l 127.0.0.1`) so the TCP port is not reachable
-   from external networks.
-3. Verify UDP port 11211 is no longer open:
-   ```
-   ss -ulnp | grep 11211   # must return empty
-   ```
-4. Verify TCP service still responds:
-   ```
-   echo stats | nc 127.0.0.1 11211   # must return STAT lines
-   ```

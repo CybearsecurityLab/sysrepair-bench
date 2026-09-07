@@ -47,6 +47,7 @@ from pathlib import Path
 import dotenv
 import yaml
 from inspect_ai import eval as inspect_eval
+from inspect_ai import eval_set as inspect_eval_set
 
 from .task import sysrepair_bench
 
@@ -277,7 +278,7 @@ def _start_sandbox_watchdog(time_limit: int, grace: int = 180,
     return stop
 
 
-def _start_hang_killer(log_dir: Path, threshold: int,
+def _start_hang_killer(state: dict, threshold: int,
                        interval: int = 60) -> threading.Event:
     """Last-resort backstop: force-exit the process when the eval log stops
     advancing for ``threshold`` seconds.
@@ -301,9 +302,23 @@ def _start_hang_killer(log_dir: Path, threshold: int,
     run_start = time.monotonic()
 
     def _newest_log_mono() -> float:
-        """Monotonic-clock estimate of the newest .eval write, or run_start."""
+        """Monotonic-clock estimate of the newest .eval write in the CURRENT
+        leg's cell dir, or run_start.
+
+        Scans state["dir"] ONLY (the current leg's ./logs_es/<cell>/), not the
+        whole ./logs_es tree. A recursive scan of the whole tree lets a
+        concurrent run writing into its OWN cells continually reset a genuinely
+        wedged leg's staleness clock, so the backstop never fires (cross-run
+        false negative, confirmed by a two-dir test: with the current leg stale
+        and a sibling dir touched every second, the whole-tree scan never fires
+        while the dir-only scan does). The false POSITIVE that might seem to
+        motivate widening the search (a resumed leg that writes nothing
+        inheriting stale time) is fixed independently, by the per-leg
+        state["since"] reset in the leg loop below.
+        """
         try:
-            files = list(log_dir.glob("*.eval"))
+            d = Path(state.get("dir", "./logs"))
+            files: list[Path] = list(d.rglob("*.eval")) if d.exists() else []
             if not files:
                 return run_start
             newest_wall = max(f.stat().st_mtime for f in files)
@@ -314,7 +329,13 @@ def _start_hang_killer(log_dir: Path, threshold: int,
 
     def _scan() -> None:
         while not stop.wait(interval):
-            last_progress = max(run_start, _newest_log_mono())
+            # Per-leg reset (state["since"]): a resumed leg writes nothing (all
+            # samples already complete) and a fresh leg's cold builds write
+            # nothing for minutes; without the reset those windows inherit
+            # process-start staleness and force-exit a healthy run. The leg loop
+            # sets state["since"] on entry so the budget is per-leg, not cumulative.
+            last_progress = max(run_start, state.get("since", run_start),
+                                _newest_log_mono())
             stale = time.monotonic() - last_progress
             if stale > threshold:
                 print(f"\n[hang-killer] no eval-log activity for {int(stale)}s "
@@ -704,6 +725,9 @@ def _run_preset(runs_path: Path, preset_name: str, *,
     # whenever a positive time_limit is configured. `watchdog: false` disables.
     watchdog_stop = threading.Event()
     hang_stop = threading.Event()
+    # Per-leg mutable state for the hang-killer; the leg loop updates it so the
+    # staleness budget is per-leg (survives resumed legs + cold-build windows).
+    hang_state = {"dir": cfg.get("log_dir", "./logs"), "since": time.monotonic()}
     _tl = int(cfg.get("time_limit", 0) or 0)
     if cfg.get("watchdog", True):
         watchdog_stop = _start_sandbox_watchdog(
@@ -713,17 +737,24 @@ def _run_preset(runs_path: Path, preset_name: str, *,
         )
         # Last-resort backstop for post-container hangs the watchdog can't see
         # (process parked in cleanup/scoring after the container exited). Fires
-        # on eval-log inactivity. Default threshold = 2 × time_limit (min 30m).
-        hang_threshold = int(cfg.get("hang_kill_seconds", max(2 * _tl, 1800))) if _tl else int(cfg.get("hang_kill_seconds", 0) or 0)
+        # on eval-log inactivity. A HEALTHY failing sample can be silent for
+        # time_limit x (retry_on_error + 1) while it grinds through retries with
+        # NO eval-log write, so the old 2 x time_limit default force-killed
+        # healthy BB/zero_day runs mid-retry and truncated the log to a 0-sample
+        # stub. Default now = time_limit x (retry_on_error + 2) (min 30m), which
+        # clears the worst-case silent retry window plus scoring margin.
+        _roe = int(cfg.get("retry_on_error", 0) or 0)
+        hang_threshold = int(cfg.get("hang_kill_seconds", max(_tl * (_roe + 2), 1800))) if _tl else int(cfg.get("hang_kill_seconds", 0) or 0)
         if hang_threshold > 0:
             hang_stop = _start_hang_killer(
-                log_dir=Path(cfg.get("log_dir", "./logs")),
+                state=hang_state,
                 threshold=hang_threshold,
                 interval=int(cfg.get("watchdog_interval", 60)),
             )
 
     total = len(models) * len(solvers) * len(modes) * len(seeds_list)
     i = 0
+    es_incomplete = False   # eval_set mode: any (model,mode,k) not fully done
     try:
       for model in models:
         for solver_name in solvers:
@@ -736,19 +767,54 @@ def _run_preset(runs_path: Path, preset_name: str, *,
                         f"mode={mode}", tag,
                     ]))
                     print(f"\n=== [{i}/{total}] {label} ===")
-                    inspect_eval(
-                        sysrepair_bench(
-                            solver=solver_name,
-                            mode=mode,
-                            max_attempts=k,
-                            **task_common,
-                        ),
-                        model=model,
-                        **eval_kwargs,
+                    task = sysrepair_bench(
+                        solver=solver_name,
+                        mode=mode,
+                        max_attempts=k,
+                        **task_common,
                     )
+                    if os.environ.get("SR_EVAL_SET") == "1":
+                        # Resumable across invocations: eval_set tracks completion
+                        # in a stable per-(preset,mode,k) log_dir, so re-running
+                        # (e.g. after a quota-window reset) skips finished samples.
+                        # Builds Tasks in-process, so no standalone task.py load
+                        # (avoids the eval_retry relative-import failure).
+                        es_dir = f"./logs_es/{preset_name}_{solver_name}_{mode}_k{k}"
+                        # Reset the hang-killer's per-leg clock and point it at
+                        # this leg's dir: a resumed leg writes nothing (all
+                        # samples complete) and a fresh leg's cold builds are
+                        # silent for minutes; without this reset those windows
+                        # inherit process-start staleness and force-exit healthy.
+                        hang_state["dir"] = es_dir
+                        hang_state["since"] = time.monotonic()
+                        es_kwargs = {kk: vv for kk, vv in eval_kwargs.items()
+                                     if kk != "log_dir"}
+                        print(f"[eval_set] log_dir={es_dir} (resumable)")
+                        es_ret = inspect_eval_set(
+                            [task],
+                            model=model,
+                            log_dir=es_dir,
+                            retry_attempts=0,
+                            **es_kwargs,
+                        )
+                        # eval_set returns (success: bool, logs). Track whether
+                        # every sample completed so the caller can tell "done"
+                        # from "partial / hit quota wall" via the exit code.
+                        ok = es_ret[0] if isinstance(es_ret, tuple) else bool(es_ret)
+                        if not ok:
+                            es_incomplete = True
+                    else:
+                        inspect_eval(
+                            task,
+                            model=model,
+                            **eval_kwargs,
+                        )
     finally:
         watchdog_stop.set()
         hang_stop.set()
+    if es_incomplete:
+        # Signal "not fully complete" to the driver (quota-paced resume loop).
+        raise SystemExit(3)
 
 
 def main(argv: list[str] | None = None) -> None:

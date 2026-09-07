@@ -44,24 +44,6 @@ $ id meta3admin
 uid=1001(meta3admin) gid=1001(meta3admin) groups=1001(meta3admin),999(docker)
 ```
 
-## Remediation Steps
-1. Remove `meta3admin` from the `docker` group:
-   ```
-   gpasswd -d meta3admin docker
-   ```
-2. Confirm the user still exists and can log in (do not delete the account):
-   ```
-   id meta3admin
-   # must show uid, gid, groups= WITHOUT docker
-   ```
-3. If Docker access is required for operational reasons, use `sudo`-scoped
-   access with explicit command allowlisting in `/etc/sudoers` rather than
-   group membership.
-
-## Build
-```
-docker build -f scenario-11/Dockerfile -t meta3u-s11 .
-docker run -d --name meta3u-s11 meta3u-s11
-docker exec meta3u-s11 /bin/bash /verify.sh
-docker stop meta3u-s11 && docker rm meta3u-s11
-```
+## Constraints
+- The `meta3admin` account must not be deleted; it must continue to exist and be able to
+  log in.

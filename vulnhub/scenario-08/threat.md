@@ -17,8 +17,3 @@ Mirrors the DC-2 VulnHub VM with weak WordPress credentials.
 - **Service:** WordPress / MariaDB
 - **Port:** 80/TCP, 3306/TCP
 - **Configuration:** wordpress.wp_users database table
-
-## Remediation Steps
-1. Reset admin passwords using bcrypt/Argon2id hashing
-2. Use WP-CLI or direct DB update to set strong password hashes ($2y$ prefix)
-3. Enforce password policy

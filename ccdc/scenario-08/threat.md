@@ -17,11 +17,8 @@ Apache HTTP Server (apache2)
 TraceEnable On
 ```
 
-## Expected Remediation
-Set `TraceEnable Off` in the Apache configuration and reload the service.
-
 ## Impact
 TRACE method can be used in Cross-Site Tracing (XST) attacks to capture HTTP headers including authentication cookies, effectively bypassing HttpOnly cookie protections.
 
 ## Source
-LATech 2023 SWCCDC apache.sh (TraceEnable Off)
+LATech 2023 SWCCDC apache.sh

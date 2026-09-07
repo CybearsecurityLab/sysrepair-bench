@@ -36,22 +36,3 @@ advertised algorithm and, depending on resources, recover session keys.
 # /etc/ssh/sshd_config (vulnerable)
 KexAlgorithms diffie-hellman-group1-sha1,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1
 ```
-
-## Remediation Steps
-1. Edit `/etc/ssh/sshd_config` and replace the `KexAlgorithms` line with modern
-   elliptic-curve and SHA-256-based algorithms only:
-   ```
-   KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
-   ```
-2. Restart the SSH daemon:
-   ```
-   /etc/init.d/ssh restart
-   ```
-3. Confirm the change by running `ssh -Q kex` on the server and verifying that no
-   SHA1-based method is listed, then attempt a connection using only the old algorithm
-   to confirm rejection:
-   ```
-   ssh -oKexAlgorithms=diffie-hellman-group1-sha1 -p 22 localhost
-   ```
-   The connection must be refused. A connection using default (modern) KEX must still
-   succeed.

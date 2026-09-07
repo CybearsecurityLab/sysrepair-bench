@@ -28,14 +28,3 @@ A TRACE request like the following returns the full request headers in the respo
 TRACE / HTTP/1.1
 Host: target
 ```
-
-## Remediation Steps
-1. Edit the Apache configuration file (`/etc/apache2/apache2.conf` or an appropriate conf file):
-   ```
-   TraceEnable Off
-   ```
-2. Restart Apache to apply the change:
-   ```
-   apache2ctl restart
-   ```
-3. Verify by sending a TRACE request -- the server should return 405 Method Not Allowed or 403 Forbidden.

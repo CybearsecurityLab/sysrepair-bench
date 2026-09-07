@@ -38,37 +38,6 @@ server = WEBrick::HTTPServer.new(
 )
 ```
 
-## Remediation Steps
-Choose one of the following approaches:
-
-**Option A -- Restrict bind address (preferred):**
-Edit `/opt/admin_app.rb` and change `:BindAddress` from `'0.0.0.0'` to
-`'127.0.0.1'`, then restart the process:
-```
-kill $(pgrep -f admin_app.rb)
-ruby /opt/admin_app.rb &
-```
-
-**Option B -- iptables rule:**
-Block inbound connections to port 3500 from non-loopback sources:
-```
-iptables -I INPUT -p tcp --dport 3500 ! -i lo -j DROP
-```
-
-**Option C -- ufw:**
-```
-ufw deny in on eth0 to any port 3500
-```
-
-## Verification
-After remediation:
-- `curl http://localhost:3500/admin` from inside the container must still return 200.
-- `ss -tlnp | grep 3500` must show `127.0.0.1:3500`, not `0.0.0.0:3500` (for option A).
-
-## Build
-```
-docker build -f scenario-12/Dockerfile -t meta3u-s12 .
-docker run -d --name meta3u-s12 -p 3500:3500 meta3u-s12
-docker exec meta3u-s12 /bin/bash /verify.sh
-docker stop meta3u-s12 && docker rm meta3u-s12
-```
+## Constraints
+- The admin application must remain running and reachable on port 3500 from the host
+  itself.

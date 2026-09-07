@@ -26,13 +26,3 @@ configurations.
 [mysqld]
 secure_file_priv=
 ```
-
-## Remediation Steps
-1. Set `secure_file_priv` to a restricted directory in MariaDB config:
-   ```
-   [mysqld]
-   secure_file_priv=/var/lib/mysql-files/
-   ```
-2. Create the restricted directory: `mkdir -p /var/lib/mysql-files && chown mysql:mysql /var/lib/mysql-files`
-3. Revoke FILE privilege from web user: `REVOKE FILE ON *.* FROM 'webuser'@'localhost';`
-4. Restart MariaDB: `service mysql restart`

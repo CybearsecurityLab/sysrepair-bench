@@ -35,18 +35,3 @@ to accept all compiled-in MAC algorithms, including the weak ones:
 # hmac-md5,hmac-sha1,hmac-ripemd160,hmac-sha1-96,hmac-md5-96,
 # umac-64@openssh.com
 ```
-
-## Remediation Steps
-1. Edit `/etc/ssh/sshd_config` and add or modify the `MACs` directive to only allow
-   the strongest available MAC on this system:
-   ```
-   MACs hmac-sha1
-   ```
-   Note: On Ubuntu 8.04's OpenSSH version, hmac-sha1 is the strongest full-length MAC
-   available. hmac-ripemd160 is also acceptable as a secondary option.
-2. Restart the SSH daemon:
-   ```
-   /etc/init.d/ssh restart
-   ```
-3. Verify the change by connecting with `ssh -vv` and confirming only approved MACs are
-   offered.

@@ -33,26 +33,5 @@ can send an HTTP request to the server.
 - **Port:** 80/TCP (or 8080 in this scenario)
 - **Vulnerable endpoint:** `/remote_agent.php`
 
-## Compensating Control (NOT an upgrade)
-This scenario deploys an **nginx reverse proxy** on port 80 that:
-1. Returns 403 for any request targeting `/remote_agent.php` from non-localhost
-   clients.
-2. Proxies all other requests to the Apache backend on port 8080.
-
-## Remediation Steps
-1. Configure nginx on port 80 as a reverse proxy to `localhost:8080`.
-2. Add a location block to deny `remote_agent.php`:
-   ```nginx
-   location = /remote_agent.php {
-       deny all;
-       return 403;
-   }
-   ```
-3. Proxy all other traffic:
-   ```nginx
-   location / {
-       proxy_pass http://127.0.0.1:8080;
-   }
-   ```
-4. Verify: `curl http://localhost/remote_agent.php` returns 403.
-5. Regression: `curl http://localhost/` returns Cacti login page (200).
+## Constraints
+- Cacti must not be upgraded; it stays at version 1.2.22 or earlier.

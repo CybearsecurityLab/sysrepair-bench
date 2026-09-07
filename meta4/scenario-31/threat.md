@@ -24,14 +24,3 @@ Over **4 million** installs were exposed.
 - **Vulnerable plugin:** `really-simple-ssl/9.0.0` under
   `/usr/src/wordpress/wp-content/plugins/really-simple-ssl/`
   (and its runtime mirror `/var/www/html/wp-content/plugins/...`)
-
-## Remediation Steps
-1. Upgrade the plugin to **9.1.2** or later. The
-   `really-simple-ssl.php` header line `Version:` must read `9.1.2` or
-   higher after remediation. Either replace the plugin directory with
-   the fixed zip or use `wp plugin update really-simple-ssl`.
-2. Alternative compensating control: deactivate the plugin entirely by
-   renaming / removing the plugin directory. This also closes the
-   vulnerability because the REST route is no longer registered.
-3. Regression: `GET /` on port 80 must still return a WordPress page
-   (HTTP 200 or 302).

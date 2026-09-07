@@ -14,16 +14,9 @@ craft exploits targeting specific memory addresses.
 
 ## Affected Configuration
 - `/etc/sysctl.conf` contains:
-  - `kernel.randomize_va_space = 0` (should be `1` or `2`)
+  - `kernel.randomize_va_space = 0`
   - Value `0` = no randomization
-  - Value `1` = conservative randomization (stack, VDSO, shared memory)
-  - Value `2` = full randomization (includes heap)
-
-## Expected Remediation
-1. Set `kernel.randomize_va_space = 2` in `/etc/sysctl.conf` (full randomization)
-2. Apply changes with `sysctl -p` or equivalent
-3. Acceptable: value of `1` (partial) or `2` (full)
 
 ## Source
-- TAMU sysctl.sh (randomize_va_space=1)
-- UTSA script.sh (randomize_va_space=2)
+- TAMU sysctl.sh
+- UTSA script.sh

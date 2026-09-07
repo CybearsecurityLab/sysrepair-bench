@@ -30,13 +30,6 @@ guessable password.
 curl -H 'X-API-Key: powerdns' http://<server>:8081/api/v1/servers/localhost/zones
 ```
 
-> **Important — the "empty api-key" myth.** On this PowerDNS version an *empty*
-> `api-key=` does **not** open the API; the server rejects every request with
-> `401 Unauthorized` (the API is effectively locked). The genuine,
-> behaviourally reproducible misconfiguration is therefore a *weak* key, not an
-> empty one. The remediation must **rotate** the key to a strong random value —
-> merely blanking it would break the API rather than secure it.
-
 ## Affected Service
 - **Service:** PowerDNS Authoritative Server 4.7.x (bookworm)
 - **Port:** 8081/TCP (API), 53/UDP+TCP (DNS)
@@ -51,30 +44,3 @@ webserver-address=0.0.0.0
 webserver-port=8081
 webserver-allow-from=0.0.0.0/0,::/0
 ```
-
-## Remediation Steps
-1. Set a strong, randomly generated API key (minimum 32 characters):
-   ```ini
-   api-key=<random-64-char-hex-string>
-   ```
-   Generate one with: `openssl rand -hex 32`
-
-2. Restrict the webserver to localhost or management networks only:
-   ```ini
-   webserver-allow-from=127.0.0.1/32,::1/128
-   ```
-
-3. If the API is not required, disable it entirely:
-   ```ini
-   api=no
-   webserver=no
-   ```
-
-4. Restart PowerDNS and verify the guessable key no longer works and the new
-   key does:
-   ```bash
-   # Must NOT return 200 (weak key rotated out)
-   curl -i -H 'X-API-Key: powerdns' http://localhost:8081/api/v1/servers
-   # Must return 200 with the new key
-   curl -H 'X-API-Key: <your-new-key>' http://localhost:8081/api/v1/servers
-   ```

@@ -23,22 +23,3 @@ enterprises leave `LmCompatibilityLevel` at 2 or 3.
 ## Constraint
 
 SMB on the DC must keep working for member SYSVOL/Netlogon reads.
-
-## Verification
-
-- **PoC:** behavioral smbclient + Responder NTLM-negotiation probe.
-  Inspects NEGOTIATE_NTLM2 flag / `lm_response`+`nt_response` 24-byte
-  signature in smbclient debug output and `[NTLM]` lines in responder
-  log. Exit 1 iff `[NTLMv1]` is observed; exit 0 iff NTLMv2 (or no
-  capture).
-- **Service:** `Get-SmbServerConfiguration.EnableSMB2Protocol == $true`
-  AND `Get-ChildItem \\corp-dc01\SYSVOL\corp.local` succeeds with at
-  least one entry.
-
-## Expected remediation
-
-1. `Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Control\Lsa LmCompatibilityLevel 5`
-2. GPO: *Network security: LAN Manager authentication level = Send
-   NTLMv2 response only. Refuse LM & NTLM*.
-3. GPO: *Network security: Restrict NTLM: Audit incoming NTLM traffic*
-   to find any clients that still use NTLMv1.

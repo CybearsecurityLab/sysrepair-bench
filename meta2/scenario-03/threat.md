@@ -37,23 +37,3 @@ PermitRootLogin yes
 # user password = "user"
 # root password = "root"
 ```
-
-## Remediation Steps
-1. Change all weak passwords to strong, random values:
-   ```
-   passwd root        # Set a strong password (16+ chars, mixed case, numbers, symbols)
-   passwd msfadmin    # Set a strong password
-   passwd user        # Set a strong password
-   ```
-2. Alternatively, disable password authentication entirely and use SSH keys:
-   ```
-   # In /etc/ssh/sshd_config:
-   PasswordAuthentication no
-   PubkeyAuthentication yes
-   ```
-3. If password authentication must remain enabled, consider installing fail2ban or
-   equivalent to throttle brute-force attempts.
-4. Restart the SSH daemon:
-   ```
-   /etc/init.d/ssh restart
-   ```

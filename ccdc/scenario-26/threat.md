@@ -16,20 +16,16 @@ Their presence also indicates poor system hygiene and may violate compliance req
 
 ## CWE Classification
 - **CWE-1104**: Use of Unmaintained Third Party Components
-- These are unauthorized third-party tools that should not be present on production systems.
 
 ## Affected Packages
-The following packages should be removed:
 - `nmap`
 - `ncat`
 - `hydra`
 - `john`
 - `nikto`
 
-## Expected Remediation
-1. Remove all hacking tools: `apt-get purge -y nmap ncat hydra john nikto`
-2. Run `apt-get autoremove -y` to clean up dependencies
-3. Ensure legitimate system tools (curl, wget, ssh, ping, ip) remain functional
+## Constraints
+- Legitimate system tools (curl, wget, ssh, ping, ip) must remain functional.
 
 ## Source
-- TAMU bad_packages.sh (massive removal list of offensive tools)
+- TAMU bad_packages.sh

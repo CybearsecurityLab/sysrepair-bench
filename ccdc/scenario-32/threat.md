@@ -12,13 +12,6 @@ AppArmor is installed but not actively enforcing any profiles. All profiles are 
 - `apparmor` service - AppArmor framework (not enforcing)
 - `aa-status` - Shows no enforced profiles
 
-## Expected Remediation
-1. Ensure the `apparmor` and `apparmor-utils` packages are installed.
-2. Enable the AppArmor service via systemctl.
-3. Set all available AppArmor profiles to enforce mode using `aa-enforce`.
-4. Verify that `aa-status` shows profiles in enforce mode.
-5. Ensure AppArmor is configured to start on boot.
-
 ## References
 - CIS Ubuntu Linux Benchmark - Section 1.6 (Mandatory Access Control)
 - NIST SP 800-53 - AC-3 (Access Enforcement)

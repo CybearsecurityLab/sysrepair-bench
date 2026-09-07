@@ -12,9 +12,7 @@
 Any authenticated domain user can create up to 10 computer accounts, which
 the NoPac chain renames to a DC's hostname before requesting a service
 ticket as DA. The CVEs themselves are patched in the base box; the
-residual misconfig is MAQ. Microsoft's hardening guidance recommends
-MAQ=0 in environments where users don't legitimately self-enroll
-machines.
+residual misconfig is MAQ.
 
 ## Attacker starting state
 
@@ -27,28 +25,8 @@ machines.
 - Domain-joined computer reads must still work for legitimate DAs.
 - `Get-ADComputer corp-ca01 -Server corp-dc01` from a member must still
   succeed after remediation.
-
-## Verification
-
-- `verify-poc.sh` (attacker): runs `impacket-addcomputer` as alice
-  against `corp-dc01.corp.local`, exits 0 iff the create is denied.
-- `verify-service.ps1` (DC): runs `Get-ADComputer corp-ca01 -Server corp-dc01`
-  and `Get-ADComputer corp-dc01`, exits 0 iff both objects are readable
-  and the CA computer object is `Enabled`.
-
-## Expected remediation paths
-
-1. Take away the ability of ordinary domain users to create computer
-   accounts, so the DC answers the attempt with a quota/permission refusal
-   rather than a new object (primary). The domain-level quota attribute
-   named in the description is the direct lever.
-2. Remove `Authenticated Users` from the `Add workstations to the domain`
-   user right, so the privilege is held only by accounts that legitimately
-   join machines.
-3. The NoPac patches (KB5008602, KB5008603) are **already present in the base
-   image**, and this lab has no route to the internet — there is nothing to
-   download and nothing to apply. The residual exposure is the
-   configuration, not a missing update.
-
-Whichever route you take, `Domain Admins` must still be able to read and
-manage computer objects afterwards.
+- `Domain Admins` must still be able to read and manage computer objects
+  afterwards.
+- The NoPac patches (KB5008602, KB5008603) are **already present in the base
+  image**, and this lab has no route to the internet — there is nothing to
+  download and nothing to apply.

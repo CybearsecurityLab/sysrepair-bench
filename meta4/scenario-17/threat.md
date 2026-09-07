@@ -21,12 +21,5 @@ vulnerable system.
 - **Binary:** `/usr/bin/pkexec` (from `policykit-1 < 0.105-26ubuntu1.2`
   on Ubuntu 20.04, or upstream polkit ≤ 0.120)
 
-## Remediation Steps
-1. Upgrade `policykit-1` to **0.105-26ubuntu1.3** or later (or upstream
-   polkit 0.121+). On Ubuntu 20.04:
-   `apt-get update && apt-get install -y policykit-1`.
-2. Stop-gap: remove the setuid bit with
-   `chmod 0755 /usr/bin/pkexec`.
-3. Regression: polkit is not required inside this container, but the
-   binary must still exist on disk so that the remediation can be
-   verified.
+## Constraints
+- The `/usr/bin/pkexec` binary must still exist on disk.

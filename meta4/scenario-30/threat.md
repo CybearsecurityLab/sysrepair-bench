@@ -21,10 +21,3 @@ VAmPI's default posture is intentionally vulnerable:
 ## Affected Service
 - **Port:** 5000/TCP
 - **Env vars:** `VULNERABLE`, `SECRET_KEY`
-
-## Remediation Steps
-1. Restart the container with `VULNERABLE=0` (enables VAmPI's
-   `secure`-mode authorization checks).
-2. Set `SECRET_KEY` to a high-entropy value (≥ 32 random bytes). A
-   hex- or base64-encoded random string is sufficient.
-3. Regression: the `/` landing page must still respond with 200.

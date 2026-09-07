@@ -1,0 +1,74 @@
+# Qwen3.5-27B, meta4 k3s block ONLY (day1). Recovery run + decisive test.
+#
+# WHY
+# The six rancher/k3s scenarios (38, 75-79) are the ONLY meta4 scenarios that
+# failed to produce a verdict on the completed 27B day1 sweep, and 38/76/77/79
+# scored 0 for DeepSeek-Pro as well, so the cause is the scenario, not the model.
+# Two distinct failures were recorded: SandboxInjectionError (tool injection) and
+# `service "default" is not running` (the container died mid-episode).
+#
+# Standalone, scenario-76 boots and accepts `docker exec -u root` within 2s, so
+# the failure is NOT a plain boot race. The leading hypothesis is resource
+# contention: k3s runs an entire Kubernetes control plane, and these are the
+# heaviest containers in the suite. Running the six ALONE, with the box no longer
+# hosting 45 concurrent sandboxes, tests that directly. If they grade here, the
+# episodes fold straight into the meta4 cell (the pass@k dedup key is
+# (model, solver, mode, benchmark, scenario, epoch), so they merge with the sweep).
+#
+# scenario-38 also carries a one-line fix applied 2026-08-28: it was the only k3s
+# scenario missing the /etc/passwd + /etc/group root entry its five siblings have,
+# without which `docker exec -u root` cannot work at all.
+#
+# Every knob below is copied from qwen27b_fs_day1 UNCHANGED so these episodes are
+# poolable with that sweep. max_connections is the one deliberate exception (8->3):
+# the whole point is to keep concurrency low.
+defaults:
+  seeds: [5]
+  epochs: 3
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.5
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  preflight: true
+  model_max_retries: 10
+  # RAISED FOR THIS PROBE ONLY (2026-08-28). The k3s six failed every episode with
+  # AttemptTimeoutError after the cgroupns fix let their containers boot. Cause,
+  # measured on the live serve under the concurrency these runs actually use:
+  # 5.03 tok/s for a 256-token completion (50.9s) and 11.23 tok/s for 1024 (91.2s)
+  # on a 14.8k-token prompt. A Kubernetes remediation emits a few thousand tokens
+  # of YAML, so ONE generate call exceeds the 300s cap. attempt_timeout wraps
+  # exactly one api.generate call (inspect_ai/model/_model.py:969-990), so a slow
+  # call kills the whole episode.
+  #
+  # This does NOT give these six a larger budget than the other 107 scenarios.
+  # time_limit (3600s) and working_limit (2400s) are unchanged and bound the
+  # episode as before; attempt_timeout only decides whether a slow call aborts the
+  # episode or the episode spends its own existing budget on it. A timeout that
+  # binds is measuring the server, not the model, and it did not bind for any
+  # other scenario in the sweep.
+  model_timeout: 1200
+  model_attempt_timeout: 900
+  model_client_timeout: 1320
+presets:
+  qwen27b_k3s_day1:
+    model: openai/Qwen/Qwen3.5-27B
+    base_url: http://localhost:8100/v1
+    api_key: vllm
+    scenarios:
+      - meta4/scenario-38
+      - meta4/scenario-75
+      - meta4/scenario-76
+      - meta4/scenario-77
+      - meta4/scenario-78
+      - meta4/scenario-79
+    solvers: [react]
+    seeds: 5
+    epochs: 3
+    max_connections: 3
+    modes: [day1]

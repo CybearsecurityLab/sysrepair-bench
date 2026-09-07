@@ -20,10 +20,3 @@ yielding remote code execution.
 - **Vulnerable artifact:** `/opt/app/log4j-core-2.17.0.jar`
 - **Vulnerable configuration:** `log4j2.xml` JDBC Appender with
   `DataSource jndiName="..."`
-
-## Remediation Steps
-1. Upgrade `log4j-core`/`log4j-api` to **2.17.1 or later** (Java 8) or
-   **2.12.4** (Java 7) or **2.3.2** (Java 6).
-2. Remove the `<JDBC>` appender or pin its `DataSource jndiName` to a local,
-   non-remote resource.
-3. Confirm the HTTP server still serves on 8080.

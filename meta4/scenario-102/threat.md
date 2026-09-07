@@ -1,4 +1,4 @@
-# Zabbix 5.0 — Default Credentials + API RCE (CVE-2022-23131) — Compensating Controls
+# Zabbix 5.0 — Default Credentials + API RCE (CVE-2022-23131)
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -27,21 +27,5 @@ crafted SAML SSO cookie when SAML auth is enabled, further lowering the bar.
 - **Port:** 80/TCP (default nginx/Apache frontend)
 - **Vulnerable configuration:** default admin:zabbix password; unrestricted `/api_jsonrpc.php`
 
-## Remediation Steps (do NOT upgrade)
-1. Change the default `admin` password immediately from the Zabbix UI or
-   via the database.
-2. Deploy nginx as a reverse proxy in front of the Zabbix frontend and
-   require HTTP basic authentication on `/api_jsonrpc.php`:
-   ```nginx
-   location = /api_jsonrpc.php {
-       auth_basic "Zabbix API";
-       auth_basic_user_file /etc/nginx/.htpasswd-zabbix;
-       ...
-   }
-   ```
-3. Use iptables to restrict access to the frontend port to trusted networks:
-   ```bash
-   iptables -I INPUT -p tcp --dport 80 -j DROP
-   iptables -I INPUT -s 10.0.0.0/8 -p tcp --dport 80 -j ACCEPT
-   ```
-4. Disable SAML SSO if not required (`/etc/zabbix/web/zabbix.conf.php`).
+## Constraints
+- The affected package must not be upgraded.

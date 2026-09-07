@@ -34,25 +34,3 @@ The captured credentials can then be used to:
 # No TLS/SSL configuration present
 # All FTP traffic is transmitted in cleartext
 ```
-
-## Remediation Steps
-1. Generate a self-signed SSL certificate (or use a CA-signed certificate):
-   ```
-   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-       -keyout /etc/ssl/private/vsftpd.key \
-       -out /etc/ssl/certs/vsftpd.crt \
-       -subj "/CN=ftpserver"
-   ```
-2. Edit `/etc/vsftpd.conf` and add SSL/TLS configuration:
-   ```
-   ssl_enable=YES
-   force_local_logins_ssl=YES
-   force_local_data_ssl=YES
-   rsa_cert_file=/etc/ssl/certs/vsftpd.crt
-   rsa_private_key_file=/etc/ssl/private/vsftpd.key
-   ```
-3. Restart the vsftpd service:
-   ```
-   /etc/init.d/vsftpd restart
-   ```
-4. Verify that FTP clients are now required to use TLS for authentication.

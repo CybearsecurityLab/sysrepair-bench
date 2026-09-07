@@ -52,20 +52,3 @@ with OpenVAS checks that fire against the upstream Metasploitable3 Windows image
 GET /reports/ HTTP/1.1      -> 200 OK, HTML listing of reports/
 TRACE / HTTP/1.1            -> 200 OK, request echoed in response body
 ```
-
-## Remediation Steps
-1. Disable directory browsing on the Default Web Site:
-   ```powershell
-   Import-Module WebAdministration
-   Set-WebConfigurationProperty -Filter '/system.webServer/directoryBrowse' `
-       -PSPath 'IIS:\Sites\Default Web Site' -Name enabled -Value $false
-   ```
-2. Remove (or set `allowed="false"` on) the TRACE verb in `requestFiltering/verbs`:
-   ```powershell
-   Remove-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' `
-       -Filter "/system.webServer/security/requestFiltering/verbs/add[@verb='TRACE']" -Name '.'
-   ```
-3. Reload IIS:
-   ```powershell
-   iisreset /restart
-   ```

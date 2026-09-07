@@ -35,21 +35,3 @@ attacker-controlled commands with the privileges of the ImageMagick process.
   with attacker-controlled input
 - **Vulnerable configuration:** `/etc/ImageMagick-6/policy.xml` absent or
   containing no `rights="none"` entries for MVG, MSL, URL coders
-
-## Remediation Steps
-1. Ensure `/etc/ImageMagick-6/policy.xml` exists with a `<policymap>` block.
-2. Add deny rules for the dangerous coders:
-   ```xml
-   <policy domain="coder" rights="none" pattern="MVG" />
-   <policy domain="coder" rights="none" pattern="MSL" />
-   <policy domain="coder" rights="none" pattern="URL" />
-   ```
-3. Optionally add a catch-all path policy to block read/write of sensitive
-   filesystem paths:
-   ```xml
-   <policy domain="path" rights="none" pattern="@*" />
-   ```
-4. Verify safe coders still work: `convert logo: /tmp/test.png` must succeed.
-5. Verify dangerous coders are blocked:
-   `convert mvg:/dev/null /tmp/out.png` must return a non-zero exit code or
-   produce an error about the coder being disabled.

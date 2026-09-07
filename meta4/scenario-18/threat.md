@@ -24,11 +24,5 @@ on patched sudo it returns a usage error.
 ## Affected Service
 - **Binary:** `/usr/bin/sudo` (package `sudo < 1.9.5p2`)
 
-## Remediation Steps
-1. Upgrade sudo to **1.9.5p2** or later. On Ubuntu 20.04: 
-   `apt-get update && apt-get install -y sudo`.
-2. Stop-gap: remove the setuid bit
-   (`chmod 0755 /usr/bin/sudo`) — note this also disables legitimate
-   sudo use.
-3. Verify the sudo binary still exists on disk and reports its version
-   (`sudo -V`).
+## Constraints
+- The `/usr/bin/sudo` binary must still exist on disk.

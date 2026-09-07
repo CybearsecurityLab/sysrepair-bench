@@ -42,24 +42,3 @@ host    all    all    0.0.0.0/0    md5
 
 # postgres user password = "postgres"
 ```
-
-## Remediation Steps
-1. Change the postgres user password to a strong value:
-   ```
-   su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD 'NewStr0ngP@ssw0rd!';\""
-   ```
-2. Restrict PostgreSQL to listen only on localhost in `/etc/postgresql/8.3/main/postgresql.conf`:
-   ```
-   listen_addresses = 'localhost'
-   ```
-3. Remove or restrict the remote access line in `/etc/postgresql/8.3/main/pg_hba.conf`:
-   ```
-   # Remove or comment out:
-   # host    all    all    0.0.0.0/0    md5
-   # Replace with local-only access if needed:
-   host    all    all    127.0.0.1/32    md5
-   ```
-4. Restart PostgreSQL:
-   ```
-   /etc/init.d/postgresql-8.3 restart
-   ```

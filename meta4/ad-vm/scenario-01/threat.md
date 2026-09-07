@@ -3,9 +3,7 @@
 **Severity:** Critical
 **Category:** Access Control / Authentication
 **CWE:** CWE-287 (improper authentication), CWE-290 (authentication bypass by spoofing)
-**Compensating controls accepted:** **Yes — and required.** The textbook fix
-(`StrongCertificateBindingEnforcement = 2`) locks the legacy application out of
-the domain, so risk must be reduced by another route.
+**Compensating controls accepted:** **Yes — and required.**
 
 ## Description
 
@@ -52,49 +50,14 @@ the *template* is misconfigured and the attacker obtains a certificate naming
 somebody else. Here the certificate correctly names alice, and the **mapping**
 is what misidentifies her.
 
-## Why the obvious fix is not available
+## Constraints
 
-Setting `StrongCertificateBindingEnforcement = 2` stops the attack — and locks
-the legacy application out, because its certificates predate the SID extension
-and Full Enforcement rejects any certificate lacking one. `verify-service.ps1`
-fails that outcome deliberately.
-
-Deleting `altSecurityIdentities` is rejected for the same reason: the mapping
-*is* how the application authenticates.
-
-Verified on the lab: Full Enforcement blocks the PoC **and** fails the service
-check, so it does not solve the scenario.
-
-## Compensating control
-
-Stay in Compatibility mode, keep a mapping, and make it unspoofable by binding
-to a specific key instead of an email address. The strong forms:
-
-| Form | Value |
-|---|---|
-| `X509IssuerSerialNumber` | `X509:<I>...<SR>...` |
-| `X509SKI` | `X509:<SKI>...` |
-| `X509SHA1PublicKey` | `X509:<SHA1-PUKEY>...` |
-
-Any of the three strong forms is acceptable. Whichever you choose, the
-mapping has to be derived from the certificate the legacy application
-actually presents, so you will need that certificate in hand — re-issuing it
-from the same template and binding to the new one is a legitimate way to get
-there. The application must keep authenticating afterwards; the email
-address must stop being an identity claim.
-
-Removing the self-service `mail` delegation also breaks the chain and is
-accepted, though it addresses reachability rather than the weak binding.
-
-## Notes
-
-- Serial numbers are byte-reversed relative to their display form. A malformed
-  mapping does not error — it simply never matches, which looks like a
-  successful fix while the application quietly stops authenticating.
-- This scenario replaced Zerologon (CVE-2020-1472), which could not be induced
-  on Server 2019 media postdating the February 2021 enforcement: that fix is in
-  code, not configuration. Both the exploit and a behavioural reframe were
-  measured, and neither discriminated. See the git history.
+- `StrongCertificateBindingEnforcement` must not be raised to Full Enforcement
+  (`2`): the legacy application's certificates predate the SID extension that
+  Full Enforcement requires.
+- The `altSecurityIdentities` mapping must not be deleted: it is how the legacy
+  application authenticates.
+- The legacy application must still authenticate after remediation.
 
 ## References
 

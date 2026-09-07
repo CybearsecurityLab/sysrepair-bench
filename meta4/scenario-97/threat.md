@@ -28,13 +28,5 @@ command execution on the Kibana server.
 ## Vulnerable Configuration
 - Kibana 6.5.4 with Timelion plugin enabled (enabled by default)
 
-## Remediation Steps (Compensating Controls — do NOT upgrade)
-1. Disable the Timelion plugin by adding the following line to
-   `/opt/kibana/config/kibana.yml`:
-   ```yaml
-   timelion.enabled: false
-   ```
-2. Restart Kibana to apply the change.
-3. Verify Timelion is disabled by confirming the `/app/timelion` URL returns 404
-   or the Timelion menu item is absent.
-4. Confirm Kibana UI is still accessible at `http://localhost:5601`.
+## Constraints
+- Kibana must not be upgraded to a patched version.

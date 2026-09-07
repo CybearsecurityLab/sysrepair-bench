@@ -19,8 +19,7 @@ the victim principal — including SCM, LDAP, or ADCS operations if the victim i
 privileged.
 
 Signing is a pure-server decision for the target: the client cannot force it if the
-server does not require it. This is why CIS and Microsoft's baseline flip
-`RequireSecuritySignature` to `$true` on every member server.
+server does not require it.
 
 ## Affected Service
 - **Service:** `LanmanServer`
@@ -36,18 +35,3 @@ RequireSecuritySignature EnableSecuritySignature
 ------------------------ -----------------------
                    False                   False
 ```
-
-## Remediation Steps
-1. Require SMB signing on the server:
-   ```powershell
-   Set-SmbServerConfiguration -RequireSecuritySignature $true -EnableSecuritySignature $true -Force
-   ```
-2. Require SMB signing on the client side as defense-in-depth for any outbound mounts:
-   ```powershell
-   Set-SmbClientConfiguration -RequireSecuritySignature $true -EnableSecuritySignature $true -Force
-   ```
-3. Pair with LLMNR / NBT-NS disablement (see scenario-13) and, where the domain allows
-   it, Extended Protection for Authentication (EPA) on LDAP and ADCS to close the
-   remaining relay paths.
-4. Verify that SMBv2/3 clients can still read/write a share — signing is transparent to
-   them, only legacy SMBv1-only clients will break.

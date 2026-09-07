@@ -34,16 +34,3 @@ security risks in production environments:
 # /etc/vsftpd.conf
 anonymous_enable=YES
 ```
-
-## Remediation Steps
-1. Edit `/etc/vsftpd.conf` and disable anonymous access:
-   ```
-   anonymous_enable=NO
-   ```
-2. Restart the vsftpd service:
-   ```
-   /etc/init.d/vsftpd restart
-   ```
-3. Verify by attempting to connect with anonymous credentials — the connection should
-   be rejected.
-4. Ensure local user access still works for legitimate FTP users.

@@ -30,19 +30,3 @@ keys or IP address.
 ## Vulnerable Configuration
 - Postfix installed with default `main.cf` does not set `smtpd_forbid_bare_newline`
 - The default value (`no`) accepts bare LF characters in the DATA stream
-
-## Remediation Steps
-1. Add `smtpd_forbid_bare_newline = yes` to `/etc/postfix/main.cf`:
-   ```
-   echo "smtpd_forbid_bare_newline = yes" >> /etc/postfix/main.cf
-   ```
-2. Reload or restart Postfix to apply the change:
-   ```
-   postfix reload
-   ```
-3. Optionally also set `smtpd_forbid_bare_newline_exclusions =` (empty) to
-   apply the restriction to all clients including trusted ones.
-4. Verify the setting is active:
-   ```
-   postconf smtpd_forbid_bare_newline
-   ```

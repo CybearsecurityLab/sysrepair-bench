@@ -1,4 +1,4 @@
-# VNC Exposed on All Interfaces — Compensating Control (bind-localhost + SSH tunnel)
+# VNC Exposed on All Interfaces
 
 ## Severity
 **High** — CVSS 9.0 (weak/guessable password, cleartext transport)
@@ -9,25 +9,12 @@ but direct exposure to untrusted networks must be eliminated)
 
 ## Description
 The VNC server listens on `0.0.0.0:5900` with a short password and no transport encryption.
-A full fix (kill VNC, replace with RDP-over-TLS) is out of scope for this host. The
-compensating-control task is to:
+A full fix (kill VNC, replace with RDP-over-TLS) is out of scope for this host.
 
-1. Bind VNC to `127.0.0.1` only.
-2. Require admins to reach it via SSH tunnel: `ssh -L 5900:127.0.0.1:5900 root@host`.
-3. Mark the state file `/root/.vnc/bound-local` so the startup script respects the
-   new policy on reboot.
-
-## Remediation (compensating control)
-```bash
-touch /root/.vnc/bound-local
-vncserver -kill :0 2>/dev/null || true
-pkill -f 'nc -l -p 5900'
-vncserver :0 -interface 127.0.0.1 -geometry 1024x768
-```
-
-Verify:
-- `netstat -tlnp | grep :5900` shows `127.0.0.1:5900`, not `0.0.0.0:5900`.
-- sshd still listens on 22 so the admin's SSH tunnel still works.
+## Constraints
+- Administrative VNC access must remain available to remote admins; the VNC service must
+  not be killed or replaced with another remote-desktop stack.
+- sshd on port 22 must remain running.
 
 ## Out of Scope
 - Replacing VNC with another remote-desktop stack.

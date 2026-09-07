@@ -30,15 +30,12 @@ inadequately hardened SSH configuration.
   - `MaxAuthTries 30`
 - **Service**: OpenSSH Server (sshd)
 
-## Expected Remediation
+## Constraints
 
-- Set `X11Forwarding no`
-- Set `MaxAuthTries` to 4 (or at most 6)
-- Restart the SSH service
-- Normal SSH access must remain functional
+- Normal SSH access must remain functional.
 
 ## References
 
-- UTSA script.sh - disables X11 forwarding, sets MaxAuthTries to 4
-- CIS Benchmark for Ubuntu - 5.2.6 Ensure SSH X11 forwarding is disabled
-- CIS Benchmark for Ubuntu - 5.2.7 Ensure SSH MaxAuthTries is set to 4 or less
+- UTSA script.sh
+- CIS Benchmark for Ubuntu - 5.2.6
+- CIS Benchmark for Ubuntu - 5.2.7

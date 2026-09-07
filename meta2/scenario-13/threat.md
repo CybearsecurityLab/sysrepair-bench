@@ -33,22 +33,3 @@ The file `/var/www/phpinfo.php` exists in the web root and contains:
 ```
 
 Accessing `http://target/phpinfo.php` displays the full PHP configuration to any remote user.
-
-## Remediation Steps
-1. **Remove the phpinfo file** (recommended):
-   ```bash
-   rm /var/www/phpinfo.php
-   ```
-2. If phpinfo is needed for debugging, restrict access:
-   ```apache
-   <Files "phpinfo.php">
-       Order deny,allow
-       Deny from all
-       Allow from 127.0.0.1
-   </Files>
-   ```
-3. Alternatively, use `php -i` on the command line for local diagnostics instead of exposing it via the web.
-4. Audit the web root for any other debug/diagnostic files:
-   ```bash
-   find /var/www -name "*.php" -exec grep -l "phpinfo" {} \;
-   ```

@@ -38,22 +38,3 @@ curl -X POST http://target:9080/apisix/admin/routes \
 `config.yaml` ships with `admin_key: edd1c9f034335f136f87ad84b625c8f1`.
 The admin API is bound to all interfaces by default, making it reachable
 from any network.
-
-## Remediation
-Change the admin API key to a strong, randomly generated secret in
-`config.yaml`:
-
-```yaml
-apisix:
-  admin_key:
-    - name: admin
-      key: <strong-random-secret>
-      role: admin
-```
-
-Restart APISIX after the change. Verify that the old default key is rejected
-with HTTP 401, and that requests using the new key succeed.
-
-Additionally, restrict the admin API port (9080) to trusted management
-networks using iptables or security groups — it should never be reachable
-from the public internet.

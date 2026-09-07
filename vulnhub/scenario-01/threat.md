@@ -27,15 +27,3 @@ OpenSSL 0.9.6b, exposing the OpenFuckV2 vulnerability (CVE-2002-0082).
 SSLProtocol all
 SSLCipherSuite ALL:!ADH:!EXPORT:!SSLv2:RC4+RSA:+HIGH:+MEDIUM:+LOW
 ```
-
-## Remediation Steps
-1. Edit `/etc/apache2/sites-available/default-ssl.conf` and set:
-   ```
-   SSLProtocol -all +TLSv1.2 +TLSv1.3
-   SSLCipherSuite HIGH:!aNULL:!MD5:!RC4:!3DES
-   ```
-2. Restart Apache:
-   ```
-   apachectl restart
-   ```
-3. Verify only TLS 1.2+ is offered.

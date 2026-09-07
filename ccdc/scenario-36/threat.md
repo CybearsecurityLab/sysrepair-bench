@@ -13,15 +13,11 @@ The CUPS (Common Unix Printing System) service is installed and enabled on a ser
 - Port 631 - CUPS web administration interface
 - `/etc/cups/cupsd.conf` - CUPS configuration
 
-## Expected Remediation
-1. Stop the CUPS and cups-browsed services.
-2. Disable the services so they do not start on boot.
-3. Remove or purge the `cups`, `cups-browsed`, and related packages.
-4. Verify that port 631 is no longer listening.
-5. Ensure the system continues to function normally after removal.
+## Constraints
+- The system must continue to function normally afterwards.
 
 ## References
-- CIS Ubuntu Linux Benchmark - Section 2.2.4 (Ensure CUPS is not enabled)
+- CIS Ubuntu Linux Benchmark - Section 2.2.4
 - CVE-2024-47176 (cups-browsed remote code execution)
 - NIST SP 800-123 (Guide to General Server Security)
 - TAMU disable_cups.sh
