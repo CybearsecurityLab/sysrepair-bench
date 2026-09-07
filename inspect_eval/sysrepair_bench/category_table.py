@@ -70,7 +70,25 @@ def _remediation_text(threat_path: Path) -> str:
 
 
 def classify_threat(threat_path: Path) -> str:
-    """Return the remediation category for a scenario given its threat.md path."""
+    """Return the remediation category for a scenario given its threat.md path.
+
+    A sidecar `category` file beside threat.md wins over every heuristic below.
+
+    The heuristics read the briefing's remediation section, so they only work
+    while the briefing prescribes a fix. Briefings are now disclosures and carry
+    no remediation section, which silently moved 109 of 300 scenarios between
+    categories and cut Compensating Controls from 37 to 13. The category is
+    scenario metadata, not something the briefing should have to encode, and it
+    must not live in the briefing anyway: writing "Category: Compensating
+    Controls" there would hand the agent the remediation class we just removed.
+    Hence a sidecar the agent never sees.
+    """
+    sidecar = threat_path.parent / "category"
+    if sidecar.exists():
+        value = sidecar.read_text(encoding="utf-8", errors="ignore").strip()
+        if value:
+            return value
+
     if not threat_path.exists():
         return "Configuration Hardening"
 
