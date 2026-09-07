@@ -24,7 +24,7 @@ needs only an API key.
 WHAT THIS MEANS FOR AN EVALUATOR
 
 Claims 1, 2, 3 and 5 need NEITHER a GPU NOR credentials: they recompute the
-published statistics from the evaluation logs shipped in artifact/logs/, and run
+published statistics from the evaluation logs shipped in logs/, and run
 on any machine with Python. This is the majority of the paper's quantitative
 content and it is fully reproducible on public infrastructure.
 

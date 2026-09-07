@@ -18,7 +18,7 @@ WHAT run.sh DOES
   accounting in the shipped logs, regenerates the frontier figure, and diffs the
   table against expected/cost.tsv.
 
-  The pricing constants live in artifact/analysis/pricing.py as a dated
+  The pricing constants live in scripts/analysis/pricing.py as a dated
   snapshot, NOT fetched at runtime. Provider prices change, and a claim that
   silently re-prices itself against a live tariff would stop reproducing the
   paper the moment the vendor updated a rate card.

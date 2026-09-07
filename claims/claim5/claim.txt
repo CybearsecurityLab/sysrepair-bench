@@ -16,7 +16,7 @@ WHAT run.sh DOES
   then diffs the distribution against expected/failure_modes.tsv.
 
   Classification is rule-based and the rules are in
-  artifact/analysis/failure_modes.py, deliberately not an LLM judge. An
+  scripts/analysis/failure_modes.py, deliberately not an LLM judge. An
   LLM-judged taxonomy would not reproduce deterministically, and a
   failure-mode table that changes between runs cannot be an evaluated claim.
   The rules key off the oracle's structured output: which checks failed, whether

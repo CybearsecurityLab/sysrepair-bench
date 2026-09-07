@@ -10,4 +10,4 @@ Evaluation logs and derived data: Creative Commons Attribution 4.0 International
 Third-party scenario content retains its original upstream license. Scenarios
 derived from public VulnHub images, CCDC practice material, and Hivestorm
 practice material are redistributed under the terms of those sources; per-suite
-provenance and licensing are recorded in artifact/scenarios/PROVENANCE.md.
+provenance and licensing are recorded in PROVENANCE.md.

@@ -29,7 +29,7 @@ THE CLAIM UNDER TEST
 
 WHAT run.sh DOES
   Default: recomputes the whole stage decomposition from the shipped logs in
-  artifact/nsplan_logs/logs_final30 and diffs it against
+  logs/nsplan/logs_final30 and diffs it against
   expected/dispositions.tsv at zero tolerance.
   LIVE=1: additionally re-runs the pipeline on three scenarios spanning
   plan-fail, execute-fail and success.

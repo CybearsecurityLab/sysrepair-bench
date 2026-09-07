@@ -44,7 +44,7 @@ to attempt it.
 Every run.sh therefore defaults to a SCALED subset that exercises the identical
 code path and completes in the time stated in its claim.txt. Passing SCALE=full
 runs the paper-scale configuration for anyone with the budget. The complete
-evaluation logs behind the published numbers ship in artifact/logs/, so every
+evaluation logs behind the published numbers ship as a separate archive, because they are large and are not kept in git; unpack it into logs/ or point LOGS at it. Every
 published cell can be recomputed exactly without re-running any model.
 
 WHAT REQUIRES CREDENTIALS

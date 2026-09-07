@@ -74,4 +74,4 @@ enough to clone directly.
 LICENSE
   Code and scenarios: Apache-2.0. Logs and derived data: CC-BY-4.0. Third-party
   scenario content retains its upstream license, recorded per suite in
-  artifact/scenarios/PROVENANCE.md.
+  PROVENANCE.md.

@@ -52,4 +52,4 @@ supplied with each scenario, they are drawn from public sources already
 documented in CVE databases and public practice material, and they exist to
 score defence rather than to enable offence. We judged that withholding them
 would make the benchmark unverifiable while withholding nothing from an
-adversary. Per-suite provenance is recorded in artifact/scenarios/PROVENANCE.md.
+adversary. Per-suite provenance is recorded in PROVENANCE.md.

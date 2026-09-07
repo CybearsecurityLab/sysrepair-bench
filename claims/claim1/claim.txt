@@ -20,7 +20,7 @@ THE CLAIM UNDER TEST
 
 WHAT run.sh DOES
   Recomputes the whole table from the evaluation logs shipped in
-  artifact/logs/, using artifact/analysis/make_headline.py, and diffs the
+  logs/, using scripts/analysis/make_headline.py, and diffs the
   result against expected/headline.tsv.
 
   It prints the DENOMINATOR next to every cell. This is deliberate. A
