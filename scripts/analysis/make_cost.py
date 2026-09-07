@@ -15,6 +15,16 @@ from passk import prefix_pass_at                  # noqa: E402
 from pricing import cost_usd, SNAPSHOT_DATE       # noqa: E402
 
 
+def _key_safe(item):
+    """Sort key tolerant of a missing grouping field.
+
+    A sample whose task_args omit e.g. "solver" yields None in the key, and
+    sorted() then raises comparing None to str. Absent sorts first and is
+    labelled, rather than crashing the whole report.
+    """
+    return tuple((v is not None, v if v is not None else "") for v in item[0])
+
+
 def tokens(sample):
     """(input, output, total) for one episode, tolerating absent usage."""
     mu = getattr(sample, "model_usage", None) or {}
@@ -45,7 +55,7 @@ def main() -> int:
     from sysrepair_bench.passk import _attempt_outcomes
     lines = ["\t".join(["solver", "successes", "n", "tok_per_success", "usd_per_success",
                         "total_tokens"])]
-    for (solver,), items in sorted(group(eps, "solver").items()):
+    for (solver,), items in sorted(group(eps, "solver").items(), key=_key_safe):
         succ = ti = to = tt = 0
         for _, (s, _ta) in items:
             i, o, t = tokens(s); ti += i; to += o; tt += t

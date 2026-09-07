@@ -58,6 +58,12 @@ def load_episodes(logdir: Path, solver=None, mode=None):
                 h = read_eval_log(i.name, header_only=True)
             except Exception:
                 continue
+            # Only sysrepair episodes. The log tree also carries NeuroPlan runs
+            # (task neurosymbolic_bench), which have no solver argument; without
+            # this they were loaded as an unnamed solver and appeared in the cost
+            # table as a "None" row alongside react and basic.
+            if "sysrepair" not in (h.eval.task or ""):
+                continue
             ta = h.eval.task_args or {}
             if solver and ta.get("solver") != solver:
                 continue

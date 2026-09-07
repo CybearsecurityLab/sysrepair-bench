@@ -1,0 +1,73 @@
+# ACSAC hivestorm cells for tab:hivestorm.
+#
+# tab:hivestorm reports MiniMax-M2.7 and Qwen3.5-9B, but the only hivestorm logs
+# in the repo are DeepSeek Flash, so BOTH rows need running. acsac_full.runs.yaml
+# carried an M2.7 hivestorm preset but none for the 9B; this file has both so the
+# two rows are produced under one config.
+#
+# hivestorm is zero_day ONLY: its scenarios carry no threat.md, so a day1 arm
+# would be prompt-identical to zero_day and is not a separate condition.
+# react ONLY, matching the table.
+#
+# SCORING DIFFERS FROM EVERY OTHER SUITE. hivestorm uses a continuous,
+# incrementally-awarded score whose scorer accepts multiple invocations in one
+# run, not the binary dual-objective oracle. So these cells are NOT poolable
+# with tab:headline pass@K cells, and epochs/seeds are 1: the paper reports a
+# single run per scenario, which is what makes the reported number a normalised
+# point score rather than a pass rate.
+defaults:
+  seeds: [1]
+  epochs: 1
+  modes: [zero_day]
+  solvers: [react]
+  benchmarks: [hivestorm]
+  fail_on_error: 0.95
+  retry_on_error: 1
+  bash_timeout: 180
+  verify_timeout: 360
+  message_limit: 0
+  token_limit: 0
+  time_limit: 7200
+  working_limit: 5400
+  hang_kill_seconds: 21600
+  preflight: true
+  model_max_retries: 5
+  model_timeout: 300
+  model_attempt_timeout: 300
+  model_client_timeout: 360
+presets:
+  acsac_hs_m2:
+    model: openai/MiniMax-M2.7
+    base_url: https://api.minimax.io/v1
+    api_key: ${MINIMAX_API_KEY_2}
+    max_connections: 4
+    # Same Windows exclusion as the 9B preset; see the note there.
+    exclude:
+      - hivestorm/scenario-03-win10
+      - hivestorm/scenario-04-win2019
+      - hivestorm/scenario-05-win2016
+      - hivestorm/scenario-08-win-iis
+      - hivestorm/scenario-11-win-dc-dns
+      - hivestorm/scenario-13-ad-dc-win2019
+      - hivestorm/scenario-14-freebsd13
+    request_limit: 15000
+    request_window: 18000
+
+  acsac_hs_9b:
+    model: openai/Qwen/Qwen3.5-9B
+    base_url: http://localhost:8100/v1
+    api_key: vllm
+    max_connections: 6
+    # Six hivestorm scenarios are Windows and drive AutomatedLab through
+    # powershell.exe, which does not exist on this host. Worse, they do not
+    # skip: the leg dies with FileNotFoundError the moment it reaches one, so
+    # excluding them is what lets the other ten produce anything at all.
+    # The Windows six must come from the Windows peer.
+    exclude:
+      - hivestorm/scenario-03-win10
+      - hivestorm/scenario-04-win2019
+      - hivestorm/scenario-05-win2016
+      - hivestorm/scenario-08-win-iis
+      - hivestorm/scenario-11-win-dc-dns
+      - hivestorm/scenario-13-ad-dc-win2019
+      - hivestorm/scenario-14-freebsd13
