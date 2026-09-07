@@ -369,7 +369,7 @@ presets:
     epochs: 1
     max_connections: 8
 
-  # ── Vagrant-VM presets (no fixed base_url — read from .env) ──────────────
+  # ── Hyper-V VM presets (no fixed base_url — read from .env) ──────────────
   # Host-kernel-coupled meta4 scenarios. Must run on a vulnerable kernel host.
   kernel_vm:
     <<: *scope_kernel_vm
@@ -378,7 +378,7 @@ presets:
     solvers: *solvers_all
     modes: ["day1", "zero_day"]
 
-  # Hivestorm FreeBSD — must run inside a live FreeBSD 13 Vagrant VM.
+  # Hivestorm FreeBSD — must run against the live FreeBSD 13 Hyper-V VM.
   freebsd_vm:
     model: openai/qwen3.5-9b
     solvers: *solvers_react
@@ -386,7 +386,7 @@ presets:
     scenarios: ["hivestorm/scenario-14-freebsd13"]
 
   # Hivestorm Windows AD DC — must run inside a live Windows Server 2019 VM
-  # (see hivestorm/scenario-13-ad-dc-win2019/Vagrantfile). Zero-day only.
+  # (see hivestorm/scenario-13-ad-dc-win2019/lab/). Zero-day only.
   win_vm:
     model: openai/qwen3.5-9b
     solvers: *solvers_react

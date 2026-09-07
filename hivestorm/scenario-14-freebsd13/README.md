@@ -1,41 +1,45 @@
 # scenario-14-freebsd13 — divergent invocation
 
-Unlike the Docker-native scenarios, this one is a **Vagrant VM**: FreeBSD
+Unlike the Docker-native scenarios, this one is a **Hyper-V VM**: FreeBSD
 cannot run inside a Linux container (different kernel ABI, `pf` lives in
 the kernel, `kldload` requires a real kernel, `rc.d` expects the FreeBSD
-init). It follows the same VM pattern as `meta3/windows/` and
-`scenario-13-ad-dc-win2019`.
+init). The former Vagrant/VirtualBox path has been retired.
 
 ## Prereqs
 
-- Vagrant ≥ 2.3
-- VirtualBox ≥ 6.1 (or libvirt; `Vagrantfile` uses the VirtualBox provider
-  by default, edit to switch)
-- The `freebsd/FreeBSD-13.2-RELEASE` box (Vagrant Cloud)
+- Windows host with Hyper-V enabled; **elevated** PowerShell
+- The `hs14-bsd` VM. AutomatedLab has no FreeBSD support and the official
+  FreeBSD 13.2 image has no unattended install path (no cloud-init, no
+  serial console, sshd disabled), so the VM was bootstrapped manually by
+  injecting keystrokes into the video console; the process, and everything
+  it left in place, is documented at the top of `lab/Bsd14Ops.ps1`.
 
 ## Build flow
 
-```bash
+```powershell
 # 1. Generate roles.json + render task.md (same as Docker scenarios)
-hivestorm/prepare.sh 14
+bash hivestorm/prepare.sh 14     # or: pwsh hivestorm/prepare.ps1 14
 
-# 2. Bring up the VM — provisioner installs nginx, then runs seed.sh
-cd hivestorm/scenario-14-freebsd13
-vagrant up
+# 2. Restore + start + port proxy + reachability check, in one call
+cd hivestorm\scenario-14-freebsd13
+. .\lab\Bsd14Ops.ps1
+Initialize-Hs14Host
 ```
 
-First boot takes ~5–8 minutes (package install + seed). Subsequent
-`vagrant up` of a previously provisioned VM skips the provisioner.
+At eval time no manual bring-up is needed: `task.py` reads
+`lab/automatedlab.json` and drives the same functions itself; the agent runs
+in a Linux bridge container and SSHes to the VM as `root` on
+`host.docker.internal:2222`. The baseline checkpoint was taken after
+`seed.sh` ran and was erased from the VM, so a restore returns the box to
+exactly the state a graded run starts from.
 
 ## Running the verifier
 
-The Inspect-AI harness invokes `verify.sh` over SSH. For manual runs:
-
-```bash
-vagrant ssh -c 'sudo /var/db/sysrepair/verify.sh'
-```
-
-JSONL output is captured and scored by `hivestorm_weighted_scorer`.
+There is no standing verifier on the VM: at scoring time the harness
+(`scorer.py`) uploads `verify.sh` and re-uploads `roles.json` (erased from
+the VM after seeding) over the bridge SSH session, runs the check, and
+removes them again. Root's shell is tcsh, so remote commands are wrapped in
+`sh -c`. JSONL output is captured and scored by `hivestorm_weighted_scorer`.
 
 ## Scope caveats
 

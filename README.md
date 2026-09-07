@@ -20,7 +20,7 @@ The benchmark comprises **313 scenarios across five VM classes** (six suites): `
 | [`vulnhub/`](vulnhub/) | 2012–2022 | 30 | Per-VM vulnerability rebuilds (Kioptrix, DC-series, Mr-Robot, SickOs, Symfonos, etc.) on Debian 11 |
 | [`meta3/ubuntu/`](meta3/ubuntu/) | 2014–2020 | 19 | Port of Rapid7 Metasploitable 3 (Ubuntu 14.04) — Drupalgeddon, ProFTPD mod_copy, payroll_app, Docker group escalation, WEBrick, UnrealIRCd, Samba, phpMyAdmin. Vendors the Rapid7 Chef cookbook under BSD-3. |
 | [`meta3/windows/`](meta3/windows/)| 2016–2020 | 21 | Rapid7 Metasploitable 3 (Windows Server) — Struts, Jenkins, ManageEngine, GlassFish, Tomcat, ElasticSearch, IIS WebDAV, SMB. Scoped by the [Windows OpenVAS scan](openvas-scan-reports/metasploitable-3.0-win-openvas.pdf). ⚠ **Windows host only** (see Host Requirements) |
-| **[`meta4/`](meta4/)** | 2022–2026 | 137 | Container suite (117 Docker scenarios) covering modern CVEs (Log4Shell family, Spring4Shell, PwnKit, Dirty Pipe, GameOver(lay), regreSSHion, Leaky Vessels, XZ backdoor, Copy Fail CVE-2026-31431, crAPI/DVGA/VAmPI API surfaces, LocalStack/MinIO/ArgoCD/k3s cloud-on-localhost misconfigs, ImageMagick, Memcached, curl SOCKS5, Redis Lua sandbox, Adminer, Apache Solr, Rsync, Cacti, and more) plus an **Active Directory VM lab** ([`meta4/ad-vm/`](meta4/ad-vm/), 20 scenarios: Zerologon, NoPac, ADCS ESC1–ESC8, Kerberoasting, DCSync, PrintNightmare, PetitPotam, and more). Kernel-coupled scenarios ship a Vagrant VM ([`meta4/kernel-vm/`](meta4/kernel-vm/)). |
+| **[`meta4/`](meta4/)** | 2022–2026 | 137 | Container suite (117 Docker scenarios) covering modern CVEs (Log4Shell family, Spring4Shell, PwnKit, Dirty Pipe, GameOver(lay), regreSSHion, Leaky Vessels, XZ backdoor, Copy Fail CVE-2026-31431, crAPI/DVGA/VAmPI API surfaces, LocalStack/MinIO/ArgoCD/k3s cloud-on-localhost misconfigs, ImageMagick, Memcached, curl SOCKS5, Redis Lua sandbox, Adminer, Apache Solr, Rsync, Cacti, and more) plus an **Active Directory VM lab** ([`meta4/ad-vm/`](meta4/ad-vm/), 20 scenarios: Zerologon, NoPac, ADCS ESC1–ESC8, Kerberoasting, DCSync, PrintNightmare, PetitPotam, and more). Kernel-coupled scenarios run inside Hyper-V VMs ([`meta4/kernel-vm/`](meta4/kernel-vm/), [`meta4/dirtypipe-vm/`](meta4/dirtypipe-vm/)). |
 | [`hivestorm/`](hivestorm/) | HS20–HS23 | 16 | **Free-roam** Hivestorm-style scenarios (Debian/Ubuntu/CentOS/Windows Server-Core/FreeBSD/AD-DC). Identities (backdoor account, trojan path, rogue cron, SUID plant) are randomized per build; the scorer emits weighted partial credit via JSONL checks rather than binary pass/fail. |
 
 ### Vulnerability categories
@@ -92,8 +92,8 @@ sysrepair-bench/
 ├── meta3/ubuntu/            # 19 Metasploitable 3 (Ubuntu 14.04) scenarios + vendored Chef cookbook (shared/)
 ├── meta3/windows/           # 21 Metasploitable 3 (Windows Server) scenarios (harness validation)
 ├── meta4/                   # 137 modern-CVE scenarios (117 Docker + 20 AD-VM)
-│   ├── kernel-vm/           #   Vagrant VM for kernel-coupled LPE scenarios (S19, S21, S22, S117)
-│   └── ad-vm/               #   Vagrant AD lab (Win2019 DC+CA + Kali attacker, S01–S20)
+│   ├── kernel-vm/           #   Hyper-V VM for kernel-coupled LPE scenarios (S21, S22, S117; S19 uses dirtypipe-vm/)
+│   └── ad-vm/               #   Hyper-V/AutomatedLab AD lab (Win2019 DC + CA + workstation + attacker VM, S01–S20)
 ├── hivestorm/               # 16 free-roam Hivestorm-style scenarios (weighted partial-credit)
 ├── openvas-scan-reports/    # OpenVAS scan PDFs scoping meta2 and meta3/windows
 ├── inspect_eval/            # Inspect AI harness: solvers, task wiring, run presets
@@ -146,7 +146,7 @@ SysRepair-Bench does **not** cover:
 
 ## Set-up
 
-SysRepair-Bench builds every scenario from source. Depending on which suites you intend to run, you will need some or all of Docker, Vagrant + VirtualBox, Python (via `uv`), and a small set of platform-specific toggles. This section lists **everything** the repo needs to work correctly.
+SysRepair-Bench builds every scenario from source. Depending on which suites you intend to run, you will need some or all of Docker, a Windows host with Hyper-V (for the Windows-container and VM-backed suites), Python (via `uv`), and a small set of platform-specific toggles. This section lists **everything** the repo needs to work correctly.
 
 ### 1. Clone the repo
 
@@ -196,8 +196,8 @@ No extras beyond Docker. These use modern base images (Ubuntu 14.04 / 22.04, Deb
 > **Kernel-coupled scenarios.** `meta4/scenario-19`, `-21`, `-22` (and `-117`)
 > target kernel vulnerabilities. Containers share the host kernel, so their PoC
 > cannot fire in Docker at all and `verify.sh` exits 0 at baseline. They are
-> excluded from the `linux_all` preset and ship a Vagrant VM instead — see
-> [3d](#3d-meta4kernel-vm--virtualbox-vm-for-kernel-coupled-lpe-scenarios-s21-s22-s117-optionally-s19).
+> excluded from the `linux_all` preset and run inside Hyper-V VMs instead — see
+> [3d](#3d-meta4kernel-vm--hyper-v-vms-for-kernel-coupled-lpe-scenarios-s19-s21-s22-s117).
 
 > **Scenarios that keep their image `CMD`.** A `.preserve-cmd` marker means a
 > real daemon boots with the container (dockerd, k3s, a database). Give it time
@@ -250,48 +250,24 @@ Requirements:
 
 Per-scenario isolation recommendations for manual runs are in [`meta3/windows/README.md`](meta3/windows/README.md).
 
-#### 3d. `meta4/kernel-vm/` — VirtualBox VM for kernel-coupled LPE scenarios (S21, S22, S117; optionally S19)
+#### 3d. `meta4/kernel-vm/` — Hyper-V VMs for kernel-coupled LPE scenarios (S19, S21, S22, S117)
 
-> These scenarios target kernel vulnerabilities. Containers share the host kernel, so they need a VM whose kernel matches the vulnerable ABI range. S19 (Dirty Pipe) additionally requires a separate Ubuntu 20.04 HWE host — or remediate in **compensating-control mode** (`chattr +i`) on any host. S117 (Copy Fail, CVE-2026-31431) runs on the existing VM's pinned 5.15 kernel (no backport exists) — or remediate by blacklisting `algif_aead`.
+> These scenarios target kernel vulnerabilities. Containers share the host kernel, so they run as **privileged containers inside a Hyper-V VM whose kernel matches the vulnerable ABI range**. [`meta4/kernel-vm/`](meta4/kernel-vm/) pins Ubuntu 22.04 at `5.15.0-25-generic` and hosts S21, S22 and S117. S19 (Dirty Pipe) needs an older kernel — [`meta4/dirtypipe-vm/`](meta4/dirtypipe-vm/) pins 20.04 HWE `5.13.0-27-generic`. All four also accept a host-kernel-agnostic **compensating control** (`chattr +i` for S19/S117, `kernel.unprivileged_userns_clone=0` for S21/S22, `algif_aead` blacklist for S117) — see [`meta4/README.md`](meta4/README.md).
 
-Requirements:
-- **BIOS/UEFI**: Intel VT-x / AMD-V enabled (optionally VT-d / AMD-Vi)
-- **Windows hosts**: Hyper-V stack disabled so VirtualBox can claim VT-x:
+Requirements (Windows host — the former Vagrant/VirtualBox path has been retired):
 
-  ```powershell
-  dism.exe /Online /Disable-Feature:Microsoft-Hyper-V-All /NoRestart
-  dism.exe /Online /Disable-Feature:VirtualMachinePlatform /NoRestart
-  dism.exe /Online /Disable-Feature:HypervisorPlatform /NoRestart
-  dism.exe /Online /Disable-Feature:Containers /NoRestart
-  bcdedit /set hypervisorlaunchtype off
-  ```
+- Hyper-V enabled, and an **elevated** PowerShell (Hyper-V cmdlets require it)
+- `qemu-img` (`scoop install qemu`) and `oscdimg` from the Windows ADK Deployment Tools
 
-  Also: **Windows Security → Device security → Core isolation → Memory Integrity OFF**, then reboot.
+Build the VM once:
 
-- **VirtualBox 7.x** and **Vagrant 2.4.x**:
+```powershell
+cd meta4\kernel-vm\lab
+. .\KernelLab.ps1
+Install-KernelLab     # image -> VHDX -> cloud-init seed -> provision -> baseline checkpoint
+```
 
-  Windows (via [Scoop](https://scoop.sh)):
-  ```powershell
-  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-  irm get.scoop.sh | iex
-  scoop install git vagrant
-  scoop bucket add extras
-  scoop install virtualbox
-  ```
-
-  Ubuntu / Debian:
-  ```bash
-  sudo apt install -y virtualbox vagrant
-  sudo usermod -aG vboxusers "$USER"   # log out / back in afterwards
-  ```
-
-- Bring up the VM:
-
-  ```bash
-  cd meta4/kernel-vm
-  vagrant up        # Ubuntu 22.04, kernel pinned pre-fix, Docker installed
-  vagrant ssh
-  ```
+At run time a preset carrying `hyperv_vm: meta4/kernel-vm` (see the `kernel_vm` preset in [`inspect_eval/example.runs.yaml`](inspect_eval/example.runs.yaml)) makes `run.py` read [`meta4/kernel-vm/lab/hyperv.json`](meta4/kernel-vm/lab/hyperv.json), bring the VM up, and point `DOCKER_CONTEXT` at it over SSH, so images build and run on the VM's vulnerable kernel. Full details, including manual invocation, in [`meta4/kernel-vm/README.md`](meta4/kernel-vm/README.md).
 
 Note: kernel-scenarios inside the VM require `docker run --privileged` to exercise the host kernel's userns behavior.
 
@@ -311,18 +287,20 @@ bash hivestorm/prepare.sh 01         # single scenario
 
 ##### VM-backed hivestorm scenarios (13, 14)
 
-These use Vagrant; AD-DC and FreeBSD cannot run inside containers.
+AD-DC and FreeBSD cannot run inside containers; these two are **Hyper-V VMs** on a Windows host (the former Vagrant/VirtualBox path has been retired). Each ships a `lab/automatedlab.json` marker naming the PowerShell entry points; per sample the harness restores the baseline checkpoint, installs the bridge SSH key, and forwards the port, and the agent works from a Linux bridge container that SSHes into the VM.
 
-| Scenario | Box | Provider | Extras |
-|---|---|---|---|
-| `scenario-13-ad-dc-win2019` | `gusztavvargadr/windows-server-2019-standard` | VirtualBox (default) or Hyper-V | Vagrant ≥ 2.3, VirtualBox ≥ 6.1; first boot ~15 min (ADDS promote + reboot + seed) |
-| `scenario-14-freebsd13` | `freebsd/FreeBSD-13.2-RELEASE` | VirtualBox (default) or libvirt | Vagrant ≥ 2.3, VirtualBox ≥ 6.1; first boot ~5–8 min |
+| Scenario | VM | Built by |
+|---|---|---|
+| `scenario-13-ad-dc-win2019` | Windows Server 2019 AD DC (`hs13-dc01`) | AutomatedLab: run `lab/Hs13Lab.ps1` (elevated), then `Save-Hs13Baseline` |
+| `scenario-14-freebsd13` | FreeBSD 13.2 (`hs14-bsd`) | Manual bootstrap (no unattended path exists); process and runtime ops in `lab/Bsd14Ops.ps1` |
 
 ```bash
 bash hivestorm/prepare.sh 13
-cd hivestorm/scenario-13-ad-dc-win2019
-vagrant up
+cd inspect_eval
+uv run python -m sysrepair_bench.run win_vm      # or freebsd_vm for scenario-14
 ```
+
+See each scenario's `README.md` for details.
 
 ### 4. Model provider credentials (for running agents)
 

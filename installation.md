@@ -1,72 +1,80 @@
 # SysRepair-Bench — Installation Guide
 
-This guide walks through everything you need to install to run the full
-benchmark, and **which host runs which suite**. It complements the high-level
-"Set-up" section in [README.md](README.md) with concrete, copy-pastable
-commands and a recommended multi-host split.
+This guide walks through everything you need to install, and **which host runs
+which suite**. It complements the high-level "Set-up" section in
+[README.md](README.md) with concrete, copy-pastable commands.
+
+## What you need depends on what you are doing
+
+| Task | Needs |
+|---|---|
+| **Reproduce the paper's tables from shipped logs** | Python 3.10+ only. No Docker, no GPU, no API keys. This lives in the ACSAC artifact repo (`sysrepair-artifact/`): run `./install.sh` there (the default, logs-only tier) and follow `claims/claimN/run.sh`. |
+| **Re-run scenarios live** | Docker (and, for some suites, a Windows host with Hyper-V), the Inspect AI harness via `uv`, and a model provider — an API key or a local vLLM/Ollama endpoint. Detailed below. |
+
+Everything below concerns running scenarios live from **this** repo.
+
+## Execution backends
 
 The benchmark spans **313 binary scenarios + 16 Hivestorm free-roam
 scenarios** across three execution backends:
 
-- **Linux containers** (ccdc, meta2, meta3/ubuntu, vulnhub, most of meta4,
+- **Linux containers** (ccdc, meta2, vulnhub, meta3/ubuntu, most of meta4,
   most of hivestorm) — run on a Linux Docker host.
 - **Windows containers** (meta3/windows, hivestorm Windows scenarios) — run on
-  a Windows host with Docker Desktop in *Windows containers* mode + Hyper-V
-  isolation.
-- **VirtualBox + Vagrant VMs** (meta4/kernel-vm, meta4/ad-vm, hivestorm
-  scenario-13 AD-DC, hivestorm scenario-14 FreeBSD) — run on a host with
-  Hyper-V **off**, because VirtualBox cannot share VT-x with the Hyper-V
-  hypervisor on Windows.
+  a Windows host with Docker in *Windows containers* mode + Hyper-V isolation.
+- **Hyper-V VMs** (meta4/ad-vm, meta4/kernel-vm, meta4/dirtypipe-vm,
+  meta3/windows-vm, hivestorm scenarios 13 and 14) — run on a Windows host
+  with Hyper-V, driven by the PowerShell scripts under each scenario's `lab/`
+  directory.
 
-Because Windows containers need Hyper-V **on** and VirtualBox needs Hyper-V
-**off**, those two cannot coexist on the same Windows install. This is why we
-recommend three hosts.
+> **There is no Vagrant, VirtualBox, or libvirt/KVM path.** The repo contains
+> no Vagrantfiles; the former Vagrant/VirtualBox VMs were all ported to
+> Hyper-V (see `meta4/kernel-vm/lab/hyperv.json`,
+> `hivestorm/scenario-13-ad-dc-win2019/lab/automatedlab.json`, and
+> `meta4/ad-vm/README.md`). Because every non-Linux backend now wants Hyper-V
+> **on**, a single Windows machine can host all Windows containers *and* all
+> VM-backed scenarios — the old "Hyper-V off for VirtualBox" host class is
+> gone.
 
----
+## Recommended host topology (2 hosts)
 
-## Recommended host topology (3 hosts)
+| Host | OS | Runs |
+|---|---|---|
+| **Host A — Linux Docker** | Ubuntu 22.04+ / Debian 12+ / Fedora 40+ | All Linux container suites; the Inspect AI harness; meta2 (requires a native Linux kernel for the Hardy `vsyscall` page) |
+| **Host B — Windows + Hyper-V** | Windows 10/11 Pro or Enterprise (or Win Server 2019+), Hyper-V ON | meta3/windows (21) and hivestorm Windows containers (03, 04, 05, 08, 11); all Hyper-V VM labs: meta4/ad-vm (S01–S20), meta4/kernel-vm + meta4/dirtypipe-vm, meta3/windows-vm, hivestorm scenarios 13 and 14 |
 
-| Host | OS | Virt. | Hyper-V | Runs |
-|---|---|---|---|---|
-| **Host A — Linux Docker** | Ubuntu 22.04+ / Debian 12+ / Fedora 40+ | VT-x/AMD-V on | n/a | All Linux container suites; the Inspect AI harness; meta2 (requires Linux kernel for the Hardy `vsyscall` page) |
-| **Host B — Windows containers** | Windows 10/11 Pro or Enterprise (or Win Server 2019+) | VT-x/AMD-V on | **ON** | meta3/windows (21), hivestorm Windows containers (03, 04, 05, 08, 11) |
-| **Host C — Vagrant VMs** | Windows 10/11 Pro or Linux | VT-x/AMD-V on | **OFF** | meta4/kernel-vm (S19/S21/S22/S117), meta4/ad-vm (S01–S20), hivestorm scenario-13 (AD DC), hivestorm scenario-14 (FreeBSD) |
-
-If you only have one machine, see [Single-host fallbacks](#single-host-fallbacks) below.
+If you only have one machine, see [Single-host fallbacks](#single-host-fallbacks).
 
 ### Recommended specs
 
-Sized for parallel evals plus headroom for Docker layer cache, Windows base images,
-and concurrent VMs (the meta4/ad-vm lab brings up DC + CA + Kali simultaneously, ~8 GB
-of guest RAM at peak). All storage figures assume **SSD/NVMe** — spinning disks make
-the Win2019 box's first-boot sysprep painfully slow.
-
 | Host | CPU | RAM | Storage | Notes |
 |---|---|---|---|---|
-| **Host A — Linux Docker** | 8 cores / 16 threads | 16 GB min, **32 GB recommended** | **200 GB SSD** | Docker layer cache + meta2 Hardy multi-stage build + ~250 container images grow fast under repeated runs. |
-| **Host B — Windows containers** | 8 cores / 16 threads | 16 GB min, **32 GB recommended** | **150 GB SSD** | Windows Server Core ltsc2019 base is ~5 GB. Hyper-V isolation utility-VM overhead is real — don't go below 16 GB. |
-| **Host C — Vagrant VMs** | 6 cores min, 8 recommended | 16 GB min, **32 GB recommended** | **250 GB SSD** | meta4/ad-vm peaks at ~8 GB guest RAM (3 concurrent VMs). Win2019 + FreeBSD + Ubuntu Vagrant boxes total ~40 GB before snapshots. |
+| **Host A** | 8 cores / 16 threads | 16 GB min, **32 GB recommended** | **200 GB SSD** | Docker layer cache + meta2 Hardy multi-stage build + ~250 container images grow fast under repeated runs. |
+| **Host B** | 8 cores / 16 threads | 16 GB min, **32 GB recommended** | **250 GB SSD** | Windows Server Core ltsc2019 base is ~5 GB; the meta4/ad-vm lab wants ~10 GB free RAM and ~60 GB disk for its four VMs. |
 
 ### Suite → host mapping
 
-| Suite | Host A (Linux+Docker) | Host B (Win+Hyper-V) | Host C (Vagrant) |
-|---|:-:|:-:|:-:|
-| `ccdc/` (50) | ✅ | | |
-| `meta2/` (40) | ✅ (Linux only) | | |
-| `vulnhub/` (30) | ✅ | | |
-| `meta3/ubuntu/` (19) | ✅ | | |
-| `meta3/windows/` (21) | | ✅ | |
-| `meta4/` Docker (117) | ✅ | | |
-| `meta4/kernel-vm/` (S19, S21, S22, S117) | | | ✅ |
-| `meta4/ad-vm/` (S01–S20) | | | ✅ |
-| `hivestorm/` Linux (01, 02, 06, 07, 09, 10, 12, 15, 16) | ✅ | | |
-| `hivestorm/` Windows containers (03, 04, 05, 08, 11) | | ✅ | |
-| `hivestorm/scenario-13-ad-dc-win2019` | | | ✅ |
-| `hivestorm/scenario-14-freebsd13` | | | ✅ |
+| Suite | Host A (Linux+Docker) | Host B (Windows+Hyper-V) |
+|---|:-:|:-:|
+| `ccdc/` (50) | ✅ | |
+| `meta2/` (40) | ✅ (native Linux only) | |
+| `vulnhub/` (30) | ✅ | |
+| `meta3/ubuntu/` (19) | ✅ | |
+| `meta3/windows/` (21) | | ✅ Windows containers |
+| `meta3/windows-vm/` (live-protocol ports of scenarios 10–12) | | ✅ Hyper-V VM |
+| `meta4/` Docker (113 of 117) | ✅ | |
+| `meta4/` kernel-coupled (S19, S21, S22, S117) | | ✅ Hyper-V Docker-host VMs (`kernel-vm/`, `dirtypipe-vm/`) |
+| `meta4/ad-vm/` (S01–S20) | | ✅ Hyper-V + AutomatedLab |
+| `hivestorm/` Linux (01, 02, 06, 07, 09, 10, 12, 15, 16) | ✅ | |
+| `hivestorm/` Windows containers (03, 04, 05, 08, 11) | | ✅ Windows containers |
+| `hivestorm/scenario-13-ad-dc-win2019` | | ✅ Hyper-V + AutomatedLab |
+| `hivestorm/scenario-14-freebsd13` | | ✅ Hyper-V |
 
 The Inspect AI harness can drive any backend; install it on whichever host
-will launch the runs. For the Vagrant scenarios it talks to the VM via an SSH
-bridge container — see [hivestorm/scenario-13-ad-dc-win2019/README.md](hivestorm/scenario-13-ad-dc-win2019/README.md).
+launches the runs. For VM-backed scenarios the harness shells out to
+`powershell.exe` to restore/start the VM, so those runs must be launched on
+the Hyper-V host itself; the agent then runs in a small Linux bridge container
+that SSHes into the VM.
 
 ---
 
@@ -74,7 +82,9 @@ bridge container — see [hivestorm/scenario-13-ad-dc-win2019/README.md](hivesto
 
 Covers every Linux container suite plus the Inspect AI harness. **meta2 must
 run here** (Hardy's `vsyscall` page is unavailable on Docker Desktop / WSL2
-kernels).
+kernels), and so must the sandbox-escape scenarios `meta4/scenario-70..72`
+(Docker Desktop's seccomp profile makes their baseline verify pass
+spuriously).
 
 ### A1. System prerequisites
 
@@ -111,7 +121,8 @@ docker run --rm hello-world
 
 ### A2. `uv` for the Inspect AI harness
 
-`uv` manages the Python env and lockfile. Use the official installer (no
+`uv` manages the Python env and lockfile (the harness declares Python ≥ 3.11;
+`uv sync` provisions its own interpreter). Use the official installer (no
 distro package yet):
 
 ```bash
@@ -157,17 +168,29 @@ pwsh hivestorm/prepare.ps1
 
 ### A6. Smoke test
 
+The tracked `example.runs.yaml` ships the `smoke` preset with a placeholder
+model (`openai/MODEL_NAME`), so it will not run as-is. Point it at a real
+endpoint first. The launcher prefers `inspect_eval/runs.yaml` (gitignored) over
+the tracked template, so the usual move is to copy it and edit the copy:
+
 ```bash
 cd inspect_eval
+cp example.runs.yaml runs.yaml
+# in runs.yaml, set the smoke preset's `model:` (and `base_url:`/`api_key:` if
+# you are serving locally) to the endpoint you want to test against
 uv run python -m sysrepair_bench.run smoke
 ```
 
+The smoke preset runs a single scenario (`meta2/scenario-01`) under ReAct and
+exits. It is the fastest end-to-end check that Docker, the harness, the model
+endpoint, and the scoring oracle are all wired together.
+
 ---
 
-## Host B — Windows containers (Hyper-V ON)
+## Host B — Windows + Hyper-V
 
-Runs the Windows-container scenarios (`meta3/windows/` and
-hivestorm Windows scenarios). Cannot run VirtualBox/Vagrant.
+One Windows machine covers both remaining backends: Windows containers and
+the Hyper-V VM labs. Hyper-V stays **on** for everything.
 
 ### B1. Enable Hyper-V + Containers
 
@@ -203,170 +226,104 @@ scoop install docker docker-compose
 (Docker Desktop is also fine — install via its MSI if you prefer. Scoop's
 `docker` package gives you the CLI + dockerd; pair with the Hyper-V backend.)
 
-### B3. Switch Docker to Windows containers + Hyper-V isolation
+### B3. Windows containers (meta3/windows + hivestorm 03/04/05/08/11)
+
+Switch Docker to Windows containers + Hyper-V isolation:
 
 - **Docker Desktop:** right-click tray → *Switch to Windows containers*.
 - **Native dockerd:** add `"exec-opts": ["isolation=hyperv"]` to
   `%ProgramData%\docker\config\daemon.json` and restart the Docker service.
 
 The harness auto-injects `isolation: hyperv` for every Windows-container
-scenario, so manual flags are only needed for ad-hoc `docker run` outside the
-harness.
+scenario (`task.py` sets it whenever the scenario OS is Windows), so manual
+flags are only needed for ad-hoc `docker run` outside the harness.
 
-### B4. Clone + harness install
+Then clone + install the harness and smoke-test:
 
 ```powershell
 git clone <repo-url> sysrepair-bench
 cd sysrepair-bench\inspect_eval
 uv sync
-cd ..
-```
-
-### B5. Smoke test
-
-```powershell
 docker run --rm mcr.microsoft.com/windows/servercore:ltsc2019 cmd /c ver
-cd inspect_eval
-uv run python -m sysrepair_bench.run hivestorm_windows   # or your preset of choice
 ```
 
----
+### B4. Kernel-coupled meta4 scenarios — Hyper-V Docker-host VMs
 
-## Host C — VirtualBox + Vagrant (Hyper-V OFF)
+`meta4/scenario-19, -21, -22, -117` target kernel CVEs; containers share the
+host kernel, so they run as **privileged containers inside a Hyper-V VM with
+a pinned vulnerable kernel**:
 
-> **`meta4/ad-vm/` no longer belongs here.** The Active Directory lab was ported
-> to Hyper-V + AutomatedLab — see [Host D](#host-d--active-directory-lab-on-hyper-v-hyper-v-on).
-> Host C still covers `meta4/kernel-vm/` and hivestorm 13/14 until those move too.
+- [`meta4/kernel-vm/`](meta4/kernel-vm/) — Ubuntu 22.04 pinned at
+  `5.15.0-25-generic`, hosts S21 (GameOver(lay)), S22 (`nf_tables` UAF) and
+  S117 (Copy Fail).
+- [`meta4/dirtypipe-vm/`](meta4/dirtypipe-vm/) — Ubuntu 20.04 HWE pinned at
+  `5.13.0-27-generic`, hosts S19 (Dirty Pipe), whose fix is already in
+  5.15.0-25.
 
-Runs the remaining VM-backed scenarios: `meta4/kernel-vm/` and hivestorm
-scenarios 13 and 14. Can be a Windows or Linux machine; we describe both.
-
-### C1. Disable Hyper-V (Windows hosts only)
-
-VirtualBox cannot share VT-x with Hyper-V. From elevated PowerShell:
+Requirements (see [`meta4/kernel-vm/README.md`](meta4/kernel-vm/README.md)):
+Hyper-V, an **elevated** PowerShell, `qemu-img` (`scoop install qemu`), and
+`oscdimg` from the Windows ADK Deployment Tools.
 
 ```powershell
-dism.exe /Online /Disable-Feature:Microsoft-Hyper-V-All /NoRestart
-dism.exe /Online /Disable-Feature:VirtualMachinePlatform /NoRestart
-dism.exe /Online /Disable-Feature:HypervisorPlatform /NoRestart
-dism.exe /Online /Disable-Feature:Containers /NoRestart
-bcdedit /set hypervisorlaunchtype off
+cd meta4\kernel-vm\lab
+. .\KernelLab.ps1
+Install-KernelLab     # image -> VHDX -> cloud-init seed -> provision -> baseline checkpoint
 ```
 
-Then: **Windows Security → Device security → Core isolation → Memory Integrity OFF**, and reboot.
+At run time, a preset carrying `hyperv_vm: meta4/kernel-vm` (the legacy key
+`vagrant_vm:` still works) makes `run.py` read `lab/hyperv.json`, bring the
+VM up via `Initialize-KernelHost`, and point `DOCKER_CONTEXT` at the VM over
+SSH so images build and run on the VM's vulnerable kernel. See the
+`kernel_vm` preset in
+[`inspect_eval/example.runs.yaml`](inspect_eval/example.runs.yaml); for the
+Dirty Pipe VM use `hyperv_vm: meta4/dirtypipe-vm`.
 
-Verify the hypervisor is gone:
+All four scenarios also accept a host-kernel-agnostic **compensating
+control** — see [`meta4/README.md`](meta4/README.md).
 
-```powershell
-systeminfo | Select-String "Hyper-V"
-# Expect: "A hypervisor has been detected... will not be displayed."
-```
+### B5. Hivestorm VM scenarios 13 (AD DC) and 14 (FreeBSD)
 
-### C2. Install VirtualBox + Vagrant
+Both are Hyper-V VMs the harness drives through the entry points named in
+each scenario's `lab/automatedlab.json`; the agent works from a Linux bridge
+container that SSHes to the VM on a forwarded host port. Per-sample the
+harness restores the baseline checkpoint, installs the bridge SSH key, and
+sets up the port proxy itself — you only build the VM once:
 
-**Windows (via Scoop):**
+- **scenario-13** (Windows Server 2019 AD DC): built by AutomatedLab —
+  elevated PowerShell, run
+  `hivestorm\scenario-13-ad-dc-win2019\lab\Hs13Lab.ps1`, then
+  `Save-Hs13Baseline` (from `lab\Hs13Ops.ps1`) to capture the clean
+  snapshot. Needs the AutomatedLab prerequisites from the AD-lab section
+  below (module + Server 2019 evaluation ISO).
+- **scenario-14** (FreeBSD 13.2): AutomatedLab has no FreeBSD support and the
+  official image has no unattended install path, so the `hs14-bsd` VM was
+  bootstrapped manually; `lab/Bsd14Ops.ps1` documents the process and
+  provides all runtime operations (`Initialize-Hs14Host`,
+  `Restore-Hs14Baseline`, …).
 
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-irm get.scoop.sh | iex
+Run `bash hivestorm/prepare.sh 13` (or `14`) first, as with every hivestorm
+scenario; then use the `win_vm` / `freebsd_vm` presets in
+[`inspect_eval/example.runs.yaml`](inspect_eval/example.runs.yaml).
 
-scoop install git
-scoop bucket add extras
-scoop install virtualbox vagrant
-```
+### B6. meta3/windows-vm — live SMB/RDP scenarios
 
-**Ubuntu / Debian:**
+Three `meta3/windows/` scenarios (10 SMBv1, 11 SMB signing, 12 RDP NLA) also
+exist as VM-backed ports whose grading probes a **live** protocol listener a
+Server-Core container cannot host. One AutomatedLab-built standalone Server
+2019 VM (`META3WIN`); per-scenario inject on a restored baseline via
+`meta3/windows-vm/run-scenario.sh NN`. See
+[`meta3/windows-vm/README.md`](meta3/windows-vm/README.md).
 
-```bash
-sudo apt update
-sudo apt install -y virtualbox vagrant git
-sudo usermod -aG vboxusers "$USER"   # log out / back in afterwards
-```
+### B7. The Active Directory lab (`meta4/ad-vm/`, 20 scenarios)
 
-**Fedora:**
-
-```bash
-sudo dnf install -y @virtualization VirtualBox vagrant git
-sudo usermod -aG vboxusers "$USER"
-```
-
-Verify:
-
-```bash
-vagrant --version       # ≥ 2.4.x
-VBoxManage --version    # ≥ 7.0
-```
-
-### C3. Vagrant plugins
-
-Several scenarios need the `vagrant-reload` plugin to chain reboots into
-provisioners (AD DC promotion, kernel pinning, etc.). Install once per host:
-
-```bash
-vagrant plugin install vagrant-reload
-```
-
-### C4. Bring up a VM scenario
-
-**meta4/kernel-vm (kernel-coupled LPE):**
-
-```bash
-cd meta4/kernel-vm
-vagrant up                 # Ubuntu 22.04, kernel pinned pre-fix, Docker preinstalled
-vagrant ssh
-```
-
-**meta4/ad-vm (AD lab — DC, CA, Kali attacker):**
-
-```bash
-cd meta4/ad-vm
-vagrant up dc              # expect a WinRM timeout the first time — that's normal
-vagrant up ca
-vagrant up kali
-```
-
-See [meta4/ad-vm/README.md](meta4/ad-vm/README.md) for the full bringup
-sequence.
-
-**hivestorm scenario-13 (AD DC):**
-
-```bash
-bash hivestorm/prepare.sh 13
-cd hivestorm/scenario-13-ad-dc-win2019
-vagrant up                 # ~15 min first boot (ADDS promote + reboot + seed)
-```
-
-**hivestorm scenario-14 (FreeBSD 13):**
-
-```bash
-bash hivestorm/prepare.sh 14
-cd hivestorm/scenario-14-freebsd13
-vagrant up                 # ~5–8 min first boot
-```
-
-The Inspect AI harness reaches these VMs via an auto-built bridge container —
-no manual networking required.
-
-### C5. Optional: harness on the same host
-
-If you want to drive the VMs from this same host, install `uv` + run
-`uv sync` in `inspect_eval/` exactly as in [Host A step A2–A3](#a2-uv-for-the-inspect-ai-harness).
-
----
-
-## Host D — Active Directory lab on Hyper-V (Hyper-V ON)
-
-Runs `meta4/ad-vm/` — 20 Active Directory scenarios on a four-machine lab.
-This replaces the Vagrant/VirtualBox path described in Host C.
-
-Because Hyper-V must be **on** here and **off** for Host C, these two cannot be
-the same machine until `kernel-vm` and hivestorm 14 are also ported. Host D can
-share a machine with Host B (Windows containers), which also wants Hyper-V on.
-
+Runs `meta4/ad-vm/` — 20 Active Directory scenarios on a four-machine
+Hyper-V lab (Win2019 DC + Enterprise CA + member workstation + Ubuntu
+attacker VM carrying the Kali tooling container), built with AutomatedLab.
 Every step below is elevated PowerShell unless noted. Versions are the ones
-this was built and verified against.
+this was built and verified against. Full detail:
+[`meta4/ad-vm/lab/RUNBOOK.md`](meta4/ad-vm/lab/RUNBOOK.md).
 
-### D1. Enable Hyper-V
+#### D1. Enable Hyper-V
 
 ```powershell
 Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All -All
@@ -378,7 +335,7 @@ Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All | Select-O
 Requires Windows 10/11 **Pro**, Enterprise or Education. Home does not ship
 Hyper-V.
 
-### D2. PowerShell modules
+#### D2. PowerShell modules
 
 ```powershell
 Install-Module Pester       -MinimumVersion 5.0.0 -Scope CurrentUser -Force -SkipPublisherCheck
@@ -389,7 +346,7 @@ Verified against **Pester 6.0.1** and **AutomatedLab 5.61.0**. Record the
 AutomatedLab version in `meta4/ad-vm/lab/IMAGES.md` — the lab definition uses
 its role API, which does change between majors.
 
-### D3. Windows ADK — Deployment Tools only
+#### D3. Windows ADK — Deployment Tools only
 
 Provides `oscdimg`, used to build the cloud-init seed ISO for the attacker VM.
 
@@ -407,7 +364,7 @@ Get-ChildItem 'C:\Program Files (x86)\Windows Kits' -Recurse -Filter oscdimg.exe
 The harness locates it under Windows Kits automatically; you do not need to
 add it to PATH.
 
-### D4. LabSources — create this BEFORE importing AutomatedLab
+#### D4. LabSources — create this BEFORE importing AutomatedLab
 
 ```powershell
 $base = 'C:\LabSources'
@@ -425,7 +382,7 @@ location during import and fails with *"Cannot bind argument to parameter
 `New-LabSourcesFolder` to create it. `lab/SysRepairLab.ps1` does this for you;
 the manual form is here for diagnosis.
 
-### D5. Installation media
+#### D5. Installation media
 
 Place both ISOs in `C:\LabSources\ISOs\`:
 
@@ -457,7 +414,7 @@ Get-LabAvailableOperatingSystem -Path C:\LabSources\ISOs |
 and set `$osName` in `lab/SysRepairLab.ps1` to match. The script's preflight
 prints the available list if it does not.
 
-### D6. Host WinRM remoting — read before running
+#### D6. Host WinRM remoting — read before running
 
 AutomatedLab **requires** `TrustedHosts = '*'` and CredSSP delegation to
 `WSMAN/*`. This is not configurable: `AutomatedLabCore.psm1` throws
@@ -500,7 +457,7 @@ the guests over PowerShell Direct (VMBus), which needs no network path and no
 TrustedHosts entry. Only `Install-Lab` and the initial provisioning require it,
 so reverting after the baseline is captured is viable.
 
-### D7. Docker, for the attacker tooling image
+#### D7. Docker, for the attacker tooling image
 
 Docker Desktop in **Linux containers** mode. Verified against 29.4.0.
 
@@ -514,7 +471,7 @@ The build fails loudly if any tool a `verify-poc.sh` invokes is missing or
 cannot run. That gate is deliberate — a missing grader tool used to be graded
 as "attack blocked", i.e. a pass on a vulnerable box.
 
-### D8. Virtual switches
+#### D8. Virtual switches
 
 ```powershell
 cd meta4\ad-vm
@@ -536,7 +493,7 @@ Get-NetAdapter -Physical | Where-Object Status -eq 'Up'
 New-LabSwitches -ExternalAdapterName '<adapter>'
 ```
 
-### D9. Build the lab
+#### D9. Build the lab
 
 ```powershell
 cd meta4\ad-vm
@@ -552,7 +509,7 @@ client Hyper-V takes on *every VM start*, reintroducing exactly the live-state
 DC snapshot the cold-baseline model exists to avoid — switches checkpoint type
 to Standard, and pins fixed memory on the DC and attacker.
 
-### D10. Attacker VM
+#### D10. Attacker VM
 
 ```powershell
 . .\lab\New-AttackerVM.ps1
@@ -572,7 +529,7 @@ Move-AttackerToLabNetwork
 Start-VM attacker01
 ```
 
-### D11. Provision, baseline, verify
+#### D11. Provision, baseline, verify
 
 ```powershell
 $cred = New-Object System.Management.Automation.PSCredential('CORP\Administrator',
@@ -593,14 +550,14 @@ Save-LabBaseline      # atomic across all four machines
 Invoke-Pester .\tests -Output Detailed
 ```
 
-### D12. Run a scenario
+#### D12. Run a scenario
 
 ```bash
 ./run-scenario.sh 13                    # restore -> inject -> handoff
 ./run-scenario.sh 13 --verify-only      # grade; exits 0 iff both gates pass
 ```
 
-### Known gotchas
+#### Known gotchas
 
 | Symptom | Cause |
 |---|---|
@@ -611,6 +568,8 @@ Invoke-Pester .\tests -Output Detailed
 | Attacker VM boots with no SSH key and no static IP; every probe times out | Seed ISO built without Joliet, so cloud-init saw `USER-DATA` rather than `user-data`. The harness passes `-j1`; if building by hand, do the same. |
 | `docker build` fails at the tool gate | A tool some `verify-poc.sh` invokes is missing. That is the gate working — fix the image, do not remove the check. |
 | certipy fails with `ept_s_not_registered` for `91AE6020-9E3C-11CF-8D7C-00AA00C091BE`, yet `certutil -ping` on corp-ca01 succeeds and the CA still issues certificates locally | CertSvc registers its RPC endpoints **once, at service start**. Resuming a snapshot can start it before the network is up, so it binds `ncalrpc` only and never advertises a TCP endpoint. Every check *on* the CA stays green; nothing else in the lab can reach it. Waiting does not help — restart CertSvc (`Repair-CaRpcEndpoint`). `Start-LabOrdered` now detects and repairs this automatically. |
+
+---
 
 ## Model provider credentials
 
@@ -626,24 +585,24 @@ the harness:
 
 Drop them into `inspect_eval/.env` (auto-loaded by the run script).
 
+Reproducing tables from the shipped artifact logs needs **no** credentials.
+
 ---
 
 ## Single-host fallbacks
 
 If you only have one machine, you can still run a meaningful subset:
 
-- **Linux only:** all Linux containers + meta4/kernel-vm + meta4/ad-vm +
-  hivestorm 13/14 (Vagrant works fine on Linux). You **cannot** run
-  meta3/windows or hivestorm Windows containers — those need a Windows kernel.
-- **Windows only, Hyper-V ON:** Linux containers (via Docker Desktop's WSL2
-  backend) + Windows containers. You **cannot** run the Vagrant VM scenarios
-  reliably while Hyper-V owns VT-x.
-- **Windows only, Hyper-V OFF:** Vagrant VM scenarios only. Docker Desktop
-  for Windows containers won't work without Hyper-V.
-
-For dual-mode work on a single Windows box, you can toggle Hyper-V off/on
-between sessions using `bcdedit /set hypervisorlaunchtype off` (or `auto`)
-and rebooting — but it's friction; two boxes is much easier.
+- **Linux only:** all Linux container suites (`ccdc`, `meta2`, `vulnhub`,
+  `meta3/ubuntu`, 113 of the 117 `meta4` Docker scenarios, 9 hivestorm Linux
+  scenarios). You **cannot** run the Windows containers (they need a Windows
+  kernel) or any Hyper-V VM lab (Hyper-V is Windows-only) — there is no
+  VM-on-Linux workflow.
+- **Windows only (Hyper-V ON):** Windows containers, all VM labs, and Linux
+  containers via Docker Desktop's WSL2 backend — **except** `meta2/`
+  (needs the legacy `vsyscall` page, absent from the WSL2 kernel) and the
+  sandbox-escape scenarios `meta4/scenario-70..72` (Docker Desktop's seccomp
+  profile defeats their baseline PoC).
 
 ---
 
@@ -656,5 +615,5 @@ Run these on each host once setup is complete:
 | A | `docker run --rm hello-world` | `Hello from Docker!` |
 | A | `cd inspect_eval && uv run python -m sysrepair_bench.run smoke` | one scenario passes verify |
 | B | `docker run --rm mcr.microsoft.com/windows/servercore:ltsc2019 cmd /c ver` | Windows version banner |
-| C | `VBoxManage --version && vagrant --version` | both report ≥ supported versions |
-| C | `vagrant plugin list` | shows `vagrant-reload` |
+| B | `Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All` | `Enabled` |
+| B (kernel VMs) | `. meta4\kernel-vm\lab\KernelOps.ps1; Initialize-KernelHost` | restore, start, port proxy, ABI check all pass |

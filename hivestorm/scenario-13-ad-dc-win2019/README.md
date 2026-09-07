@@ -1,37 +1,49 @@
 # scenario-13-ad-dc-win2019 — divergent invocation
 
-Unlike the Docker-native scenarios, this one is a **Vagrant VM**: Active
-Directory Domain Services cannot be hosted inside a Windows Server-Core
-container (no `ADDSDeployment` module support, no reboot semantics). It
-follows the same VM pattern as `meta3/windows/`.
+Unlike the Docker-native scenarios, this one is a **Hyper-V VM** built with
+AutomatedLab: Active Directory Domain Services cannot be hosted inside a
+Windows Server-Core container (no `ADDSDeployment` module support, no reboot
+semantics). The former Vagrant/VirtualBox path has been retired — see
+`lab/Hs13Lab.ps1`.
 
 ## Prereqs
 
-- Vagrant ≥ 2.3
-- VirtualBox ≥ 6.1 (or Hyper-V; `Vagrantfile` uses the VirtualBox provider
-  by default, edit to switch)
-- The `gusztavvargadr/windows-server-2019-standard` box (Vagrant Cloud)
+- Windows host with Hyper-V enabled; **elevated** PowerShell
+- The AutomatedLab module (and its LabSources folder + a Windows Server 2019
+  evaluation ISO — same prerequisites as `meta4/ad-vm/`, see
+  `meta4/ad-vm/lab/RUNBOOK.md`)
 
 ## Build flow
 
-```bash
+```powershell
 # 1. Generate roles.json + render task.md (same as Docker scenarios)
-hivestorm/prepare.sh 13
+bash hivestorm/prepare.sh 13     # or: pwsh hivestorm/prepare.ps1 13
 
-# 2. Bring up the VM — provisioner promotes to DC, reboots, then runs seed.ps1
-cd hivestorm/scenario-13-ad-dc-win2019
-vagrant up
+# 2. Build the DC (one-time): AutomatedLab creates the forest
+cd hivestorm\scenario-13-ad-dc-win2019
+powershell -ExecutionPolicy Bypass -File .\lab\Hs13Lab.ps1
+
+# 3. Capture the clean (pre-seed) baseline checkpoint, then seed
+. .\lab\Hs13Ops.ps1
+Save-Hs13Baseline
+Invoke-Hs13Seed -RolesPath .\build\roles.json
 ```
 
-First boot takes ~15 minutes (ADDS promotion + reboot + seed). Subsequent
-`vagrant up` of a previously provisioned VM skips the provisioner.
+At eval time `task.py` reads `lab/automatedlab.json` and calls
+`Restore-Hs13Baseline`, `Install-Hs13SshAccess`, and `Set-Hs13PortProxy`
+itself; the agent runs in a Linux bridge container and SSHes to the DC on
+`host.docker.internal:2223`. Note the restore returns the DC to the
+**pre-seed** baseline, so re-run `Invoke-Hs13Seed` for the session's
+`build/roles.json`.
 
 ## Running the verifier
 
-The Inspect-AI harness invokes `verify.ps1` over WinRM. For manual runs:
+The Inspect-AI harness uploads and runs `verify.ps1` on the DC (inlining
+`lib/verifylib.ps1`). For manual runs, from an elevated PowerShell:
 
-```bash
-vagrant winrm -s powershell -c 'C:\ProgramData\sysrepair\verify.ps1'
+```powershell
+. .\lab\Hs13Ops.ps1
+Invoke-Hs13Verify
 ```
 
 JSONL output is captured and scored by `hivestorm_weighted_scorer`.

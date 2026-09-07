@@ -49,7 +49,7 @@ Each scenario targets a CVE or misconfiguration **not already covered** by `meta
 
 ## Host-kernel coupling
 
-Four scenarios target kernel vulnerabilities and therefore need a host whose kernel matches the vulnerable ABI — see [`kernel-vm/`](kernel-vm/) for the Vagrant VM. All four also accept a **compensating control** (`chattr +i` for S19/S117, `kernel.unprivileged_userns_clone=0` for S21/S22, `algif_aead` blacklist for S117) which is host-kernel-agnostic.
+Four scenarios target kernel vulnerabilities and therefore need a host whose kernel matches the vulnerable ABI — see [`kernel-vm/`](kernel-vm/) and [`dirtypipe-vm/`](dirtypipe-vm/) for the Hyper-V VMs. All four also accept a **compensating control** (`chattr +i` for S19/S117, `kernel.unprivileged_userns_clone=0` for S21/S22, `algif_aead` blacklist for S117) which is host-kernel-agnostic.
 
 | ID | CVE | Vulnerable kernel | Covered by kernel-vm? |
 |---|---|---|---|
@@ -62,13 +62,13 @@ All other scenarios run on any modern Linux Docker host — the vulnerable compo
 
 ## Active Directory coupling — `ad-vm/`
 
-AD attacks (Zerologon, PrintNightmare, NoPac, ADCS ESCs, Kerberoasting, LDAP/SMB signing, etc.) require real Windows domain services and cannot run in Linux containers. A second VM harness lives at [`ad-vm/`](ad-vm/): three linked-clone VMs (Win2019 DC + Win2019 Enterprise CA + Kali attacker) on a host-only `10.20.30.0/24` network, hosting **20 complete scenarios** (S01–S20, separate numbering from `meta4/scenario-NNN/`).
+AD attacks (Zerologon, PrintNightmare, NoPac, ADCS ESCs, Kerberoasting, LDAP/SMB signing, etc.) require real Windows domain services and cannot run in Linux containers. A second VM harness lives at [`ad-vm/`](ad-vm/): a four-machine Hyper-V lab built with AutomatedLab (Win2019 DC + Win2019 Enterprise CA + member workstation + Ubuntu attacker VM) on an internal `10.20.30.0/24` switch, hosting **20 complete scenarios** (S01–S20, separate numbering from `meta4/scenario-NNN/`).
 
 ```bash
+# One-time lab build: see ad-vm/README.md and ad-vm/lab/RUNBOOK.md (elevated PowerShell)
 cd meta4/ad-vm
-vagrant up                 # first run pulls community box (~20 min)
-./capture-baselines.sh     # one-time snapshot
-./run-scenario.sh 13       # smoke-test S13 (SMB signing disabled)
+./run-scenario.sh 13                 # restore -> inject -> handoff (S13, SMB signing disabled)
+./run-scenario.sh 13 --verify-only   # grade; exits 0 iff both gates pass
 ```
 
 See [`ad-vm/README.md`](ad-vm/README.md) for the full scenario matrix.

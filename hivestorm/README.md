@@ -57,8 +57,8 @@ scorer unchanged.
 | scenario-10-ubuntu-faillock     | `ubuntu:22.04` + faillock + group hygiene (HS23) | implemented |
 | scenario-11-win-dc-dns          | `servercore:ltsc2019` + DC/DNS reg-state (HS23) | implemented |
 | scenario-12-centos7-lamp        | `centos:7` (vault.centos.org)           | implemented |
-| scenario-13-ad-dc-win2019       | Win2019 Vagrant VM (ADDS promoted)      | implemented (VM) |
-| scenario-14-freebsd13           | FreeBSD 13 Vagrant VM                   | implemented (VM) |
+| scenario-13-ad-dc-win2019       | Win2019 Hyper-V VM (ADDS promoted)      | implemented (VM) |
+| scenario-14-freebsd13           | FreeBSD 13 Hyper-V VM                   | implemented (VM) |
 | scenario-15-docker-host         | `ubuntu:22.04` + dockerd-in-container   | implemented |
 | scenario-16-nginx-phpfpm        | `debian:12` + nginx + php8.2-fpm        | implemented |
 
@@ -71,7 +71,8 @@ scenarios (03/04/05/08/11) score on registry / policy / file state rather than
 live service behavior; the `services_must_survive` probes check account and
 IIS state only.
 
-Scenarios 13 (AD-DC) and 14 (FreeBSD) require Vagrant: Active Directory
-Domain Services cannot be hosted in a Windows Server-Core container, and
-FreeBSD has no Docker image. They follow the `meta3/windows/` VM pattern and
-each ships a per-scenario `README.md` documenting the divergent invocation.
+Scenarios 13 (AD-DC) and 14 (FreeBSD) are Hyper-V VMs on a Windows host:
+Active Directory Domain Services cannot be hosted in a Windows Server-Core
+container, and FreeBSD has no Docker image. The harness drives each through
+the PowerShell entry points named in its `lab/automatedlab.json`; each ships
+a per-scenario `README.md` documenting the divergent invocation.

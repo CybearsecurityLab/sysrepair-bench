@@ -1,8 +1,10 @@
 # meta4/ad-vm — Active Directory VM harness
 
-Vagrant-provisioned Windows Server 2019 DC + Enterprise CA + Kali attacker,
-hosting 20 Active-Directory-targeted SysRepair-Bench scenarios that cannot
-run in Linux containers (Netlogon, Kerberos, LDAP, ADCS, Spooler, etc.).
+Hyper-V/AutomatedLab-provisioned Windows Server 2019 DC + Enterprise CA +
+member workstation + Ubuntu attacker VM (running the pinned Kali tooling
+container), hosting 20 Active-Directory-targeted SysRepair-Bench scenarios
+that cannot run in Linux containers (Netlogon, Kerberos, LDAP, ADCS,
+Spooler, etc.).
 
 Design rationale in `docs/superpowers/specs/2026-04-20-meta4-ad-vm-design.md`.
 
@@ -249,9 +251,9 @@ full run on real hardware (2026-07-29, 20/20). `run-scenario.sh` never
 referenced them; the remaining mentions in `lab/` and `provision/` are comments
 recording what each file superseded and why.
 
-Note this retires VirtualBox for **this suite only**. `meta4/kernel-vm` and
-hivestorm scenarios 13 and 14 are still Vagrant/VirtualBox and have not been
-ported.
+`meta4/kernel-vm` and hivestorm scenarios 13 and 14 have since been ported
+off Vagrant/VirtualBox as well (to plain Hyper-V and Hyper-V/AutomatedLab
+respectively); no suite uses VirtualBox any more.
 
 **Gate status: 20 of 20 validated, 0 failed, 0 excluded**
 (2026-07-29, full run against the live lab).
