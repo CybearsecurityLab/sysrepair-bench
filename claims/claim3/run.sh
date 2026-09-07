@@ -21,4 +21,5 @@ echo "[claim3] comparing against expected/cost.tsv"
 python "$ROOT/scripts/analysis/compare_tables.py" \
   --expected "$HERE/expected/cost.tsv" \
   --observed "$HERE/observed.tsv" \
+  --key-cols 1 --unpaired \
   --tolerance 0.05

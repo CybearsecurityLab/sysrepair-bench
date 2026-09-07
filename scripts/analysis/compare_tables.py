@@ -86,7 +86,18 @@ def main() -> int:
                 # on rather than trying to float("-").
                 print(f"NEW DATA          {label} {col}: no expected value, got {ov} (n={on})")
                 continue
-            if abs(float(ev) - float(ov)) > a.tolerance:
+            try:
+                delta = abs(float(ev) - float(ov))
+            except ValueError:
+                # A non-numeric cell is compared as text. Skipping it silently
+                # would be the vacuous-comparison failure all over again.
+                if ev != ov:
+                    print(f"DIFFERS           {label} {col}: expected {ev!r}, got {ov!r}")
+                    differ += 1
+                else:
+                    match += 1
+                continue
+            if delta > a.tolerance:
                 print(f"DIFFERS           {label} {col}: expected {ev} (n={en}), got {ov} (n={on})")
                 differ += 1
             elif en != on:

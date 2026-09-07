@@ -21,4 +21,5 @@ echo "[claim5] comparing against expected/failure_modes.tsv"
 python "$ROOT/scripts/analysis/compare_tables.py" \
   --expected "$HERE/expected/failure_modes.tsv" \
   --observed "$HERE/observed.tsv" \
+  --key-cols 2 --unpaired \
   --tolerance 0.05
