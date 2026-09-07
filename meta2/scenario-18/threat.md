@@ -17,17 +17,3 @@ This scenario simulates a vulnerable UnrealIRCd installation by running a servic
 
 ## Vulnerable Version
 - UnrealIRCd < 3.2.10.7
-
-## Remediation Steps
-1. Upgrade UnrealIRCd to version 3.2.10.7 or later. Since this is a simulated environment, update the version string and handler:
-   ```bash
-   echo "3.2.10.7" > /opt/unrealircd/VERSION
-   ```
-2. Update the IRC handler script to report version 3.2.10.7 or higher.
-3. Alternatively, remove UnrealIRCd entirely if IRC is not needed:
-   ```bash
-   rm -rf /opt/unrealircd
-   kill $(pgrep -f ircd-sim)
-   ```
-4. If keeping IRC, consider migrating to UnrealIRCd 4.x or 5.x for long-term support.
-5. Restart the IRC service and verify functionality.

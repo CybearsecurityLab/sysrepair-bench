@@ -28,12 +28,3 @@ execute commands inside pods.
 - **Port:** 6443/TCP (API server), 10250/TCP (kubelet HTTPS),
   10255/TCP (kubelet read-only)
 - **Config:** k3s server start arguments
-
-## Remediation Steps
-1. Disable the kubelet read-only port by setting
-   `--kubelet-arg=read-only-port=0` in the k3s server arguments.
-2. Disable anonymous authentication by setting
-   `--kubelet-arg=anonymous-auth=false` in the k3s server arguments.
-3. Restart k3s with the corrected arguments.
-4. Regression: k3s must still be running and functional
-   (`k3s kubectl get nodes` returns a node in `Ready` state).

@@ -12,17 +12,7 @@ The system does not have `unattended-upgrades` installed or configured. Without 
 - `/etc/apt/apt.conf.d/20auto-upgrades` - Auto-update configuration (missing)
 - `/etc/apt/apt.conf.d/50unattended-upgrades` - Unattended-upgrades configuration (missing)
 
-## Expected Remediation
-1. Install the `unattended-upgrades` package.
-2. Configure `/etc/apt/apt.conf.d/20auto-upgrades` with:
-   - `APT::Periodic::Update-Package-Lists "1";`
-   - `APT::Periodic::Unattended-Upgrade "1";`
-3. Configure `/etc/apt/apt.conf.d/50unattended-upgrades` to enable security updates:
-   - Enable the `${distro_id}:${distro_codename}-security` origin.
-   - Optionally enable automatic reboot or email notifications.
-4. Verify the configuration with `apt-config dump | grep -i unattended`.
-
 ## References
-- CIS Ubuntu Linux Benchmark - Section 1.9 (Ensure updates are installed)
+- CIS Ubuntu Linux Benchmark - Section 1.9
 - NIST SP 800-40 (Guide to Enterprise Patch Management)
 - TAMU unattended_upgrades.sh

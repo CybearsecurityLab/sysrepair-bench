@@ -20,15 +20,9 @@ frequently exploited in the wild via automated scanning tools.
 
 ## Affected Configuration
 - `/etc/redis/redis.conf`:
-  - `bind 0.0.0.0` (should be `127.0.0.1` or `127.0.0.1 ::1`)
-  - `protected-mode no` (should be `yes`)
-  - No `requirepass` directive (should have a strong password)
-
-## Expected Remediation
-1. Change `bind` to `127.0.0.1` (or `127.0.0.1 ::1`) in `/etc/redis/redis.conf`
-2. Set `protected-mode yes` in `/etc/redis/redis.conf`
-3. Add `requirepass <strong_password>` in `/etc/redis/redis.conf`
-4. Restart Redis to apply changes
+  - `bind 0.0.0.0`
+  - `protected-mode no`
+  - No `requirepass` directive
 
 ## Source
 - Common CCDC Redis hardening practices

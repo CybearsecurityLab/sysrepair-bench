@@ -1,4 +1,4 @@
-# SaltStack 3000 — ClearFuncs Auth Bypass (CVE-2020-11651) — Compensating Controls
+# SaltStack 3000 — ClearFuncs Auth Bypass (CVE-2020-11651)
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -27,22 +27,5 @@ This was exploited in the wild by ransomware groups in 2020.
 - **Ports:** 4505/TCP (publisher), 4506/TCP (request server)
 - **Vulnerable condition:** ports reachable from untrusted networks, no publisher_acl
 
-## Remediation Steps (do NOT upgrade)
-1. Use iptables to restrict ports 4505 and 4506 to trusted minion IPs only:
-   ```bash
-   # Drop all traffic to salt ports by default
-   iptables -I INPUT -p tcp --dport 4505 -j DROP
-   iptables -I INPUT -p tcp --dport 4506 -j DROP
-   # Allow only trusted minion subnet
-   iptables -I INPUT -s 10.0.0.0/8 -p tcp --dport 4505 -j ACCEPT
-   iptables -I INPUT -s 10.0.0.0/8 -p tcp --dport 4506 -j ACCEPT
-   ```
-2. Configure `publisher_acl` in `/etc/salt/master` to restrict which minions
-   and users can execute which functions:
-   ```yaml
-   publisher_acl:
-     salt:
-       - .*
-   ```
-3. Restart salt-master after config changes.
-4. Monitor for unauthorised ZeroMQ connections.
+## Constraints
+- The affected package must not be upgraded.

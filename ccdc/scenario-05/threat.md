@@ -18,9 +18,6 @@ PasswordAuthentication yes
 PubkeyAuthentication no
 ```
 
-## Expected Remediation
-Enable `PubkeyAuthentication yes` and ideally set `PasswordAuthentication no` (or at minimum ensure both methods are available). Reload the SSH service after changes.
-
 ## Impact
 Password-only authentication is susceptible to brute-force attacks, credential stuffing, and password reuse attacks. Disabling public key authentication removes the most secure authentication method.
 

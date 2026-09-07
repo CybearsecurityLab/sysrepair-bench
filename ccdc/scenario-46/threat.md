@@ -16,15 +16,12 @@ Without proper password aging, compromised credentials can be used indefinitely.
 - **Password History Bypass**: With PASS_MIN_DAYS=0, users can rapidly change passwords to exhaust the password history and reuse old passwords.
 - **Compliance Violations**: Most security frameworks (CIS, NIST, DISA STIG) require password aging policies.
 
-## What Needs to Be Fixed
-1. Set `PASS_MAX_DAYS` to 90 (or per organizational policy, typically 60-90 days).
-2. Set `PASS_MIN_DAYS` to 10 (or per organizational policy, typically 7-10 days).
-3. Set `PASS_WARN_AGE` to 7 (or per organizational policy, typically 7-14 days).
-4. Ensure existing users can still change their passwords after remediation.
+## Constraints
+- Existing users must still be able to change their passwords afterwards.
 
 ## Affected Files
 - `/etc/login.defs` -- system-wide password aging configuration
 
 ## Source Reference
-- TAMU `login_defs.sh` -- sets PASS_MAX_DAYS=90, PASS_MIN_DAYS=10, PASS_WARN_AGE=7
-- UTSA `script.sh` -- enforces password aging policies
+- TAMU `login_defs.sh`
+- UTSA `script.sh`

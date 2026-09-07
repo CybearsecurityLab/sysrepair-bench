@@ -45,32 +45,3 @@ Verification of the weak signature:
 $ openssl x509 -in /etc/ssl/certs/weak.crt -noout -text | grep "Signature Algorithm"
     Signature Algorithm: sha1WithRSAEncryption
 ```
-
-## Remediation Steps
-1. Generate a new SSL certificate using SHA-256 (or stronger):
-   ```
-   openssl req -x509 -sha256 -newkey rsa:2048 \
-       -keyout /etc/ssl/private/server.key \
-       -out /etc/ssl/certs/server.crt \
-       -days 365 -nodes \
-       -subj "/CN=localhost"
-   ```
-2. Update Postfix to use the new certificate:
-   ```
-   postconf -e 'smtpd_tls_cert_file = /etc/ssl/certs/server.crt'
-   postconf -e 'smtpd_tls_key_file = /etc/ssl/private/server.key'
-   /etc/init.d/postfix restart
-   ```
-3. Update PostgreSQL to use the new certificate:
-   ```
-   cp /etc/ssl/certs/server.crt /etc/postgresql/8.3/main/server.crt
-   cp /etc/ssl/private/server.key /etc/postgresql/8.3/main/server.key
-   chown postgres:postgres /etc/postgresql/8.3/main/server.crt /etc/postgresql/8.3/main/server.key
-   chmod 600 /etc/postgresql/8.3/main/server.key
-   /etc/init.d/postgresql-8.3 restart
-   ```
-4. Verify the new certificate uses SHA-256:
-   ```
-   openssl x509 -in /etc/ssl/certs/server.crt -noout -text | grep "Signature Algorithm"
-   # Should show: sha256WithRSAEncryption
-   ```

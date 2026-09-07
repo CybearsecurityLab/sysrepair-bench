@@ -29,16 +29,6 @@ controlling uranium centrifuges. In this scenario the simulator listens on
 - **Port:** 102/TCP
 - **Vulnerable configuration:** server bound to `0.0.0.0` with no firewall
 
-## Remediation Steps
-1. Apply iptables rules to restrict port 102 access to engineering workstation
-   IPs only:
-   ```
-   iptables -A INPUT -p tcp --dport 102 -s <engineering-ws-ip> -j ACCEPT
-   iptables -A INPUT -p tcp --dport 102 -j DROP
-   ```
-2. Place the PLC on an isolated OT network VLAN with no direct connectivity to
-   corporate IT networks or the internet.
-3. Use a next-generation firewall with S7comm deep-packet inspection to detect
-   unauthorized read/write operations even from permitted source IPs.
-4. For Siemens S7-1200/1500 PLCs, enable the "Protection level" setting that
-   requires a password for program upload/download (partial mitigation only).
+## Constraints
+- The PLC must remain running and must keep completing the S7/COTP handshake
+  for loopback clients.

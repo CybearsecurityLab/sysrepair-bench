@@ -14,8 +14,3 @@ vulnerability pattern in SickOs 1.2 VulnHub VM.
 ## Affected Service
 - **Service:** cron
 - **Configuration:** /etc/cron.d/vulnerable-cleanup
-
-## Remediation Steps
-1. Move cron scripts to a secure directory (e.g., /usr/local/sbin/)
-2. Remove cron entries referencing /tmp
-3. Set proper permissions (700, root:root) on cron scripts

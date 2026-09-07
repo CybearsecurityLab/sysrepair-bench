@@ -39,43 +39,6 @@ Example row from `payroll.users`:
 The Linux account `leia_organa` has the same password set via `chpasswd` during
 provisioning. Reading either credential source yields both.
 
-## Remediation Steps
-Sever the link between OS credentials and application credentials. Choose one or
-more of the following:
-
-**Option A — Change the OS user passwords (recommended):**
-```bash
-echo 'leia_organa:NewRandomPassword1!' | chpasswd
-echo 'han_solo:NewRandomPassword2!'    | chpasswd
-# Repeat for each affected account
-```
-
-**Option B — Lock or remove OS accounts (if shell access is not required):**
-```bash
-usermod -L leia_organa   # lock without deleting
-# or
-userdel leia_organa      # delete if account is unused
-```
-
-**Option C — Rotate application passwords to values different from the OS:**
-```bash
-mysql -u root payroll -e \
-  "UPDATE users SET password=SHA2(CONCAT('new_salt_', username, RAND()), 256);"
-```
-Note: Option C alone is insufficient if the app stores passwords in plaintext;
-also hash them properly with bcrypt or SHA-512+salt.
-
-After remediation the payroll application must still accept the (now different)
-application credentials, and OS login with the old (DB-sourced) password must
-fail.
-
-## Build
-
-Build from the `meta3/ubuntu/` directory (one level above this scenario):
-
-```
-docker build -f scenario-10/Dockerfile -t meta3u-s10 .
-docker run -d --name meta3u-s10 -p 8080:80 meta3u-s10
-docker exec meta3u-s10 /bin/bash /verify.sh
-docker stop meta3u-s10 && docker rm meta3u-s10
-```
+## Constraints
+- The payroll application must remain in service and must continue to accept its own
+  application credentials.

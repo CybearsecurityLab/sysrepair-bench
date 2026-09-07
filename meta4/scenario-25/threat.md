@@ -17,10 +17,3 @@ disrupting the host or replacing binaries used by subsequent CI jobs.
 
 ## Affected Service
 - **Binary:** `buildkitd` / `buildctl` ≤ 0.12.4
-
-## Remediation Steps
-1. Upgrade to BuildKit **0.12.5 or later**.
-2. Compensating control: run `buildkitd` under a dedicated low-privilege
-   user with no write access outside its own state directory, so the
-   symlink-based delete is bounded to the daemon's own files.
-3. Verify `buildctl --version` reports the fixed release.

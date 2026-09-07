@@ -22,21 +22,3 @@ x11vnc -display :0 -rfbport 5900 -rfbauth /root/.vnc/passwd -forever -shared
 ```
 
 No `-ssl` or `-stunnel` flag is used, and the service is not tunneled through SSH. All RFB protocol traffic is transmitted in cleartext over the network.
-
-## Remediation Steps
-1. **Option A -- Enable SSL on x11vnc:**
-   - Start x11vnc with the `-ssl` flag to enable built-in SSL/TLS encryption:
-     ```
-     x11vnc -display :0 -rfbport 5900 -rfbauth /root/.vnc/passwd -forever -shared -ssl SAVE
-     ```
-2. **Option B -- Tunnel VNC through SSH:**
-   - Stop exposing port 5900 externally.
-   - Connect to VNC only via SSH tunnel:
-     ```
-     ssh -L 5900:localhost:5900 user@host
-     ```
-3. **Option C -- Disable VNC entirely and use SSH X forwarding:**
-   - Stop the VNC server process.
-   - Remove or disable the VNC startup script.
-   - Use `ssh -X` or `ssh -Y` for remote GUI access.
-4. Restrict VNC access via firewall rules to trusted networks only.

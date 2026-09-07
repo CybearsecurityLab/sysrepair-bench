@@ -38,19 +38,3 @@ UserAuthentication = 0     # NLA OFF
 SecurityLayer      = 1     # negotiate — effectively RDP-layer, not TLS+CredSSP
 fDenyTSConnections = 0     # RDP enabled
 ```
-
-## Remediation Steps
-1. Require NLA on the RDP-Tcp listener:
-   ```powershell
-   Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
-     -Name 'UserAuthentication' -Value 1
-   ```
-2. Force TLS + CredSSP (SecurityLayer = 2) so the transport cannot downgrade:
-   ```powershell
-   Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
-     -Name 'SecurityLayer' -Value 2
-   ```
-3. Restart the TermService or the host so the listener picks up the new settings.
-4. Verify that an RDP client with `Enable CredSSP` succeeds and a legacy client
-   (mstsc < 6.1, rdesktop) now fails at the NLA handshake — that's the intended
-   outcome; upgrade the client.

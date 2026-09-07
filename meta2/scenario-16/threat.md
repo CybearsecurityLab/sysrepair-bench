@@ -17,14 +17,3 @@ This scenario simulates the backdoor by running a netcat listener on port 6200 a
 
 ## Vulnerable Version
 - vsftpd 2.3.4 (compromised source tarball)
-
-## Remediation Steps
-1. Stop the backdoor listener process on port 6200.
-2. Remove the backdoor script (`/usr/local/bin/backdoor.sh`).
-3. Replace the compromised vsftpd with a clean version from the package manager:
-   ```bash
-   apt-get install --reinstall vsftpd
-   ```
-4. Remove the spoofed banner referencing version 2.3.4 from `/etc/vsftpd.conf` (remove or change the `ftpd_banner` line).
-5. Ensure no process is listening on port 6200.
-6. Restart the vsftpd service and verify FTP functionality.

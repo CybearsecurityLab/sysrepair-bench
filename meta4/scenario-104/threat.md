@@ -1,4 +1,4 @@
-# Metabase 0.46.6 — Pre-auth RCE via H2 JDBC Injection (CVE-2023-38646) — Compensating Controls
+# Metabase 0.46.6 — Pre-auth RCE via H2 JDBC Injection (CVE-2023-38646)
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -40,17 +40,5 @@ curl -s -X POST http://<host>:3000/api/setup/validate \
 - **Vulnerable endpoint:** `POST /api/setup/validate`
 - **Vulnerable condition:** H2 backend (`MB_DB_TYPE=h2`, the default)
 
-## Remediation Steps (do NOT upgrade)
-1. Switch the Metabase database backend from H2 to PostgreSQL by setting
-   the environment variable `MB_DB_TYPE=postgres` (and corresponding
-   `MB_DB_HOST`, `MB_DB_DBNAME`, `MB_DB_USER`, `MB_DB_PASS`).
-   This removes the H2 JDBC code path exploited by the vulnerability.
-2. Deploy nginx as a reverse proxy in front of Metabase (port 3001) and
-   explicitly block the `/api/setup/validate` endpoint:
-   ```nginx
-   location = /api/setup/validate {
-       return 403;
-   }
-   ```
-3. Ensure port 3000 (nginx proxy) is the only externally reachable port;
-   bind the Metabase JAR to localhost only (port 3001).
+## Constraints
+- The affected package must not be upgraded.

@@ -37,23 +37,3 @@ bind-address = 0.0.0.0    # Listening on all interfaces
 # MySQL root user has no password set
 # mysql -u root (connects without password)
 ```
-
-## Remediation Steps
-1. Set a strong root password:
-   ```
-   mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('StrongP@ssw0rd!');"
-   mysql -u root -p -e "SET PASSWORD FOR 'root'@'%' = PASSWORD('StrongP@ssw0rd!');"
-   ```
-2. Restrict MySQL to listen only on localhost by editing `/etc/mysql/my.cnf`:
-   ```
-   bind-address = 127.0.0.1
-   ```
-3. Remove remote root access:
-   ```
-   mysql -u root -p -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1');"
-   mysql -u root -p -e "FLUSH PRIVILEGES;"
-   ```
-4. Restart MySQL:
-   ```
-   /etc/init.d/mysql restart
-   ```

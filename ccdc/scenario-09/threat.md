@@ -17,9 +17,6 @@ Nginx
 server_tokens on;
 ```
 
-## Expected Remediation
-Set `server_tokens off;` in the `http` block of `/etc/nginx/nginx.conf` and reload Nginx.
-
 ## Impact
 Version disclosure helps attackers identify specific CVEs and exploits applicable to the running version of Nginx.
 

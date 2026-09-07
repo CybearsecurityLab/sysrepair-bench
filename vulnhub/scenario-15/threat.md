@@ -14,8 +14,3 @@ restricting access. Mirrors DC-8 VulnHub VM.
 - **Service:** Exim4
 - **Port:** 25/TCP
 - **Configuration:** /etc/exim4/update-exim4.conf.conf
-
-## Remediation Steps
-1. Set `dc_local_interfaces='127.0.0.1'` in Exim4 config
-2. Or add iptables rules to restrict port 25
-3. Run `update-exim4.conf && service exim4 restart`

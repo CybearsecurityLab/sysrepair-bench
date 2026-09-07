@@ -34,17 +34,3 @@ POST /app/rest/users  (Bearer <admin token>) -> creates a new administrator
 ## Affected Service
 - **Service:** JetBrains TeamCity On-Premises 2023.05.3 (simulated with Flask)
 - **Port:** 8111/TCP
-
-## Remediation Steps (in-container fix)
-1. Require authentication on the token-generation endpoint, matching JetBrains'
-   fix. In the sim, set `REQUIRE_AUTH_FOR_TOKENS = True` in
-   `/opt/teamcity/app.py`, e.g.:
-   ```
-   sed -i 's/^REQUIRE_AUTH_FOR_TOKENS = False/REQUIRE_AUTH_FOR_TOKENS = True/' /opt/teamcity/app.py
-   ```
-2. **Restart** the service so the running process loads the fix (the sim boots
-   on 0.0.0.0:8111 in the background; a fix that is not restarted leaves the old
-   vulnerable process running).
-3. Verify: the unauthenticated token request is refused (401) and no rogue admin
-   can be created.
-4. Regression: the TeamCity UI must still respond on port 8111.

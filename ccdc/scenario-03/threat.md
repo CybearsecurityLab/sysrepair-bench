@@ -22,17 +22,12 @@ potentially decrypt SSH traffic if weak ciphers are negotiated.
 - **Service**: OpenSSH Server (sshd)
 - **Weak Ciphers**: `3des-cbc`, `aes128-cbc`
 
-## Expected Remediation
+## Constraints
 
-Remove weak ciphers from the `Ciphers` directive. Acceptable ciphers include
-only CTR or GCM mode ciphers:
-`Ciphers aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com`
-
-The SSH service must be restarted and must still accept connections using
-strong ciphers.
+- The SSH service must still accept connections using strong ciphers.
 
 ## References
 
-- UTSA script.sh line 43 (Ciphers aes128-ctr,aes192-ctr,aes256-ctr)
-- CIS Benchmark for Ubuntu - 5.2.13 Ensure only strong ciphers are used
+- UTSA script.sh line 43
+- CIS Benchmark for Ubuntu - 5.2.13
 - NIST SP 800-52 Rev 2

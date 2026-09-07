@@ -19,9 +19,6 @@ location / {
 }
 ```
 
-## Expected Remediation
-Set `autoindex off;` in all Nginx location blocks (or remove the autoindex directive entirely, as it defaults to off). Reload Nginx.
-
 ## Impact
 Directory listing exposes file names, sizes, and modification dates, potentially revealing sensitive files such as backup files, configuration files, and credential stores.
 

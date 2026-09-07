@@ -14,8 +14,3 @@ Mirrors Symfonos 2 VulnHub VM.
 ## Affected Service
 - **Service:** MariaDB
 - **Port:** 3306/TCP
-
-## Remediation Steps
-1. Revoke privileges: `REVOKE FILE ON *.* FROM 'webapp'@'localhost';`
-2. `REVOKE SUPER ON *.* FROM 'webapp'@'localhost';`
-3. `FLUSH PRIVILEGES;`

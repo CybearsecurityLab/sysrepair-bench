@@ -21,8 +21,7 @@ traffic for banking sites, email servers, software update endpoints, or
 internal services.
 
 The Kaminsky attack (2008) demonstrated that cache poisoning is practical
-even against well-randomised resolvers. DNSSEC validation is the only
-cryptographic defence against this class of attack.
+even against well-randomised resolvers.
 
 With `dnssec-validation no`:
 - Forged A records are accepted without question
@@ -40,32 +39,3 @@ options {
     dnssec-validation no;
 };
 ```
-
-## Remediation Steps
-1. Enable automatic DNSSEC validation using the built-in trust anchors:
-   ```
-   options {
-       dnssec-validation auto;
-   };
-   ```
-   `auto` loads the IANA root trust anchor from `bind.keys` automatically.
-
-2. Alternatively, enable manual validation (requires explicit trust anchor
-   configuration):
-   ```
-   options {
-       dnssec-validation yes;
-   };
-   ```
-
-3. Reload BIND after the change:
-   ```
-   rndc reload
-   ```
-
-4. Verify DNSSEC validation is active by querying a DNSSEC-signed domain
-   and checking for the `ad` (Authenticated Data) flag:
-   ```
-   dig @127.0.0.1 isc.org +dnssec
-   # Expected: flags: qr rd ra ad
-   ```

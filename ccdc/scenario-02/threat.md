@@ -23,14 +23,12 @@ without credentials.
 - **Service**: OpenSSH Server (sshd)
 - **Affected User**: `emptyuser` (has empty password)
 
-## Expected Remediation
+## Constraints
 
-Set `PermitEmptyPasswords no` in `/etc/ssh/sshd_config` and restart the SSH
-service. Optionally, also set a password on the `emptyuser` account or lock it.
-Normal user SSH access with real passwords must remain functional.
+- Normal user SSH access with real passwords must remain functional.
 
 ## References
 
-- TAMU ssh.sh - disables empty passwords
-- UTSA script.sh - disables empty passwords
-- CIS Benchmark for Ubuntu - 5.2.11 Ensure SSH PermitEmptyPasswords is disabled
+- TAMU ssh.sh
+- UTSA script.sh
+- CIS Benchmark for Ubuntu - 5.2.11

@@ -37,22 +37,5 @@ curl -s -X POST http://<host>:8088/ws/v1/cluster/apps \
 - No Kerberos principal configured
 - Port 8088 exposed to untrusted networks
 
-## Remediation Steps (do NOT upgrade)
-1. Enable ACL enforcement in `yarn-site.xml`:
-   ```xml
-   <property>
-     <name>yarn.acl.enable</name>
-     <value>true</value>
-   </property>
-   <property>
-     <name>yarn.admin.acl</name>
-     <value>yarn</value>
-   </property>
-   ```
-2. Use iptables to restrict port 8088 to trusted admin subnets:
-   ```bash
-   iptables -I INPUT -p tcp --dport 8088 -j DROP
-   iptables -I INPUT -s 10.0.0.0/8 -p tcp --dport 8088 -j ACCEPT
-   ```
-3. For production: enable Kerberos (`hadoop.security.authentication=kerberos`).
-4. Restart the ResourceManager after config changes.
+## Constraints
+- Hadoop YARN must not be upgraded to a patched version.

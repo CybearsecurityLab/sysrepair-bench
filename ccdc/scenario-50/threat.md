@@ -17,14 +17,6 @@ Nginx (web server document root)
 drwxrwxrwx /var/www/html  (777 - world-writable)
 ```
 
-## Expected Remediation
-Set proper ownership and permissions:
-```bash
-chown -R www-data:www-data /var/www/html
-chmod -R 755 /var/www/html
-find /var/www/html -type f -exec chmod 644 {} \;
-```
-
 ## Impact
 Any local user or compromised service can modify web content, inject JavaScript for XSS/phishing, place web shells for remote access, or deface the website.
 

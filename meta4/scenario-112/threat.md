@@ -29,23 +29,5 @@ This vulnerability was actively exploited within hours of public disclosure.
 - **Conditions:** `Require all granted` on the root directory AND mod_cgi
   enabled
 
-## Compensating Control (NOT an upgrade)
-Because upgrading may not always be possible (locked vendor environment,
-certification constraints), this scenario deploys **ModSecurity** as a WAF
-with the OWASP Core Rule Set (CRS) to block the encoded traversal sequences
-at the HTTP layer. Apache remains at version 2.4.49.
-
-## Remediation Steps
-1. Install `libapache2-mod-security2` (Debian/Ubuntu) or `mod_security` (RHEL).
-2. Enable ModSecurity with `SecRuleEngine On`.
-3. Deploy the OWASP CRS rules (at minimum, rules covering path traversal —
-   REQUEST-930-APPLICATION-ATTACK-LFI.conf).
-4. Add a custom rule to block `%2e` encoded dot sequences in the URI:
-   ```
-   SecRule REQUEST_URI "@contains %2e%2e" \
-       "id:9000001,phase:1,deny,status:403,msg:'Encoded traversal blocked'"
-   ```
-5. Verify: `curl -s http://localhost/cgi-bin/%2e%2e/%2e%2e/etc/passwd`
-   returns **403**, not file content.
-6. Verify Apache version is still 2.4.49: `httpd -v`.
-7. Regression: `curl http://localhost/` returns the site HTML.
+## Constraints
+- Apache must remain at version 2.4.49; upgrading the package is not permitted.

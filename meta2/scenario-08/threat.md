@@ -37,24 +37,3 @@ An attacker who gains VNC access can:
 # Password: "password" (stored in VNC's DES-encrypted format)
 # x11vnc started with: x11vnc -rfbauth /root/.vnc/passwd -rfbport 5900
 ```
-
-## Remediation Steps
-1. Change the VNC password to a strong value (up to 8 characters due to VNC limitations):
-   ```
-   x11vnc -storepasswd /root/.vnc/passwd
-   # Enter a strong password when prompted
-   ```
-   Or disable VNC entirely if remote desktop access is not needed:
-   ```
-   kill $(pgrep x11vnc)
-   # Remove from startup scripts
-   ```
-2. If VNC must remain enabled, add additional security layers:
-   - Tunnel VNC through SSH: `ssh -L 5900:localhost:5900 user@server`
-   - Restrict access via iptables to specific IP addresses
-   - Use a VNC server that supports longer passwords or certificate-based auth
-3. Restart the VNC server after changing the password:
-   ```
-   killall x11vnc
-   x11vnc -display :0 -rfbauth /root/.vnc/passwd -forever -rfbport 5900 &
-   ```

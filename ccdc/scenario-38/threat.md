@@ -12,15 +12,8 @@ System-wide (unnecessary packages)
 ## Issue
 Compiler tools on a production server significantly increase the attack surface. An attacker who gains limited access can compile privilege escalation exploits, custom backdoors, and rootkits locally.
 
-## Expected Remediation
-Remove all compiler and development tools:
-```bash
-apt-get remove --purge gcc g++ make build-essential cmake autoconf automake
-apt-get autoremove
-```
-
 ## Impact
 An attacker with shell access can download and compile exploit code, kernel modules, rootkits, and custom backdoors directly on the server, making post-exploitation trivial.
 
 ## Source
-TAMU CCDC linuxmonkeys bad_packages.sh (removes gcc, make, build-essential)
+TAMU CCDC linuxmonkeys bad_packages.sh

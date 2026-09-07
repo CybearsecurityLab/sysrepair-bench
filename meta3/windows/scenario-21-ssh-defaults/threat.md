@@ -51,36 +51,5 @@ vagrant local user          : password = "vagrant", member of Administrators
 sshd                        : LISTEN 0.0.0.0:22, password auth enabled
 ```
 
-## Remediation Steps
-The verifier grades three things independently, and all three must hold: the
-password must no longer be the default, the `vagrant` account must no longer be
-a local administrator, and the `sshd` service must launch a supported build.
-Deleting the account satisfies the first two at once.
-
-1. **Rotate the default password AND drop the account out of `Administrators`**
-   (it was only ever needed for provisioning, so removing it outright is the
-   cleaner fix):
-   ```powershell
-   $pw = Read-Host -AsSecureString 'new vagrant password'
-   Set-LocalUser -Name 'vagrant' -Password $pw
-   # Or remove it outright once provisioning is done:
-   Remove-LocalGroupMember -Group 'Administrators' -Member 'vagrant' -ErrorAction SilentlyContinue
-   Remove-LocalUser       -Name  'vagrant' -ErrorAction SilentlyContinue
-   ```
-2. **Replace the legacy OpenSSH binary** with a supported build (major ≥ 9).
-   A fixed release is staged on the host at `C:\ossh-fixed.zip` — this container
-   has no outbound network, so unpack that rather than trying to download one:
-   ```powershell
-   Stop-Service sshd
-   Expand-Archive -Path 'C:\ossh-fixed.zip' -DestinationPath 'C:\Program Files\' -Force
-   Remove-Item 'C:\Program Files\OpenSSH' -Recurse -Force
-   Rename-Item 'C:\Program Files\OpenSSH-Win64' 'C:\Program Files\OpenSSH'
-   Start-Service sshd
-   ```
-   Note `Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0` is NOT
-   sufficient here: the inbox capability on Server 2019 is OpenSSH **7.7**, which
-   is older than the CVE-2018-15473 fix line this scenario is about, so it does
-   not satisfy the version requirement even though it "reinstalls OpenSSH".
-3. **Disable password authentication** in favor of key-based auth (`sshd_config`:
-   `PasswordAuthentication no`), and restrict the listener to a management
-   interface rather than `0.0.0.0`.
+## Constraints
+- This container has no outbound network access.

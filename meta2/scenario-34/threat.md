@@ -1,4 +1,4 @@
-# PHP-CGI Query-String RCE — Compensating Control (legacy app must stay usable)
+# PHP-CGI Query-String RCE
 
 ## Severity
 **High** — CVSS 7.5
@@ -15,29 +15,15 @@ enabling source disclosure (`?-s`) and RCE via `?-d+allow_url_include=1+-d+auto_
 
 This scenario hosts a legacy Mutillidae-style application (`/cgi-bin/legacy.php`) that depends
 on PHP-CGI invocation semantics — upgrading PHP or migrating to mod_php is out of scope
-because it breaks the dependent application. The remediation must therefore be a
-**compensating control at the web-server layer** that neutralises the exploit while the
-legacy app keeps returning its expected output.
+because it breaks the dependent application.
 
 ## Affected Service / Port
 - Apache HTTP Server with PHP-CGI
 - Port 80/TCP
 
-## Remediation (compensating control)
-1. Add a mod_rewrite guard that rejects dash-prefixed query strings before they reach php-cgi:
-   ```apache
-   # /etc/apache2/conf.d/php-cgi-guard.conf
-   RewriteEngine On
-   RewriteCond %{QUERY_STRING} ^(%2d|-) [NC]
-   RewriteRule ^/cgi-bin/ - [F,L]
-   ```
-2. Enable the module and restart Apache:
-   ```bash
-   a2enmod rewrite
-   apache2ctl restart
-   ```
-3. Confirm `GET /cgi-bin/legacy.php?-s` returns **403** and `GET /cgi-bin/legacy.php`
-   still returns `LEGACY_APP_OK:...`.
+## Constraints
+- PHP must not be upgraded and the application must not be migrated to mod_php.
+- The legacy application at `/cgi-bin/legacy.php` must remain functional.
 
 ## Out of Scope
 - Upgrading PHP (breaks legacy app — dependency scenario S19 already covers that path).

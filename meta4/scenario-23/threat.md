@@ -21,12 +21,3 @@ and even `/bin/sh -c` invocations) read and write host files directly.
 - **Binary:** `/usr/local/bin/runc` version 1.1.11
 - **Surface:** any container created via `docker run`, `containerd`,
   `nerdctl`, Kubernetes, etc., backed by this runc.
-
-## Remediation Steps
-1. **Patch**: upgrade runc to **1.1.12 or later**. Replace the binary:
-   `curl -fsSL -o /usr/local/bin/runc https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.amd64 && chmod +x /usr/local/bin/runc`.
-2. **Compensating control** if immediate upgrade is blocked: apply the
-   Docker-published AppArmor profile / seccomp filter that blocks
-   `openat2` flags used by the exploit, or disable user-supplied
-   `WORKDIR`/`-w` values on the orchestrator.
-3. Verify `runc --version` reports ≥ 1.1.12.

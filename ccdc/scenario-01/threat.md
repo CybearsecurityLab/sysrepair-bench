@@ -22,14 +22,12 @@ accountability and limiting the blast radius of compromised credentials.
 - **Setting**: `PermitRootLogin yes`
 - **Service**: OpenSSH Server (sshd)
 
-## Expected Remediation
+## Constraints
 
-The `PermitRootLogin` directive should be set to `no` (or `prohibit-password`
-at minimum). The SSH service must be restarted after the configuration change.
-Normal user SSH access must remain functional.
+- Normal user SSH access must remain functional.
 
 ## References
 
-- TAMU ssh.sh - disables root login
-- UTSA script.sh - disables root login
-- CIS Benchmark for Ubuntu - 5.2.10 Ensure SSH root login is disabled
+- TAMU ssh.sh
+- UTSA script.sh
+- CIS Benchmark for Ubuntu - 5.2.10

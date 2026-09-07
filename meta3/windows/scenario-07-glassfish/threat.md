@@ -53,29 +53,3 @@ curl --path-as-is \
 # 2. Log in as admin with an empty password over the secure-admin REST API
 curl -u admin: "http://<target>:4848/management/domain"
 ```
-
-## Remediation Steps
-
-All three steps are required (the verifier checks for the admin-listener binding and
-the empty password; shutting GlassFish down is an acceptable PoC fix for a benchmark
-run but is not real-world remediation).
-
-1. **Set a strong admin password.** Start `domain1`, then:
-   ```powershell
-   & $env:GLASSFISH_HOME\bin\asadmin.bat --user admin change-admin-password
-   # supply the empty current password, then a strong new one
-   ```
-2. **Force TLS on the admin listener (enable-secure-admin).** Once a strong password
-   is set, enabling secure-admin makes :4848 HTTPS-only, so the cleartext overlong-UTF-8
-   traversal probe can no longer reach the admin console — a compensating control for the
-   unpatchable traversal:
-   ```powershell
-   & $env:GLASSFISH_HOME\bin\asadmin.bat --user admin --passwordfile <pf> enable-secure-admin
-   & $env:GLASSFISH_HOME\bin\asadmin.bat --user admin --passwordfile <pf> restart-domain domain1
-   ```
-3. **Migrate off GlassFish 4.0.** Oracle does not ship security fixes for the 4.x
-   line. Long-term the server should be replaced with Payara 5.x / 6.x or another
-   actively maintained Jakarta EE runtime — that is the only path that closes
-   CVE-2017-1000028. Until migration completes, a reverse proxy that blocks the
-   overlong-UTF-8 `%c0%ae` byte sequence on `/theme/` paths is an acceptable
-   compensating control.

@@ -23,10 +23,6 @@ negotiates zlib compression on the wire, two risks arise:
    information through compression ratio differences, analogous to CRIME/BREACH
    attacks on TLS-compressed HTTP.
 
-Both risks are eliminated by removing `zlib` from the accepted compressor list.
-The safer alternatives (`snappy`, `zstd`) do not exhibit the same amplification
-or side-channel properties.
-
 ## Affected Service
 - **Service:** MongoDB 4.4
 - **Port:** 27017/TCP
@@ -35,26 +31,3 @@ or side-channel properties.
 ## Vulnerable Configuration
 - `mongod.conf` contains `compressors: zlib` (or `zlib,snappy,zstd`)
 - No explicit exclusion of `zlib` from the compressor list
-
-## Remediation Steps
-1. Edit `/etc/mongod/mongod.conf` (or the config file passed via `--config`)
-   and set the compressors list to exclude `zlib`:
-   ```yaml
-   net:
-     compression:
-       compressors: snappy,zstd
-   ```
-   To disable all wire compression entirely, use:
-   ```yaml
-   net:
-     compression:
-       compressors: disabled
-   ```
-2. Restart `mongod` to apply the new configuration.
-3. If clients negotiate compression on connect, update their connection
-   strings to omit `compressors=zlib` (e.g., use `compressors=snappy`).
-4. Confirm the fix by checking the running config:
-   ```
-   mongosh --eval "db.adminCommand({getCmdLineOpts:1})" | grep -i compressor
-   ```
-   The output must not contain `zlib`.

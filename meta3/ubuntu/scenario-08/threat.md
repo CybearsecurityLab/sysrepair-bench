@@ -42,37 +42,3 @@ Notice USN-7826-2.
 The container ships with the vulnerable package version. `wins support` and
 `streams_xattr` are not explicitly enabled in the seed config, but the binaries
 contain the unpatched code paths.
-
-## Remediation Steps
-1. Update the Samba package to the USN-7826-2 patched version. Since Ubuntu 14.04
-   is EOL, fetch the patched build from the Ubuntu ESM archive or install a
-   manually backported package:
-   ```
-   apt-get update
-   apt-get install --only-upgrade samba samba-common samba-common-bin
-   ```
-   If ESM is unavailable, compile Samba 4.19.x from source with the upstream patches:
-   ```
-   # Download Samba 4.19.x source and apply CVE-2025-10230 / CVE-2025-9640 patches
-   # then: ./configure && make && make install
-   ```
-2. As an immediate mitigation while patching, add to `/etc/samba/smb.conf`:
-   ```
-   [global]
-       wins support = no
-       wins hook =
-   ```
-   And remove `streams_xattr` from any `vfs objects` lines.
-3. Reload Samba:
-   ```
-   /etc/init.d/samba reload
-   ```
-4. Verify with `smbclient --version` that the patched package version is installed.
-
-## Build
-```
-docker build -f scenario-08/Dockerfile -t meta3u-s08 .
-docker run -d --name meta3u-s08 -p 4445:445 meta3u-s08
-docker exec meta3u-s08 /bin/bash /verify.sh
-docker stop meta3u-s08 && docker rm meta3u-s08
-```

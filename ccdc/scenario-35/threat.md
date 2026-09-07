@@ -15,21 +15,7 @@ The NFS (Network File System) server is installed and configured with insecure e
 - `nfs-kernel-server` service - Running and enabled
 - `/srv/nfs` - Exported directory with world access
 
-## Expected Remediation
-Option A (Remove NFS if not needed):
-1. Stop and disable the NFS server service.
-2. Remove or purge the `nfs-kernel-server` package.
-3. Clean up `/etc/exports`.
-
-Option B (Secure NFS if needed):
-1. Restrict exports to specific IP addresses or subnets (not `*`).
-2. Remove `no_root_squash` (use `root_squash` instead).
-3. Use `ro` (read-only) where possible.
-4. Add `secure` option to require privileged ports.
-5. Consider adding Kerberos authentication.
-6. Restart the NFS server to apply changes.
-
 ## References
-- CIS Ubuntu Linux Benchmark - Section 2.2.7 (Ensure NFS is not enabled)
+- CIS Ubuntu Linux Benchmark - Section 2.2.7
 - NIST SP 800-123 (Guide to General Server Security)
 - TAMU remove_nfs.sh

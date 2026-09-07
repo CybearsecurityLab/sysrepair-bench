@@ -17,8 +17,3 @@ Mirrors the DC-4 VulnHub VM with web-based command execution.
 - **Service:** Apache + PHP
 - **Port:** 80/TCP
 - **Configuration:** /var/www/html/cmd.php
-
-## Remediation Steps
-1. Wrap all user input with `escapeshellarg()` before passing to system()/exec()
-2. Use `escapeshellcmd()` for the command itself
-3. Restart Apache

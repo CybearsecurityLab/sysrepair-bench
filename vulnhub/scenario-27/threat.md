@@ -14,8 +14,3 @@ Mirrors LinSecurity VulnHub VM.
 ## Affected Service
 - **Service:** sudo
 - **Configuration:** /etc/sudoers
-
-## Remediation Steps
-1. Remove dangerous entries from /etc/sudoers
-2. If needed, replace with specific, parameter-validated commands
-3. Verify with `visudo -c`

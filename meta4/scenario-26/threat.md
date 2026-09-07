@@ -18,22 +18,10 @@ host.
 `--privileged: true` disables nearly all container isolation: the
 container gets all Linux capabilities, unrestricted device access, and
 can remount the host filesystem. Either flag independently voids the
-security boundary; this scenario ships both in a compose file so the
-remediator has to remove both.
+security boundary; this scenario ships both in a compose file.
 
 This is a **compensating-controls** scenario: neither flag has a
-"patched version." Remediation is architectural.
+"patched version."
 
 ## Affected Service
 - `/opt/app/docker-compose.yml`
-
-## Remediation Steps
-The compose file must be edited so that:
-
-1. `privileged: true` is removed entirely.
-2. The docker-socket bind mount is removed. If the application genuinely
-   needs Docker API access, route it through a socket proxy
-   (e.g. `tecnativa/docker-socket-proxy`) exposing only the minimal set
-   of endpoints required, mounted read-only.
-3. The compose file must still parse via `docker compose config`
-   (regression check).

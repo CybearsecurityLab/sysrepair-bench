@@ -18,15 +18,10 @@ The Avahi daemon (an mDNS/DNS-SD service discovery protocol implementation) is i
 - Port 5353/UDP - Multicast DNS
 - `/etc/avahi/avahi-daemon.conf` - Avahi configuration
 
-## Expected Remediation
-1. Stop the avahi-daemon service.
-2. Disable the service so it does not start on boot.
-3. Remove or purge the `avahi-daemon`, `avahi-utils`, and related packages.
-4. Optionally remove `libnss-mdns` if mDNS name resolution is not needed.
-5. Ensure `/etc/nsswitch.conf` is updated so DNS resolution still works without mDNS.
-6. Verify that standard DNS resolution (via `host`, `dig`, or `nslookup`) still functions.
+## Constraints
+- Standard DNS name resolution (via `host`, `dig`, or `nslookup`) must keep working.
 
 ## References
-- CIS Ubuntu Linux Benchmark - Section 2.2.3 (Ensure Avahi Server is not enabled)
+- CIS Ubuntu Linux Benchmark - Section 2.2.3
 - NIST SP 800-123 (Guide to General Server Security)
 - TAMU disable_avahi.sh

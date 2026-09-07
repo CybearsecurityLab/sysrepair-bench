@@ -20,11 +20,3 @@ building an attacker-submitted Dockerfile" compromise.
 - **Binary:** `/usr/bin/buildkitd` (or `/usr/local/bin/buildkitd`) at
   version 0.12.4 or earlier
 - **Exposure surface:** CI builds of untrusted Dockerfiles
-
-## Remediation Steps
-1. Upgrade BuildKit to **0.12.5** or later. The image tag
-   `moby/buildkit:v0.12.5` or `v0.13.0+` is fixed.
-2. Compensating control: refuse to build untrusted Dockerfiles that
-   contain `RUN --mount=type=cache` or `--mount=type=bind` clauses
-   pointing to attacker-controlled paths.
-3. Verify `buildctl --version` reports the fixed release.

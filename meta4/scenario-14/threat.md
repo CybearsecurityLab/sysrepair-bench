@@ -34,18 +34,3 @@ POST /users/password   token=<stolen>  user[password]=<new>
 ## Affected Service
 - **Service:** GitLab CE 16.7.0 (simulated with Python/Flask)
 - **Ports:** 80/TCP
-
-## Remediation Steps (in-container fix)
-1. Reject array/multiple recipients in the reset handler (strict parameter
-   typing), matching GitLab's fix. In the sim, set
-   `ALLOW_MULTI_EMAIL_RESET = False` in `/opt/gitlab/app.py`, e.g.:
-   ```
-   sed -i 's/^ALLOW_MULTI_EMAIL_RESET = True/ALLOW_MULTI_EMAIL_RESET = False/' /opt/gitlab/app.py
-   ```
-2. **Restart** the service so the running process loads the fix (the sim boots
-   on 0.0.0.0:80 in the background; a fix that is not restarted leaves the old
-   vulnerable process running).
-3. Verify: the array-recipient reset is rejected, the attacker receives no
-   token, and the victim's password is unchanged.
-4. Regression: a legitimate single-address reset still delivers to the account
-   owner and `/users/sign_in` still works.

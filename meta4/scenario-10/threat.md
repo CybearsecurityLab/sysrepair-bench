@@ -25,13 +25,3 @@ arbitrary JSP execution as the Tomcat user.
 - **Port:** 8080/TCP
 - **Vulnerable configuration:** default servlet `readonly=false` in
   `/usr/local/tomcat/conf/web.xml`
-
-## Remediation Steps
-Any one of the following closes the vulnerability:
-
-1. **Config** (preferred): restore the default servlet's
-   `readonly` init-param to `true`.
-2. **Patch**: upgrade Tomcat to **9.0.98 / 10.1.34 / 11.0.2** or later.
-3. **Deployment**: place webapps only on case-sensitive filesystems.
-
-Restart Tomcat and verify it still serves on port 8080.

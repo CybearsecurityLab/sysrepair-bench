@@ -41,29 +41,6 @@ Admin password         : admin
 REST API               : enabled, unauthenticated
 ```
 
-## Remediation Steps
-Either of the first two closes the critical path. Note that this host has **no outbound
-network access**, no WordPress distribution newer than 4.7.1 staged on disk, and no
-`wp-cli.phar` — so both must be done with what is already installed: the PHP CLI at
-`C:\php\php.exe` and the MariaDB client at `C:\mariadb\bin\mysql.exe`.
-
-1. **Update WordPress core** to 4.7.2 or later. `$wp_version` in
-   `C:\wamp\www\wordpress\wp-includes\version.php` is what states the installed version;
-   editing that string without replacing the code behind it is not an update, and the
-   REST API and PHPMailer bugs remain. Realistically this path needs a 4.7.2+ tarball
-   that this host cannot obtain — if you cannot produce genuine upgraded core files, take
-   option 2.
-2. **Rotate the admin password** to something not in any wordlist. WordPress stores a
-   portable-phpass hash in the `wp_users` table, so generate the hash with WordPress's own
-   hasher and write it back with the MariaDB client — the DB name and credentials are in
-   `C:\wamp\www\wordpress\wp-config.php`:
-   ```powershell
-   # Generate a hash using WordPress's own password API, then UPDATE wp_users.user_pass
-   # for the 'admin' login. C:\php\php.exe can load wp-includes\class-phpass.php directly.
-   ```
-   `admin:admin` must no longer authenticate at `/wp-login.php` afterwards, and the site
-   must still serve its front page — deleting the admin user's row or breaking the DB
-   takes WordPress down rather than fixing it.
-3. **Defense-in-depth:** disable XML-RPC (`xmlrpc.php`), restrict `/wp-login.php` and
-   `/wp-admin/` by source IP at the IIS layer (request filtering / IP restrictions), and
-   front the site with a WAF that blocks the known CVE-2017-1001000 request shape.
+## Constraints
+- This host has no outbound network access, no WordPress distribution newer than 4.7.1 staged on disk, and no `wp-cli.phar`.
+- The site must still serve its front page; taking WordPress or its database down is not an acceptable outcome.

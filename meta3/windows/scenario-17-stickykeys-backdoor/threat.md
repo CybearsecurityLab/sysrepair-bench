@@ -48,31 +48,5 @@ Typical deployment footprint:
   console or RDP banner.
 - **Runs as:** `NT AUTHORITY\SYSTEM`.
 
-## Remediation Steps
-1. Enumerate the IFEO hive and find every subkey that carries a `Debugger` value:
-   ```powershell
-   $ifeo = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options'
-   Get-ChildItem $ifeo | ForEach-Object {
-       $d = (Get-ItemProperty $_.PSPath -Name Debugger -ErrorAction SilentlyContinue).Debugger
-       if ($d) { "$($_.PSChildName) -> $d" }
-   }
-   ```
-2. Remove the hijack. Delete the `Debugger` **value** (or the per-image subkey the
-   intruder created) for each accessibility executable — do **not** delete the
-   `Image File Execution Options` key itself. That hive is the supported mechanism for
-   attaching a debugger and for per-image AppCompat settings; destroying it is collateral
-   damage, not remediation:
-   ```powershell
-   Remove-ItemProperty -Path "$ifeo\sethc.exe" -Name Debugger -ErrorAction SilentlyContinue
-   ```
-3. Check the file-swap variant too, on any host where the accessibility binaries exist:
-   an accessibility binary whose SHA256 equals `cmd.exe` or `powershell.exe` has been
-   replaced. Restore it from the component store and put ownership back:
-   ```powershell
-   sfc /scanfile=C:\Windows\System32\sethc.exe
-   icacls C:\Windows\System32\sethc.exe /setowner 'NT SERVICE\TrustedInstaller'
-   ```
-4. Apply both checks to every accessibility executable, not just `sethc.exe` — hijacking
-   any of them is the same attack.
-5. Audit: the Sticky Keys bypass is an operator artifact, not a software bug. Treat
-   its presence as evidence of prior compromise and rotate local admin credentials.
+## Constraints
+- The `Image File Execution Options` key itself must not be deleted: that hive is the supported mechanism for attaching a debugger and for per-image AppCompat settings.

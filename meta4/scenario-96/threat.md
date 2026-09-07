@@ -31,14 +31,3 @@ privileges of the `airflow` OS user.
 
 ## Vulnerable Configuration
 - `load_examples = True` in the `[core]` section of `airflow.cfg` — ships as default
-
-## Remediation Steps
-1. Set `load_examples = False` in the `[core]` section of `$AIRFLOW_HOME/airflow.cfg`:
-   ```ini
-   [core]
-   load_examples = False
-   ```
-2. Restart the Airflow webserver and scheduler to apply the change.
-3. Optionally, delete any already-loaded example DAG files from the `dags/` folder.
-4. Verify no example DAGs appear in the Airflow UI.
-5. Confirm the webserver still responds on `http://localhost:8080`.

@@ -20,11 +20,8 @@ local-infile = 1
 local-infile = 1
 ```
 
-## Expected Remediation
-Set `local-infile = 0` in both the `[mysqld]` and `[mysql]` sections of the MySQL configuration and restart MySQL.
-
 ## Impact
 An attacker with MySQL access can use `LOAD DATA LOCAL INFILE '/etc/shadow'` to read arbitrary files from the server filesystem, potentially obtaining password hashes and other sensitive data.
 
 ## Source
-TAMU CCDC linuxmonkeys harden_mysql.sh (local-infile=0)
+TAMU CCDC linuxmonkeys harden_mysql.sh

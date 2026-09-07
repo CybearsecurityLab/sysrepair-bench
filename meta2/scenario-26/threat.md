@@ -40,29 +40,3 @@ The `mod_usertrack` configuration sets cookies without protection:
     # No HttpOnly or Secure flags
 </IfModule>
 ```
-
-## Remediation Steps
-1. Enable the `mod_headers` module:
-   ```
-   a2enmod headers
-   ```
-2. Add cookie security headers to the Apache configuration (e.g.,
-   `/etc/apache2/conf.d/security` or the main config):
-   ```
-   Header edit Set-Cookie ^(.*)$ $1;HttpOnly;Secure
-   ```
-   Or alternatively:
-   ```
-   Header always edit Set-Cookie ^(.*)$ "$1; HttpOnly; Secure"
-   ```
-3. Optionally add additional security headers:
-   ```
-   Header always append X-Frame-Options DENY
-   Header always set X-Content-Type-Options nosniff
-   ```
-4. Restart Apache:
-   ```
-   apache2ctl restart
-   ```
-5. Verify by inspecting response headers with `curl -I` and confirming cookies
-   include `HttpOnly` and `Secure` flags.

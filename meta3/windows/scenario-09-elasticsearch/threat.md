@@ -25,8 +25,7 @@ can reach port 9200/TCP can exploit the RCE without credentials.
 > Elasticsearch 1.1.1 (CVE-2014-3120). On Server Core ltsc2019 the 1.1.1 JVM hits
 > a native Lucene JNI crash at startup under every JRE we tested. ES 1.6.0 boots
 > cleanly, targets the same `/_search` RCE attack surface, and lets the benchmark
-> agent exercise exactly the same remediation skills (upgrade, disable scripting,
-> or re-enable the sandbox).
+> agent exercise exactly the same remediation skills.
 
 ## Affected Service
 - **Service:** Elasticsearch 1.6.0 (standalone JVM, `elasticsearch.bat`)
@@ -62,37 +61,6 @@ Content-Type: application/json
 ```
 The response body contains the process stdout of `whoami`.
 
-## Remediation Steps
-
-Either path closes CVE-2015-1427. Whichever you take, Elasticsearch must still answer
-`GET /` and `GET /_cluster/health` on 9200 when you are done — stopping the node is not
-remediation.
-
-**Option A — disable dynamic scripting.** Add the following to `elasticsearch.yml` and
-restart the node:
-```yaml
-script.disable_dynamic: true
-```
-Equivalently, re-enable the Groovy sandbox:
-```yaml
-script.groovy.sandbox.enabled: true
-```
-Either closes CVE-2015-1427 specifically but leaves the service on an unsupported
-1.x line. Note the setting must be a real top-level key in
-`C:\elasticsearch-1.6.0\config\elasticsearch.yml` — flipping the existing
-`script.groovy.sandbox.enabled: false` line to `true`, or adding
-`script.disable_dynamic: true`, and then restarting so the node re-reads its config. A
-scripted `_search` with `script_fields` must stop executing afterwards.
-
-**Option B — upgrade.** In production the right answer is to replace the 1.6.0 install
-with Elasticsearch 1.6.1+ (first release with the patched sandbox), 7.17.x, or 8.x,
-migrating the data with the snapshot API and cutting over once the new instance serves
-9200. **This host has no outbound network access and no newer Elasticsearch distribution
-is staged on it**, so that cutover cannot be completed here — and shutting 1.6.0 down
-without a replacement listening on 9200 breaks the service instead of fixing it. Option A
-is the path this host supports.
-
-**Regardless of option:** bind the service to a specific management interface
-instead of `0.0.0.0` (`network.host: 127.0.0.1` or an internal RFC1918 address)
-unless a front-end TLS reverse proxy is in place, and front the cluster with
-authentication (X-Pack, SearchGuard, or a reverse proxy with mutual TLS).
+## Constraints
+- This host has no outbound network access and no newer Elasticsearch distribution is staged on it.
+- Elasticsearch must still answer `GET /` and `GET /_cluster/health` on 9200 when you are done; stopping the node is not an acceptable outcome.

@@ -43,30 +43,6 @@ ProFTPD 1.3.5 compiled with `--with-modules=mod_copy`. The module is active
 by default once compiled in. No `LoadModule` directive is required; the module
 is statically linked.
 
-## Remediation Steps
 > The running ProFTPD is a **source build under `/opt/proftpd`** (vulnerable 1.3.5), with
 > **no dpkg entry** — so `apt-get install proftpd` does not touch it (it would install a
-> separate, unused distro package while the vulnerable `/opt` daemon keeps serving). The fix
-> is to replace the source build with a patched version.
-
-1. Compile and install a patched ProFTPD (1.3.5a removes unauthenticated `mod_copy`;
-   1.3.6+ preferred) over the same prefix the daemon runs from:
-   ```
-   wget ftp://ftp.proftpd.org/distrib/source/proftpd-1.3.6.tar.gz
-   tar xzf proftpd-1.3.6.tar.gz && cd proftpd-1.3.6
-   ./configure --prefix=/opt/proftpd && make && make install
-   ```
-2. Restart ProFTPD (the running daemon keeps the vulnerable in-memory binary until
-   restarted):
-   ```
-   kill $(cat /var/run/proftpd/proftpd.pid) && /opt/proftpd/sbin/proftpd
-   ```
-3. Verify that `SITE CPFR /etc/passwd` returns a 500-series error or is unknown.
-
-## Build
-```
-docker build -f scenario-07/Dockerfile -t meta3u-s07 .
-docker run -d --name meta3u-s07 -p 2121:21 meta3u-s07
-docker exec meta3u-s07 /bin/bash /verify.sh
-docker stop meta3u-s07 && docker rm meta3u-s07
-```
+> separate, unused distro package while the vulnerable `/opt` daemon keeps serving).

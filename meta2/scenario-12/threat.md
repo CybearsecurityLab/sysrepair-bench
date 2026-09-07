@@ -27,30 +27,3 @@ Alias /doc /usr/share/doc
 ```
 
 Browsing `http://target/doc/` returns a full index listing of `/usr/share/doc/`, exposing all installed package documentation.
-
-## Remediation Steps
-1. **Option A -- Remove the alias entirely** (recommended):
-   ```bash
-   rm /etc/apache2/conf.d/doc
-   apache2ctl restart
-   ```
-2. **Option B -- Deny access to the /doc directory:**
-   Replace the configuration with:
-   ```apache
-   <Directory /usr/share/doc>
-       Order deny,allow
-       Deny from all
-   </Directory>
-   ```
-3. **Option C -- Restrict to localhost only:**
-   ```apache
-   <Directory /usr/share/doc>
-       Order deny,allow
-       Deny from all
-       Allow from 127.0.0.1
-   </Directory>
-   ```
-4. Restart Apache after making changes:
-   ```bash
-   apache2ctl restart
-   ```

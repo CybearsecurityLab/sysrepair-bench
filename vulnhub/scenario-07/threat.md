@@ -18,8 +18,3 @@ This mirrors the DC-1 VulnHub VM running Drupal 7.x.
 - **Service:** Apache + Drupal 7
 - **Port:** 80/TCP
 - **Configuration:** /var/www/html/includes/database/database.inc
-
-## Remediation Steps
-1. Backup the database: `mysqldump drupal > /var/lib/agent/backups/drupal_backup.sql`
-2. Patch database.inc: sanitize array keys with `preg_match('/^[a-zA-Z0-9_]+$/', $i)`
-3. Restart Apache

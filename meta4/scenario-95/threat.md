@@ -26,17 +26,3 @@ workflow executions.
 
 ## Vulnerable Configuration
 - `secret_key = temporary_key` in the `[webserver]` section of `airflow.cfg`
-
-## Remediation Steps
-1. Generate a strong random secret key:
-   ```
-   python3 -c "import secrets; print(secrets.token_hex(32))"
-   ```
-2. Replace the default value in `$AIRFLOW_HOME/airflow.cfg`:
-   ```ini
-   [webserver]
-   secret_key = <your-new-random-32-byte-hex-value>
-   ```
-3. Ensure the new value is not `temporary_key` or any other known default.
-4. Restart the Airflow webserver to apply the change.
-5. Verify the webserver responds on `http://localhost:8080`.

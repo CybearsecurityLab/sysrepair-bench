@@ -36,16 +36,3 @@ sshd to accept all compiled-in ciphers, including the weak ones:
 # aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,arcfour128,arcfour256,arcfour,
 # aes192-cbc,aes256-cbc,aes128-ctr,aes192-ctr,aes256-ctr
 ```
-
-## Remediation Steps
-1. Edit `/etc/ssh/sshd_config` and add or modify the `Ciphers` directive to only allow
-   CTR-mode ciphers:
-   ```
-   Ciphers aes256-ctr,aes192-ctr,aes128-ctr
-   ```
-2. Restart the SSH daemon:
-   ```
-   /etc/init.d/ssh restart
-   ```
-3. Verify the change by connecting with `ssh -vv` and confirming only CTR ciphers are
-   offered.

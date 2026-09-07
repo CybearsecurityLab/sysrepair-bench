@@ -31,18 +31,3 @@ VRFY root
 VRFY nonexistent
 550 5.1.1 <nonexistent>: Recipient address rejected
 ```
-
-## Remediation Steps
-1. Edit `/etc/postfix/main.cf` and add or modify:
-   ```
-   disable_vrfy_command = yes
-   ```
-2. Restart Postfix to apply the change:
-   ```bash
-   postfix reload
-   ```
-   or:
-   ```bash
-   /etc/init.d/postfix restart
-   ```
-3. Verify by connecting to port 25 and issuing a VRFY command -- the server should reject it with a 502 error.

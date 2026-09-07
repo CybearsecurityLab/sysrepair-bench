@@ -26,10 +26,3 @@ files. If `mod_cgi`/`mod_cgid` is enabled, the same traversal into
 - **Vulnerable binary:** `/usr/local/apache2/bin/httpd`
 - **Aggravating config:** mod_cgi/mod_cgid loaded, `Require all granted`
   on `<Directory "/">`
-
-## Remediation Steps
-1. Upgrade httpd to **2.4.51 or later** (2.4.50 is also vulnerable — see
-   scenario 09).
-2. As a temporary compensating control, remove the `Require all granted`
-   block on `<Directory "/">` and unload `cgi_module`/`cgid_module`.
-3. Verify the server still serves the default landing page on port 80.

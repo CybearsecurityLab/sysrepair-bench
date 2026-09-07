@@ -44,19 +44,4 @@ SMB1 : 1
 `LanmanServer` reads `Stopped` on this host: the SMB server driver stack (`Srv2` →
 `srvnet.sys`) does not load in a container, so 445/TCP never binds. The persisted
 `SMB1` setting is still live configuration — it is what the SMB server would honour
-the moment this configuration reached a host where the stack does load, which is why
-it has to be turned off here rather than dismissed as inert.
-
-## Remediation Steps
-1. Disable the SMBv1 dialect on the server side immediately:
-   ```powershell
-   Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
-   ```
-2. Remove the optional component so it cannot be silently re-enabled:
-   ```powershell
-   Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart
-   ```
-3. (Optional) Block SMBv1 inbound at the firewall for defense in depth — modern
-   clients that still need it should be replaced, not accommodated.
-4. Verify that file shares still mount from a SMBv2/3 client; legacy clients (XP,
-   Server 2003, some embedded NAS) will lose access — that's the intended outcome.
+the moment this configuration reached a host where the stack does load.

@@ -40,21 +40,3 @@ segment is hardened.
 EnableMulticast      = 1     # LLMNR on
 NetbiosOptions       = 1     # NBT-NS on (per interface)
 ```
-
-## Remediation Steps
-1. Disable LLMNR host-wide:
-   ```powershell
-   New-Item -Path 'HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient' -Force | Out-Null
-   Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient' `
-     -Name 'EnableMulticast' -Value 0 -Type DWord
-   ```
-2. Disable NBT-NS on every interface:
-   ```powershell
-   Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces' |
-     ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name NetbiosOptions -Value 2 -Type DWord }
-   ```
-3. Restart the host (or the `netbt` + `dnscache` services) so the kernel stops
-   listening on UDP/5355 and UDP/137.
-4. Verify resolution of legitimate hostnames still works via DNS — any breakage is
-   almost always a missing DNS entry that was previously being papered over by LLMNR
-   broadcast; fix DNS rather than re-enabling LLMNR.

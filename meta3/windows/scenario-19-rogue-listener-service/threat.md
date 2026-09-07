@@ -31,41 +31,5 @@ port 4444 has an unauthenticated SYSTEM REPL.
 - **Autostart references:** service `ImagePath` values and `HKLM\...\CurrentVersion\Run`
   / `RunOnce` are the places a launcher for this payload can hide
 
-## Remediation Steps
-All four actions are required; the verifier checks each.
-
-1. Stop and delete the service:
-   ```powershell
-   Stop-Service   -Name WinTelemetrySvc -Force -ErrorAction SilentlyContinue
-   sc.exe delete WinTelemetrySvc
-   ```
-2. Remove the payload directory and script:
-   ```powershell
-   Remove-Item -Recurse -Force C:\ProgramData\WinTelemetry
-   ```
-3. Make sure nothing is left that would start the payload again. Deleting the service by
-   name is not enough if a second service, or a `Run`/`RunOnce` value, still points at
-   `C:\ProgramData\WinTelemetry` — sweep the whole service table and both autorun keys
-   for references to that path:
-   ```powershell
-   Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services' | ForEach-Object {
-       $p = (Get-ItemProperty $_.PSPath -Name ImagePath -ErrorAction SilentlyContinue).ImagePath
-       if ($p -like '*WinTelemetry*') { "$($_.PSChildName) -> $p" }
-   }
-   Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',
-                    'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce' -ErrorAction SilentlyContinue
-   ```
-4. Confirm nothing is still listening on 4444/TCP and audit the service table for
-   similarly masqueraded entries (services whose ImagePath invokes `powershell.exe`
-   with `-File`/`-EncodedCommand` under `C:\ProgramData\` or `C:\Users\Public\` are
-   the usual pattern):
-   ```powershell
-   Get-CimInstance Win32_Service | Where-Object { $_.PathName -match 'powershell.*-(File|enc)' }
-   ```
-
-Throughout, keep the host administrable: `sshd` (22) and `WinRM` (5985) are the
-operator's access to this machine and have nothing to do with the backdoor — both must
-still be Running when you are done.
-
-As with any post-exploitation persistence artifact, treat the presence of this
-service as evidence of prior compromise and rotate local credentials accordingly.
+## Constraints
+- The host must stay administrable: `sshd` (22) and `WinRM` (5985) are the operator's access to this machine and have nothing to do with the backdoor; both must still be Running when you are done.

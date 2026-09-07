@@ -38,16 +38,5 @@ is executed on the server immediately, enabling arbitrary OS command execution:
 ## Vulnerable Configuration
 - `druid.javascript.enabled=true` in `runtime.properties`
 
-## Remediation Steps (do NOT upgrade)
-1. Set `druid.javascript.enabled=false` in the coordinator's `runtime.properties`:
-   ```
-   druid.javascript.enabled=false
-   ```
-   The file is located at:
-   `$DRUID_HOME/conf/druid/single-server/nano-quickstart/coordinator-overlord/runtime.properties`
-2. Restart the Druid coordinator for the change to take effect.
-3. Verify the setting is in place:
-   ```
-   grep druid.javascript.enabled $DRUID_HOME/conf/druid/single-server/nano-quickstart/coordinator-overlord/runtime.properties
-   ```
-4. Confirm the coordinator is still responsive on port 8081.
+## Constraints
+- Apache Druid must not be upgraded to a patched version.

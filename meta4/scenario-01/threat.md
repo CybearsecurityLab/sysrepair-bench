@@ -33,14 +33,3 @@ is sufficient to trigger the lookup.
 ## Vulnerable Configuration
 - `log4j-core` version 2.14.1
 - `-Dlog4j2.formatMsgNoLookups=false` (JNDI substitution enabled)
-
-## Remediation Steps
-1. Upgrade the bundled Log4j to **2.17.1 or later** (the 2.15 and 2.16
-   releases have follow-on CVEs — see scenarios 02–04). Replace
-   `log4j-core-2.14.1.jar` and `log4j-api-2.14.1.jar` under
-   `/opt/solr/server/lib/ext/` with the fixed versions.
-2. As a stop-gap while the upgrade is staged, set
-   `-Dlog4j2.formatMsgNoLookups=true` in `/opt/solr/bin/solr.in.sh` and
-   restart Solr.
-3. Verify that the Solr admin UI and the `/solr/admin/cores` endpoint still
-   respond on port 8983.

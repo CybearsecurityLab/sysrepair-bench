@@ -12,8 +12,3 @@ Non-essential binaries have dangerous Linux capabilities: python3 has cap_dac_re
 
 ## Affected Service
 - **Binaries:** /usr/bin/python3.7, /usr/bin/find
-
-## Remediation Steps
-1. Remove capabilities: `setcap -r /usr/bin/python3.7`
-2. `setcap -r /usr/bin/find`
-3. Audit with `getcap -r / 2>/dev/null`

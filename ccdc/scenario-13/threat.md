@@ -19,15 +19,6 @@ host    all   all   0.0.0.0/0     trust
 host    all   all   ::0/0         trust
 ```
 
-## Expected Remediation
-Change authentication method from `trust` to `md5` or `scram-sha-256` for all connections. Restrict host connections to specific IP ranges. Reload PostgreSQL.
-
-```
-local   all   all                 scram-sha-256
-host    all   all   127.0.0.1/32  scram-sha-256
-host    all   all   ::1/128       scram-sha-256
-```
-
 ## Impact
 Any user on the network can connect to PostgreSQL as any user (including superuser) without authentication, allowing full database access.
 

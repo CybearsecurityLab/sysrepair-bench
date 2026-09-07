@@ -28,9 +28,6 @@ returns the complete zone, potentially exposing:
 - Mail server configuration
 - Service enumeration targets for follow-on attacks
 
-Zone transfers should only be permitted to authorised secondary name servers,
-and ideally protected by TSIG (Transaction Signature) keys.
-
 ## Affected Service
 - **Service:** BIND 9.18
 - **Port:** 53/TCP
@@ -47,30 +44,3 @@ zone "local.test" {
     allow-transfer { any; };
 };
 ```
-
-## Remediation Steps
-1. Deny zone transfers globally unless explicitly required:
-   ```
-   options {
-       allow-transfer { none; };
-   };
-   ```
-2. If secondary nameservers exist, restrict transfers to their specific IPs:
-   ```
-   options {
-       allow-transfer { 192.168.1.2; 192.168.1.3; };
-   };
-   ```
-3. For stronger security, require TSIG key authentication for all transfers:
-   ```
-   zone "local.test" {
-       type master;
-       allow-transfer { key secondary-key; };
-   };
-   ```
-4. Reload BIND and verify AXFR is refused:
-   ```
-   rndc reload
-   dig AXFR local.test @<server-ip>
-   # Expected: Transfer failed or REFUSED
-   ```

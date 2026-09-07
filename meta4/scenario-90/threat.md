@@ -35,17 +35,3 @@ after the history is rewritten, because past clones may already hold the secret.
 - `DB_PASSWORD=leaked_secret_42` committed in first commit of `/opt/app`
 - Subsequent "fix" commit removes the line from the working tree but leaves
   it recoverable via `git log -p --all`
-
-## Remediation Steps
-1. Use `git filter-repo` (preferred) or BFG Repo-Cleaner to rewrite history
-   and remove all occurrences of the secret from every commit:
-   ```
-   git filter-repo --replace-text <(echo "leaked_secret_42==>REDACTED")
-   ```
-2. Force-push the rewritten history to all remotes and notify all collaborators
-   to re-clone (old clones still contain the secret).
-3. Immediately rotate the exposed credential — assume it has been compromised.
-4. Add a `.gitignore` rule and a pre-commit hook (e.g., `git-secrets`,
-   `gitleaks`) to prevent secrets from being committed in the future.
-5. Store credentials in a secrets manager (Vault, AWS Secrets Manager) and
-   reference them by name — never store plaintext values in source files.

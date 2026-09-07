@@ -16,7 +16,3 @@ Mirrors the DC-5 VulnHub VM.
 ## Affected Service
 - **Service:** GNU Screen
 - **Binary:** /usr/bin/screen
-
-## Remediation Steps
-1. Remove SUID bit: `chmod u-s /usr/bin/screen`
-2. Verify with: `ls -la /usr/bin/screen`

@@ -24,7 +24,3 @@ This is a direct reproduction from the Metasploitable 2 VulnHub VM.
 [global]
     wide links = yes
 ```
-
-## Remediation Steps
-1. Edit `/etc/samba/smb.conf` and set `wide links = no` in [global]
-2. Restart Samba: `service smbd restart`

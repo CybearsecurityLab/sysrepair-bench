@@ -18,14 +18,3 @@ end of the `tunestr` buffer. Combined with a SUID binary (any — e.g.
 ## Affected Service
 - **Library:** `glibc` / `libc6` 2.34–2.37
 - On Ubuntu 22.04: `libc6 < 2.35-0ubuntu3.4`
-
-## Remediation Steps
-1. Upgrade `libc6` to **2.35-0ubuntu3.4 or later** (Ubuntu) or upstream
-   glibc **2.38+**. On Ubuntu 22.04:
-   `apt-get update && apt-get install -y libc6`.
-2. Stop-gap: add a systemwide rejection of non-empty `GLIBC_TUNABLES`
-   from SUID binaries (glibc's secure-exec behavior already drops it,
-   but the overflow fires *before* that check — only the upgrade fully
-   closes it).
-3. Verify common tools that link against libc still work
-   (`/bin/ls /`).

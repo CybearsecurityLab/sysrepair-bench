@@ -17,7 +17,3 @@ Mirrors the DC-4 and DC-8 VulnHub VMs.
 - **Service:** Exim4
 - **Port:** 25/TCP
 - **Binary:** /usr/sbin/exim4
-
-## Remediation Steps
-1. Remove SUID bit: `chmod u-s /usr/sbin/exim4`
-2. Verify: `stat -c %a /usr/sbin/exim4` should not show 4xxx

@@ -17,7 +17,3 @@ Mirrors PwnOS 2.0 VulnHub VM and DC-9 scenarios.
 - **Service:** Apache + PHP
 - **Port:** 80/TCP
 - **Configuration:** /etc/php/7.3/apache2/php.ini
-
-## Remediation Steps
-1. Set `open_basedir = /var/www/html:/tmp` in php.ini
-2. Restart Apache

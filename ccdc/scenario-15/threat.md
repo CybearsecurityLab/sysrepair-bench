@@ -20,11 +20,8 @@ anon_mkdir_write_enable=YES
 no_anon_password=YES
 ```
 
-## Expected Remediation
-Set `anonymous_enable=NO` or at minimum disable `anon_upload_enable=NO` and `anon_mkdir_write_enable=NO`. Reload vsftpd.
-
 ## Impact
 Anonymous users can upload malware, web shells, or other malicious content to the server. Combined with a web server, this could lead to remote code execution.
 
 ## Source
-TAMU CCDC linuxmonkeys vsftpd.sh (anonymous_enable=NO)
+TAMU CCDC linuxmonkeys vsftpd.sh

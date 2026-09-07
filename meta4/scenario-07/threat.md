@@ -27,16 +27,3 @@ store, an attacker can:
   - `/usr/local/tomcat/conf/web.xml` default servlet `readonly=false`
   - `/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml` with
     `PersistentManager` + `FileStore`
-
-## Remediation Steps
-Any one of the following closes the vulnerability; the most minimal fix is
-preferred:
-
-1. **Config** (preferred): flip the default servlet back to
-   `readonly=true` in `/usr/local/tomcat/conf/web.xml`.
-2. **Config**: remove the `PersistentManager` / `FileStore` block from
-   `ROOT.xml` (fall back to the in-memory session manager).
-3. **Patch**: upgrade to Tomcat **9.0.99 / 10.1.35 / 11.0.3** or later.
-
-After remediation, restart Tomcat and verify that the default landing page
-still responds on 8080.

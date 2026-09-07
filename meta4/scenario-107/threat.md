@@ -31,21 +31,6 @@ than the system SSH port (22).
 The `ssh:daemon(2222, [...])` call is reachable from any IP — no network-level
 restriction is in place to limit who can initiate an SSH handshake.
 
-## Remediation (Compensating Control)
-**Do NOT rely solely on upgrading** when an immediate OTP upgrade is not
-feasible. Apply the following compensating controls:
-
-1. **iptables DROP rule** — block inbound connections to the OTP SSH port
-   (2222) from all sources except trusted admin IP ranges:
-   ```bash
-   iptables -I INPUT -p tcp --dport 2222 -j DROP
-   # Allow only trusted admin subnet:
-   iptables -I INPUT -p tcp -s 10.0.0.0/8 --dport 2222 -j ACCEPT
-   ```
-
-2. **Disable the OTP SSH daemon** entirely if it is not required for the
-   application's operation. Remove the `ssh:daemon(...)` call or add an
-   application configuration guard.
-
-3. Combine both controls: restrict network access AND disable the daemon
-   if not needed.
+## Constraints
+- Upgrading Erlang/OTP must not be the sole measure relied on when an
+  immediate OTP upgrade is not feasible.

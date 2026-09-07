@@ -23,13 +23,3 @@ query string and its `log4j2.xml` uses a PatternLayout that expands
 ## Affected Service
 - **Port:** 8080/TCP
 - **Vulnerable artifact:** `/opt/app/log4j-core-2.15.0.jar`
-
-## Remediation Steps
-1. Replace `log4j-core-2.15.0.jar` and `log4j-api-2.15.0.jar` with
-   **2.17.1 or later**. (2.16 is vulnerable to CVE-2021-45105; 2.17.0 is
-   vulnerable to CVE-2021-44832 — see scenarios 03 and 04.)
-2. Additionally, remove the `${ctx:q}` reference from any PatternLayout and
-   remove JndiLookup.class from the classpath if upgrade is not immediately
-   possible.
-3. Verify the HTTP server still responds with `200 ok` on
-   `http://127.0.0.1:8080/`.

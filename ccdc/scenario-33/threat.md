@@ -13,14 +13,10 @@ The system is running an outdated version of OpenSSL that has been held back fro
 - `/opt/.openssl_vulnerable_version` - Records the vulnerable version
 - `/opt/.openssl_status` - Marker indicating the vulnerability
 
-## Expected Remediation
-1. Remove the apt hold on `openssl` and `libssl3`/`libssl3t64` packages.
-2. Run `apt-get update && apt-get upgrade -y openssl libssl3t64` (or the current library package name).
-3. Verify that `openssl version` shows the latest available version.
-4. Remove or update the vulnerability marker files.
-5. Ensure TLS connections still work properly after the upgrade.
+## Constraints
+- TLS connections must continue to work.
 
 ## References
-- CIS Ubuntu Linux Benchmark - Section 1.9 (Ensure updates, patches, and additional security software are installed)
+- CIS Ubuntu Linux Benchmark - Section 1.9
 - NIST SP 800-52 (Guidelines for TLS Implementations)
 - TAMU check_openssl_date.sh

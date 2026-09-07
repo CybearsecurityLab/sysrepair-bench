@@ -37,16 +37,3 @@ POST /rest/tinymce/1/macro/preview   _template=../../../../etc/passwd    # file 
 ## Affected Service
 - **Service:** Confluence Server (simulated with Python/Flask)
 - **Port:** 8090/TCP
-
-## Remediation Steps (in-container fix)
-1. Validate the `_template` parameter against a safe allowlist (reject path
-   traversal, remote URLs, and inline directives), matching Atlassian's fix. In
-   the sim, set `VALIDATE_MACRO_TEMPLATE = True` in `/opt/confluence/app.py`:
-   ```
-   sed -i 's/^VALIDATE_MACRO_TEMPLATE = False/VALIDATE_MACRO_TEMPLATE = True/' /opt/confluence/app.py
-   ```
-2. **Restart** the service so the running process loads the fix (the sim boots
-   on 0.0.0.0:8090 in the background; a fix that is not restarted leaves the old
-   vulnerable process running).
-3. Verify: the SSTI command-execution and file-read payloads are rejected (400).
-4. Regression: a legitimate macro preview still renders on port 8090.

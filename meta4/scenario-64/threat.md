@@ -22,23 +22,11 @@ credentials. An attacker can:
 - Write arbitrary register values to manipulate physical processes
 - Cause equipment damage or safety incidents
 
-Because the vulnerability is a protocol design flaw, it cannot be fixed in
-software — compensating network-layer controls are required.
-
 ## Affected Service
 - **Service:** pyModbusTCP simulated PLC
 - **Port:** 502/TCP
 - **Vulnerable configuration:** server bound to `0.0.0.0` with no firewall
 
-## Remediation Steps
-1. Apply an iptables allow-list that restricts port 502 to authorized
-   engineering workstation IPs only, dropping all other traffic:
-   ```
-   iptables -A INPUT -p tcp --dport 502 -s <trusted-ip> -j ACCEPT
-   iptables -A INPUT -p tcp --dport 502 -j DROP
-   ```
-2. Alternatively, bind the Modbus server to `127.0.0.1` only so it is not
-   reachable from external interfaces.
-3. Deploy the Modbus server on an isolated OT network VLAN with no direct
-   internet or corporate LAN access.
-4. Use a Modbus-aware firewall or IDS to detect anomalous read/write patterns.
+## Constraints
+- The PLC must remain running and must keep answering Modbus holding-register
+  reads from loopback.

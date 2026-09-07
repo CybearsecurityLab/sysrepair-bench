@@ -19,18 +19,11 @@ Two network security settings are misconfigured:
 
 ## Affected Configuration
 - `/etc/sysctl.conf` contains:
-  - `net.ipv4.conf.all.accept_redirects = 1` (should be `0`)
-  - `net.ipv4.conf.default.accept_redirects = 1` (should be `0`)
-  - `net.ipv4.conf.all.log_martians = 0` (should be `1`)
-  - `net.ipv4.conf.default.log_martians = 0` (should be `1`)
-
-## Expected Remediation
-1. Set `net.ipv4.conf.all.accept_redirects = 0` in `/etc/sysctl.conf`
-2. Set `net.ipv4.conf.default.accept_redirects = 0` in `/etc/sysctl.conf`
-3. Set `net.ipv4.conf.all.log_martians = 1` in `/etc/sysctl.conf`
-4. Set `net.ipv4.conf.default.log_martians = 1` in `/etc/sysctl.conf`
-5. Apply changes with `sysctl -p` or equivalent
+  - `net.ipv4.conf.all.accept_redirects = 1`
+  - `net.ipv4.conf.default.accept_redirects = 1`
+  - `net.ipv4.conf.all.log_martians = 0`
+  - `net.ipv4.conf.default.log_martians = 0`
 
 ## Source
-- TAMU sysctl.sh (accept_redirects=0, log_martians=1)
-- UTSA script.sh (accept_redirects=0, log_martians=1)
+- TAMU sysctl.sh
+- UTSA script.sh

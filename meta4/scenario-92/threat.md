@@ -29,21 +29,3 @@ targeted follow-on attacks against exposed services.
 
 ## Vulnerable Configuration
 - Prometheus started without `--web.config.file`; all endpoints unauthenticated
-
-## Remediation Steps
-1. Create a `web.yml` configuration file enabling HTTP basic authentication:
-   ```yaml
-   basic_auth_users:
-     admin: <bcrypt-hashed-password>
-   ```
-   Generate the bcrypt hash with: `htpasswd -nBC 12 admin`
-2. Start Prometheus with `--web.config.file=/etc/prometheus/web.yml` so that
-   all HTTP endpoints require credentials.
-3. Verify that unauthenticated requests are rejected:
-   ```
-   curl http://localhost:9090/metrics   # must return 401
-   ```
-4. Verify that authenticated requests still succeed:
-   ```
-   curl -u admin:pass http://localhost:9090/metrics  # must return 200
-   ```

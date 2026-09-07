@@ -19,9 +19,6 @@ Apache HTTP Server (apache2)
 </Directory>
 ```
 
-## Expected Remediation
-Change `Options Indexes` to `Options -Indexes` (disable Indexes) in all relevant Apache configuration blocks. Reload Apache.
-
 ## Impact
 Directory listing exposes internal file names, backup files, configuration files, and other sensitive data that should not be publicly accessible.
 

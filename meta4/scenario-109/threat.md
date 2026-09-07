@@ -35,25 +35,6 @@ unauthenticated Remote Code Execution chain against the full WebLogic stack.
 The console is reachable on port 7001 with no upstream proxy normalising or
 blocking encoded traversal paths.
 
-## Remediation (Compensating Control)
-Deploy an nginx reverse proxy that blocks access to `/console` paths entirely
-from non-admin sources, and normalises URL encoding before forwarding:
-
-```nginx
-# Block the console path including URL-encoded traversal attempts
-location ~* /console {
-    deny all;
-    return 403;
-}
-
-location / {
-    proxy_pass http://127.0.0.1:7001;
-}
-```
-
-This stops the URL-encoding bypass because nginx processes the path before
-the request reaches WebLogic. An attacker sending the double-encoded URL hits
-nginx's `/console` deny rule regardless of encoding tricks.
-
-Additionally, restrict port 7001 to trusted admin IPs using iptables so the
-WebLogic port is not directly reachable from the internet.
+## Constraints
+- The service on port 7001/TCP must remain running and reachable.
+- Non-console paths must continue to be served on port 7001.
