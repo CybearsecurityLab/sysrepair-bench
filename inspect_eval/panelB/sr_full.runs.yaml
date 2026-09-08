@@ -1,4 +1,4 @@
-# ACSAC-2026 ARTIFACT RERUN -- full grid, one epoch.
+# SysRepair-2026 ARTIFACT RERUN -- full grid, one epoch.
 #
 # seeds:[5] means max_attempts=5, and pass@1..5 is reconstructed from the five
 # submit attempts WITHIN each episode: every solver emits k-1 intermediate
@@ -45,7 +45,7 @@ defaults:
   model_client_timeout: 360
 presets:
   # ---- smoke: validates the whole path before we commit days of compute ----
-  acsac_smoke_m2:
+  sr_smoke_m2:
     model: openai/MiniMax-M2.7
     base_url: https://api.minimax.io/v1
     api_key: ${MINIMAX_API_KEY_2}
@@ -58,7 +58,7 @@ presets:
     request_window: 18000
 
   # ---- MiniMax-M2.7, key 2, no GPU needed ----
-  acsac_m2_full:
+  sr_m2_full:
     model: openai/MiniMax-M2.7
     base_url: https://api.minimax.io/v1
     api_key: ${MINIMAX_API_KEY_2}
@@ -68,7 +68,7 @@ presets:
     request_limit: 15000
     request_window: 18000
 
-  acsac_m2_hivestorm:
+  sr_m2_hivestorm:
     model: openai/MiniMax-M2.7
     base_url: https://api.minimax.io/v1
     api_key: ${MINIMAX_API_KEY_2}
@@ -80,7 +80,7 @@ presets:
     request_window: 18000
 
   # ---- Qwen models, served on Delta and tunnelled to :8001 ----
-  # 9B is HALF the ACSAC paper (the other model is MiniMax-M2.7; 35B is not in
+  # 9B is HALF the SysRepair paper (the other model is MiniMax-M2.7; 35B is not in
   # tab:headline). Served locally on the 2xL40 at :8100.
   #
   # vulnhub is included even though the peer holds partial 9B/vulnhub cells:
@@ -92,7 +92,7 @@ presets:
   # Reportable solvers first. reflexion is the one most exposed to connection
   # attrition (the peer measured 14 of 30 episodes lost in one cell, against 0
   # for react), so retry handling matters most there.
-  acsac_9b_full:
+  sr_9b_full:
     model: openai/Qwen/Qwen3.5-9B
     base_url: http://localhost:8100/v1
     api_key: vllm
@@ -103,7 +103,7 @@ presets:
   # The peer already holds qwen35b on ccdc+vulnhub (80 scenarios, all 5 solvers,
   # both conditions). Run only the suites it does not hold, so we do not reburn
   # 800 banked episodes.
-  acsac_35b_full:
+  sr_35b_full:
     model: openai/Qwen/Qwen3.5-35B-A3B
     base_url: http://localhost:8100/v1
     api_key: vllm

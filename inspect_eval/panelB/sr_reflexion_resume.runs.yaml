@@ -1,0 +1,68 @@
+# MiniMax-M2.7 reflexion day1 - RESUME of a cell parked at 137/184.
+#
+# The cell was produced on the previous Windows box and stopped when its Docker
+# engine died, NOT on quota; it was cancelled cleanly rather than left to drain,
+# which is why it is resumable at all. Its .eval and eval-set.json came across in
+# the 2026-09-07 handoff archive and are staged in
+# logs_es/sr_minimax_reflexion_d1_reflexion_day1_k5.
+#
+# RESUME ONLY, WITH SR_EVAL_SET=1. Re-running the 137 scored episodes would burn
+# metered MiniMax quota for nothing. The preset name must stay exactly
+# sr_minimax_reflexion_d1 because run.py derives the eval_set directory from
+# it (run.py:782); a different name starts a new namespace and re-runs everything.
+#
+# WHY THIS CELL MATTERS: MiniMax reflexion is one of four cells with no
+# corrected-harness data anywhere, and those four are why tab:headline currently
+# carries pass@5-below-pass@1 values.
+defaults:
+  seeds: 5
+  epochs: 1
+  modes: [day1]
+  solvers: [reflexion]
+  # RESTORED FROM sr_full.runs.yaml, which produced this cell's first 138
+  # episodes. Omitting them is what killed the 2026-09-08 05:03 resume: with
+  # fail_on_error unset the run aborts on the FIRST sample error, so a single
+  # flake on meta4/scenario-06 ended the task at 138 of 184 with 44 never
+  # attempted. That scenario is NOT broken: across every log on this box it has
+  # scored 82 times against 6 failures, from unrelated causes (sandbox, API
+  # connection, a stray 35B 404). Neither key is in TASK_KEYS (run.py:738), so
+  # they change eval_kwargs only and do NOT fork the eval_set identity.
+  fail_on_error: 0.95
+  retry_on_error: 1
+  message_limit: 0
+  token_limit: 0
+  # These MUST match the values recorded in the staged cell's task_args exactly.
+  # request_limit/request_window are TASK KEYS: they participate in the eval_set
+  # task identity, so a mismatch makes inspect refuse the resume with
+  # "log_dir is not associated with a task passed to eval_set" and the only
+  # alternative would be re-running all 137 scored episodes. I had 0/unset here
+  # and the cell was built with 15000/18000.
+  request_limit: 15000
+  request_window: 18000
+  time_limit: 7200
+  working_limit: 5400
+  bash_timeout: 180
+  verify_timeout: 360
+
+presets:
+  sr_minimax_reflexion_d1:
+    model: openai/MiniMax-M2.7
+    base_url: https://api.minimax.io/v1
+    api_key: ${MINIMAX_API_KEY}
+    benchmarks: [ccdc, meta3/ubuntu, meta4]
+    exclude:
+      - meta4/scenario-61
+      - meta4/scenario-100
+    # Was 6. Dropped to 2 after the first resume attempt died on RateLimitError:
+    # this cell is a THIRD concurrent consumer of one shared MiniMax budget
+    # alongside the two sr_m2_full legs, and at 6 it took key2's interval burn
+    # from ~15 to ~22 points/hour and onto the floor. 2 coexists instead of
+    # starving them. max_connections is NOT a task key, so changing it does not
+    # break the eval_set identity and the resume still picks up at 137/184.
+    max_connections: 2
+    # model_args participate in the eval_set task identity too, not just
+    # task_args. The staged cell records model_args {"client_timeout": 240.0};
+    # run.py:772 derives that from model_client_timeout, defaulting to 60. Left
+    # unset, the identity differs and the resume is refused exactly as if a task
+    # key were wrong.
+    model_client_timeout: 240

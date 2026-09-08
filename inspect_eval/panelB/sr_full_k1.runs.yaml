@@ -1,6 +1,6 @@
-# ACSAC M2.7 on API KEY 1.
+# SysRepair M2.7 on API KEY 1.
 #
-# The preset name is DELIBERATELY identical to the one in acsac_full.runs.yaml.
+# The preset name is DELIBERATELY identical to the one in sr_full.runs.yaml.
 # run.py derives the eval_set dir as ./logs_es/{preset}_{solver}_{mode}_k{k},
 # so sharing the name makes both keys write into the SAME eval_set namespace.
 # That is what lets key 2, when it eventually reaches lats/plan_and_solve in its
@@ -11,7 +11,7 @@
 # would put two processes in one eval_set dir concurrently. Key 2 currently owns
 # [react, basic, reflexion]; this file owns [lats, plan_and_solve] only.
 #
-# Every budget key below is copied verbatim from acsac_full.runs.yaml. Unequal
+# Every budget key below is copied verbatim from sr_full.runs.yaml. Unequal
 # budgets across cells make cross-cell accuracy comparisons meaningless, and
 # tab:headline compares these cells directly.
 defaults:
@@ -33,7 +33,7 @@ defaults:
   model_attempt_timeout: 300
   model_client_timeout: 360
 presets:
-  acsac_m2_full:
+  sr_m2_full:
     model: openai/MiniMax-M2.7
     base_url: https://api.minimax.io/v1
     api_key: ${MINIMAX_API_KEY}

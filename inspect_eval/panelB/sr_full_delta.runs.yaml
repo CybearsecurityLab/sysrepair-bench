@@ -1,6 +1,6 @@
-# ACSAC Qwen3.5-9B on DELTA (job 21850308, 4xA40, -dp 4), tunnelled to :8001.
+# SysRepair Qwen3.5-9B on DELTA (job 21850308, 4xA40, -dp 4), tunnelled to :8001.
 #
-# The preset name is DELIBERATELY identical to the one in acsac_full.runs.yaml.
+# The preset name is DELIBERATELY identical to the one in sr_full.runs.yaml.
 # run.py derives the eval_set dir as ./logs_es/{preset}_{solver}_{mode}_k{k},
 # so sharing the name puts Delta and the local L40s in ONE eval_set namespace:
 # whichever finishes a leg first, the other sees it complete and skips it.
@@ -9,7 +9,7 @@
 # [react, basic, reflexion] and is on basic; this file owns the tail,
 # [plan_and_solve, lats], which local has not started.
 #
-# Budgets are copied from acsac_full.runs.yaml VERBATIM. tab:headline compares
+# Budgets are copied from sr_full.runs.yaml VERBATIM. tab:headline compares
 # these cells directly against the locally-served ones, and unequal budgets
 # would make that comparison meaningless.
 #
@@ -36,7 +36,7 @@ defaults:
   model_attempt_timeout: 300
   model_client_timeout: 360
 presets:
-  acsac_9b_full:
+  sr_9b_full:
     model: openai/Qwen/Qwen3.5-9B
     base_url: http://127.0.0.1:8001/v1
     api_key: ${DELTA_VLLM_KEY}

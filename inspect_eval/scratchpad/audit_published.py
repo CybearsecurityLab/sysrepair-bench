@@ -11,7 +11,7 @@ three:
 
 So this never pools. It groups by (model string, source dir) and prints each
 source separately, then flags when a cell has more than one source. Grouping only
-by model string would silently merge the ACSAC scaffold-study ccdc runs into the
+by model string would silently merge the scaffold-study ccdc runs into the
 main 9B ccdc cell, which is the same defect being audited.
 """
 from collections import defaultdict

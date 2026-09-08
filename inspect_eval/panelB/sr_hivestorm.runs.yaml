@@ -1,7 +1,7 @@
-# ACSAC hivestorm cells for tab:hivestorm.
+# SysRepair hivestorm cells for tab:hivestorm.
 #
 # tab:hivestorm reports MiniMax-M2.7 and Qwen3.5-9B, but the only hivestorm logs
-# in the repo are DeepSeek Flash, so BOTH rows need running. acsac_full.runs.yaml
+# in the repo are DeepSeek Flash, so BOTH rows need running. sr_full.runs.yaml
 # carried an M2.7 hivestorm preset but none for the 9B; this file has both so the
 # two rows are produced under one config.
 #
@@ -36,7 +36,7 @@ defaults:
   model_attempt_timeout: 300
   model_client_timeout: 360
 presets:
-  acsac_hs_m2:
+  sr_hs_m2:
     model: openai/MiniMax-M2.7
     base_url: https://api.minimax.io/v1
     api_key: ${MINIMAX_API_KEY_2}
@@ -53,7 +53,7 @@ presets:
     request_limit: 15000
     request_window: 18000
 
-  acsac_hs_9b:
+  sr_hs_9b:
     model: openai/Qwen/Qwen3.5-9B
     base_url: http://localhost:8100/v1
     api_key: vllm
@@ -82,13 +82,13 @@ presets:
   # 21858271 is on gpuA40x4-PREEMPT and can die without notice. SR_EVAL_SET=1
   # is mandatory here so a preemption resumes rather than restarts, and
   # min_context makes preflight refuse if a later job comes back truncated.
-  acsac_hs_9b_delta:
+  sr_hs_9b_delta:
     model: openai/Qwen/Qwen3.5-9B
     base_url: http://127.0.0.1:8010/v1
     api_key: ${DELTA_HS_KEY}
     min_context: 262144
     max_connections: 4
-    # Same seven exclusions as acsac_hs_9b. Five Windows containers, one
+    # Same seven exclusions as sr_hs_9b. Five Windows containers, one
     # Windows VM and one FreeBSD VM cannot run on a Linux host, and they do NOT
     # skip: the leg dies the moment it reaches one (it went down on
     # "[automatedlab] Bringing up hs13-dc01"). Nine Linux containers remain.

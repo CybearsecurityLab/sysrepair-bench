@@ -21,13 +21,23 @@ defaults:
   time_limit: 7200
   bash_timeout: 180
   verify_timeout: 360
+  # Same omission that killed the MiniMax reflexion resume twice. With
+  # fail_on_error UNSET the run aborts on the FIRST sample error, which is why
+  # this leg kept ending far short: basic 12 of 256, reflexion 10 of 256, all
+  # three cells status=error. sr_full.runs.yaml (which produced the original
+  # episodes) sets 0.95 / 1, so restoring them also makes the re-run consistent
+  # with the data it is meant to join. Neither key is in TASK_KEYS (run.py:738):
+  # they go to eval_kwargs, so the eval_set identity is unchanged and the resume
+  # still picks up where it left off.
+  fail_on_error: 0.95
+  retry_on_error: 1
   message_limit: 0
   token_limit: 0
   request_limit: 0
   request_window: 18000
 
 presets:
-  acsac_9b_zd_fullctx:
+  sr_9b_zd_fullctx:
     model: openai/Qwen/Qwen3.5-9B
     base_url: http://localhost:8100/v1
     api_key: vllm

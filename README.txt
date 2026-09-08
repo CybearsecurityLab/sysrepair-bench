@@ -1,5 +1,5 @@
 SysRepair: Autonomous Remediation of Running Systems
-ACSAC 2026 -- Artifact Submission
+SysRepair-Bench -- Artifact Submission
 ====================================================
 
 WHAT THIS ARTIFACT IS
@@ -13,7 +13,7 @@ declared port.
 
 The artifact contains the scenario corpus, the execution harness, all six solver
 implementations including the NeuroPlan neural-symbolic planner, and the
-evaluation logs underlying the numbers in the paper.
+evaluation logs underlying the reported results.
 
 CONTENTS
 
@@ -30,12 +30,12 @@ QUICK START
   ./install.sh                      # dependencies, images, python env
   cd claims/claim1 && ./run.sh      # smallest claim, ~20 minutes
 
-Each claims/claimN/ holds claim.txt (the paper statement under test), run.sh
+Each claims/claimN/ holds run.sh
 (reproduces it), and expected/ (the reference output to compare against).
 
 SCALE, AND WHY EVERY CLAIM SHIPS A SCALED-DOWN MODE
 
-The full evaluation grid in the paper is six solvers against three models over
+The full evaluation grid is six solvers against three models over
 313 scenarios in two information conditions at five epochs. That is on the order
 of tens of thousands of container-backed episodes and several thousand GPU-hours;
 it is not reproducible inside an evaluation window, and we do not ask reviewers
@@ -43,7 +43,7 @@ to attempt it.
 
 Every run.sh therefore defaults to a SCALED subset that exercises the identical
 code path and completes in the time stated in its claim.txt. Passing SCALE=full
-runs the paper-scale configuration for anyone with the budget. The complete
+runs the full-scale configuration for anyone with the budget. The complete
 evaluation logs behind the published numbers ship as a separate archive, because they are large and are not kept in git; unpack it into logs/ or point LOGS at it. Every
 published cell can be recomputed exactly without re-running any model.
 

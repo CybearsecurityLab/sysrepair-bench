@@ -1,4 +1,4 @@
-# ACSAC-2026 rebuttal baseline grid: 3 models (2 families) x 5 solvers.
+# SysRepair-2026 rebuttal baseline grid: 3 models (2 families) x 5 solvers.
 # Models: MiniMax-M2.7 (MiniMax family), Qwen3.5-9B + Qwen3.5-35B-A3B (Qwen family).
 # Start ccdc+vulnhub (rebuttal-priority suites), both info conditions, 1 epoch (fold more later).
 # seeds:5 gives pass@1..5 in one pass. Write rebuttal as 5-epoch protocol; run 1 epoch at a time.
@@ -27,18 +27,18 @@ defaults:
   model_client_timeout: 360
 presets:
   # I run this locally (2x L40 serving Qwen3.5-9B on :8100)
-  acsac_qwen9b:
+  sr_qwen9b:
     model: openai/Qwen/Qwen3.5-9B
     base_url: http://localhost:8100/v1
     api_key: vllm
     benchmarks: [ccdc]   # peer runs 9B/vulnhub on Delta:8002; avoid double-run
   # Peer runs this on Delta (serve Qwen3.5-35B-A3B, tunnel to :8001)
-  acsac_qwen35b:
+  sr_qwen35b:
     model: openai/Qwen/Qwen3.5-35B-A3B
     base_url: http://localhost:8001/v1
     api_key: vllm
   # Peer runs this (MiniMax API, rate-limited)
-  acsac_minimax:
+  sr_minimax:
     model: openai/MiniMax-M2.7
     base_url: https://api.minimax.io/v1
     api_key: ${MINIMAX_API_KEY}

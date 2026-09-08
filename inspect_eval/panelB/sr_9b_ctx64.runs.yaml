@@ -13,8 +13,8 @@
 # 34.7 against a published 31: a 55-point band, and meta3-ubuntu falls to n=2.
 #
 # THE PRESET NAME IS DELIBERATELY NEW. run.py derives the eval_set dir from the
-# preset name, so `acsac_9b_ctx64` writes to fresh dirs and the original
-# `acsac_9b_full` cells are preserved untouched for comparison. This is a
+# preset name, so `sr_9b_ctx64` writes to fresh dirs and the original
+# `sr_9b_full` cells are preserved untouched for comparison. This is a
 # separate population, not a repair of the old one, and must be reported as
 # such: a cell regenerated at a corrected context length, not a swapped number.
 #
@@ -26,13 +26,21 @@
 #
 # meta4/ad-vm is excluded: Windows AD targets do not run on this host.
 #
-# Every other budget key is copied VERBATIM from acsac_full.runs.yaml. Context
+# Every other budget key is copied VERBATIM from sr_full.runs.yaml. Context
 # length is not a task key, but the budgets are, and changing them would fork
 # the cell for a second reason on top of the context change.
 defaults:
   seeds: [5]
   epochs: 1
-  modes: [day1, zero_day]
+  # DAY1 ONLY. The local 2xL40 box runs sr_9b_zd_fullctx: the SAME model, the
+  # same five suites and the same three solvers, restricted to zero_day. Leaving
+  # zero_day here would run every one of those cells twice on two servers and
+  # produce two competing eval_set dirs for one cell. Measured 9B scored coverage
+  # against the 256-scenario Linux target when this split was made: day1 basic
+  # 195, react 228, reflexion 238; zero_day basic 49, react 172, reflexion 50. So
+  # day1 is the smaller remaining gap (~107) and belongs on the 2-day dedicated
+  # Delta job, while the local box finishes zero_day.
+  modes: [day1]
   fail_on_error: 0.95
   retry_on_error: 1
   bash_timeout: 180
@@ -48,7 +56,7 @@ defaults:
   model_attempt_timeout: 300
   model_client_timeout: 360
 presets:
-  acsac_9b_ctx64:
+  sr_9b_ctx64:
     model: openai/Qwen/Qwen3.5-9B
     base_url: http://127.0.0.1:8002/v1
     api_key: ${DELTA_CTX64_KEY}

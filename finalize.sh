@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Regenerate every claim's expected/ table from the FINAL logs, then verify the
-# artifact by running every claim exactly as an ACSAC evaluator will.
+# artifact by running every reproduction script exactly as an evaluator will.
 #
 # WHY THIS EXISTS: the expected/ tables were generated while evaluation was
 # still running, so they describe smaller populations than the logs now hold
@@ -44,7 +44,7 @@ if [ "$VERIFY_ONLY" = "0" ]; then
        --out "$HERE/claims/claim2/expected/hivestorm.tsv" 2>/dev/null; then
     :
   else
-    echo "  SKIPPED: no hivestorm logs yet. tab:hivestorm reports MiniMax-M2.7"
+    echo "  SKIPPED: no hivestorm logs yet. the hivestorm table reports MiniMax-M2.7"
     echo "           and Qwen3.5-9B; until those runs land claim2 cannot ship."
   fi
 

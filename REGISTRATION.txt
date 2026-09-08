@@ -1,4 +1,4 @@
-ACSAC 2026 -- Artifact Registration
+SysRepair-Bench -- Artifact Registration
 Deadline: September 9, 11:59pm AoE
 
 PAPER TITLE
@@ -12,28 +12,23 @@ The software is the SysRepair benchmark and evaluation harness: 313 containerise
 scenarios across seven suites, a dual-objective execution oracle, six solver
 implementations (ReAct, Reflexion, Plan-and-Solve, LATS, an Agentless-style
 baseline, and the NeuroPlan neural-symbolic planner), and the analysis scripts
-that produce every table in the paper. Source code is submitted, not binaries.
+that produce every results table. Source code is submitted, not binaries.
 
 The data is the complete set of evaluation logs underlying the reported numbers:
 per-episode records containing the solver transcript, every submit attempt, the
 oracle's per-check verdicts, and token accounting. These support recomputation of
-the published statistics without re-executing any model.
+the reported statistics without re-executing any model.
 
-WHICH PARTS OF THE PAPER
+WHAT THE REPRODUCTION SCRIPTS COMPUTE
 
-  Section "Results / Accuracy", Table tab:headline
-      pass@K by solver, model and information condition.
-  Section "Results", Table tab:hivestorm
-      continuous scoring on the 16 Hivestorm scenarios, zero-day only.
-  Section "Results / Cost and efficiency", Table tab:cost and Figure fig:cost-acc
-      tokens and dollars per success; the accuracy-cost frontier.
-  Section "Results / Verifiability", Table tab:nsplan
-      the NeuroPlan pipeline on the 50-scenario ccdc suite.
-  Section "Results / Failure-mode analysis"
-      the distribution of failure modes by condition.
+  claims/claim1   pass@K by solver, model and information condition.
+  claims/claim2   continuous scoring on the 16 Hivestorm scenarios, zero-day only.
+  claims/claim3   tokens and dollars per success; the accuracy-cost frontier.
+  claims/claim4   the NeuroPlan pipeline on the 50-scenario ccdc suite.
+  claims/claim5   the distribution of failure modes by condition.
 
-Each appears as claims/claimN/ with a claim statement, a run script, and
-reference output.
+Each is a directory holding a run script and reference output, so an evaluator
+can execute it and diff the result against the shipped reference.
 
 REQUIREMENTS AND DEPENDENCIES
 

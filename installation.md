@@ -8,7 +8,7 @@ which suite**. It complements the high-level "Set-up" section in
 
 | Task | Needs |
 |---|---|
-| **Reproduce the paper's tables from shipped logs** | Python 3.10+ only. No Docker, no GPU, no API keys. This lives in the ACSAC artifact repo (`sysrepair-artifact/`): run `./install.sh` there (the default, logs-only tier) and follow `claims/claimN/run.sh`. |
+| **Reproduce the results tables from shipped logs** | Python 3.10+ only. No Docker, no GPU, no API keys. This lives in the artifact repo (`sysrepair-artifact/`): run `./install.sh` there (the default, logs-only tier) and follow `claims/claimN/run.sh`. |
 | **Re-run scenarios live** | Docker (and, for some suites, a Windows host with Hyper-V), the Inspect AI harness via `uv`, and a model provider — an API key or a local vLLM/Ollama endpoint. Detailed below. |
 
 Everything below concerns running scenarios live from **this** repo.
