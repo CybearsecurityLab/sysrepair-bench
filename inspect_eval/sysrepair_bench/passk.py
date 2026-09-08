@@ -20,8 +20,8 @@ Inspect's react agent breaks *before* grading the final attempt
 k-attempt run emits exactly **k-1** intermediate events; the k-th attempt's
 outcome is the end-of-sample score.
 
-In-episode oracle calls — hivestorm's ``score_progress`` tool, LATS's in-search
-verify — use raw ``sandbox().exec()`` and emit no ScoreEvent, so they cannot
+In-episode oracle calls — hivestorm's ``score_progress`` tool — use raw
+``sandbox().exec()`` and emit no ScoreEvent, so they cannot
 inflate the attempt count. That invariant is what makes this reader correct;
 see the note in ``solvers.py``.
 
@@ -52,8 +52,6 @@ Caveats
 -------
 - Hivestorm is excluded: it always runs react at k=1 and is scored on a
   continuous 0..1 scale, so it has no pass@k axis.
-- LATS gets uncapped ground-truth checks *inside* one attempt, so its pass@1 is
-  not on equal footing with react's. Flagged in the output.
 
 Usage::
 
@@ -71,9 +69,12 @@ from pathlib import Path
 from inspect_ai.log import list_eval_logs, read_eval_log
 from tabulate import tabulate
 
-# Solvers whose in-episode oracle access is uncapped, so their pass@1 is not
-# comparable with react's. Reported with a footnote rather than silently ranked.
-_UNCAPPED_ORACLE_SOLVERS = {"lats"}
+# Solvers whose in-episode oracle access is uncapped, so their pass@1 would not
+# be comparable with react's. Empty today. Kept as a guard: a solver that queries
+# ground truth inside an attempt is measuring a different task, because knowing
+# whether the fault is fixed is the capability under test. Add any such solver
+# here rather than ranking it against the others.
+_UNCAPPED_ORACLE_SOLVERS: set[str] = set()
 
 
 from .verdict import is_pass as _is_pass
@@ -426,8 +427,8 @@ def main() -> None:
     if uncapped:
         print(
             "\n*  Uncapped in-episode oracle: this solver runs ground-truth "
-            "verify checks inside a single attempt (LATS uses them as its search "
-            "reward), so its pass@1 is not on equal footing with react's."
+            "verify checks inside a single attempt, so its pass@1 is not on "
+            "equal footing with react's."
         )
     if skipped:
         print(f"\nSkipped {skipped} hivestorm sample(s): continuous scoring, no pass@k axis.")

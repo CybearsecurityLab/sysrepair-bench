@@ -101,7 +101,7 @@ def _self_bricked(sample) -> bool:
             cmd = args.get("cmd") or args.get("command") or "" if isinstance(args, dict) else str(args)
             if _scan(cmd):
                 return True
-    # plan_and_solve and lats drive the sandbox directly and emit no tool_calls,
+    # plan_and_solve drives the sandbox directly and emits no tool_calls,
     # so their commands are only visible as SandboxEvents.
     for e in (getattr(sample, "events", None) or []):
         if type(e).__name__ == "SandboxEvent" and _scan(getattr(e, "cmd", "")):

@@ -154,7 +154,7 @@ _anchors:
 
   solvers:
     react_only: &solvers_react ["react"]
-    all:        &solvers_all   ["react", "reflexion", "plan_and_solve", "lats"]
+    all:        &solvers_all   ["react", "reflexion", "plan_and_solve"]
 
 # ────────────────────────────────────────────────────────────────────────────
 # Presets

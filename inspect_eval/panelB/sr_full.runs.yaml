@@ -3,7 +3,7 @@
 # seeds:[5] means max_attempts=5, and pass@1..5 is reconstructed from the five
 # submit attempts WITHIN each episode: every solver emits k-1 intermediate
 # ScoreEvents plus the end-of-sample score (verified across react, basic,
-# reflexion, plan_and_solve and lats on 2026-09-06). So ONE epoch here is a
+# reflexion and plan_and_solve on 2026-09-06). So ONE epoch here is a
 # complete pass@1..5 curve, not a fifth of one. Run epoch 2 only after the whole
 # grid has one epoch, so a full result set always exists.
 #
@@ -63,7 +63,7 @@ presets:
     base_url: https://api.minimax.io/v1
     api_key: ${MINIMAX_API_KEY_2}
     benchmarks: [ccdc, meta2, meta3/ubuntu, vulnhub, meta4, meta4/ad-vm]
-    solvers: [react, basic, reflexion, plan_and_solve, lats]
+    solvers: [react, basic, reflexion, plan_and_solve]
     max_connections: 4
     request_limit: 15000
     request_window: 18000
@@ -108,5 +108,5 @@ presets:
     base_url: http://localhost:8100/v1
     api_key: vllm
     benchmarks: [meta2, meta3/ubuntu, meta4, meta4/ad-vm]
-    solvers: [react, basic, reflexion, plan_and_solve, lats]
+    solvers: [react, basic, reflexion, plan_and_solve]
     max_connections: 8

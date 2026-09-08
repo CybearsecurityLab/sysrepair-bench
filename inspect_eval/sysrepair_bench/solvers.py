@@ -1,4 +1,4 @@
-"""Solver registry: react, basic, reflexion, plan_and_solve, lats.
+"""Solver registry: react, basic, reflexion, plan_and_solve.
 
 All solvers expose a `bash` tool plus the built-in `submit` semantics provided
 by `inspect_ai.agent.react`. Termination is driven by `submit()`; the harness
@@ -44,7 +44,7 @@ def _extract_json_obj(completion: str) -> dict:
     Thinking models (e.g. MiniMax-M2.7) wrap JSON in <think>...</think> and/or
     prose, and may use upper-case ```JSON fences. The old
     ``strip("`") + startswith("json")`` logic silently yielded {} on all of
-    these -> empty plan/commands -> a guaranteed 0% for plan_and_solve/lats.
+    these -> empty plan/commands -> a guaranteed 0% for plan_and_solve.
 
     We must NOT mutate string *contents*: the benchmark's payloads are shell
     commands full of braces and backticks (e.g. ``grep '}' f``, ``echo ```json``),
@@ -647,7 +647,7 @@ def _prime_os(state: TaskState) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Verify helper (used by reflexion / plan_and_solve / lats mid-run)
+# Verify helper (used by reflexion / plan_and_solve mid-run)
 # ---------------------------------------------------------------------------
 
 async def _verify_in_sandbox(
@@ -752,7 +752,7 @@ def _shell_exec_argv(os_name: str, command: str) -> list[str]:
 #
 # INVARIANT (passk.py depends on it): only attempt-boundary grading goes
 # through inspect_ai.scorer.score(). Every in-episode oracle call — hivestorm's
-# score_progress tool, LATS's in-search verify — uses raw sandbox().exec() and
+# score_progress tool uses raw sandbox().exec() and
 # therefore emits no ScoreEvent. Routing either through score() would inflate
 # the intermediate-event count and corrupt every extracted pass@j.
 
@@ -794,7 +794,7 @@ def _with_attempts(inner: Solver, attempts: int) -> Solver:
                 state.messages.append(
                     ChatMessageUser(content=ATTEMPT_INCORRECT_MESSAGE)
                 )
-                # plan_and_solve and lats rebuild their prompts from
+                # plan_and_solve rebuilds its prompt from
                 # state.input_text each episode and never read state.messages,
                 # so the message above alone would leave them resampling
                 # blindly. Record the SAME binary signal where they can reach it.
@@ -1067,182 +1067,6 @@ def plan_and_solve_solver(
     return solve
 
 
-# ---------------------------------------------------------------------------
-# 5. LATS — Monte Carlo Tree Search with LLM-as-value-function
-# ---------------------------------------------------------------------------
-
-UCB_C = math.sqrt(2)
-
-
-class _Node:
-    __slots__ = ("id", "parent", "command", "exit_code", "stdout", "stderr",
-                 "value", "visits", "children", "depth", "fatal")
-
-    def __init__(self, command: str, parent: "_Node | None", depth: int):
-        self.id = str(uuid.uuid4())
-        self.parent = parent
-        self.command = command
-        self.exit_code = 0
-        self.stdout = ""
-        self.stderr = ""
-        self.value = 0.0
-        self.visits = 0
-        self.children: list[_Node] = []
-        self.depth = depth
-        self.fatal = False
-
-    def ucb(self, parent_visits: int) -> float:
-        if self.visits == 0:
-            return float("inf")
-        return self.value / self.visits + UCB_C * math.sqrt(
-            math.log(max(parent_visits, 1)) / self.visits
-        )
-
-
-@solver
-def lats_solver(
-    message_limit: int = 40,
-    num_expansions: int = 4,
-    max_rollouts: int = 12,
-    max_depth: int = 8,
-    bash_timeout: int = 180,
-    verify_timeout: int = 300,
-) -> Solver:
-    async def solve(state: TaskState, generate: Generate) -> TaskState:
-        _prime_os(state)
-        scenario_path = state.metadata["scenario_path"]
-        os_name = state.metadata.get("os", "linux")
-        shell_word = "PowerShell" if os_name == "windows" else "bash"
-        model = get_model()
-        sys_text = state.input_text + _attempt_context(state)
-        root = _Node(command="", parent=None, depth=0)
-        rollout_count = 0
-        executed = 0
-
-        def select_leaf(n: _Node) -> _Node:
-            cur = n
-            while cur.children and not cur.fatal:
-                viable = [c for c in cur.children if not c.fatal]
-                if not viable:
-                    return cur
-                unvisited = [c for c in viable if c.visits == 0]
-                if unvisited:
-                    return unvisited[0]
-                cur = max(viable, key=lambda c: c.ucb(cur.visits))
-            return cur
-
-        def path_cmds(n: _Node) -> list[str]:
-            seq = []
-            cur = n
-            while cur and cur.parent is not None:
-                if cur.command:
-                    seq.append(cur.command)
-                cur = cur.parent
-            return list(reversed(seq))
-
-        async def expand(n: _Node) -> None:
-            if n.depth >= max_depth:
-                return
-            path_text = "\n".join(f"$ {c}" for c in path_cmds(n)) or "(no commands yet)"
-            prompt = (
-                f"Path so far:\n{path_text}\n"
-                f"Last result: exit={n.exit_code} "
-                f"stdout={n.stdout[:200]} stderr={n.stderr[:200]}\n\n"
-                f'Return JSON: {{"commands": ["cmd1", ...]}} with {num_expansions} '
-                f"distinct candidate {shell_word} commands that each make different progress."
-            )
-            await get_rate_limiter().acquire()
-            resp = await model.generate(
-                input=[
-                    ChatMessageSystem(content=state.input_text),
-                    ChatMessageUser(content=prompt),
-                ]
-            )
-            cmds = (_extract_json_obj(resp.completion or "").get("commands", []) or [])[:num_expansions]
-            for c in cmds:
-                if isinstance(c, str) and c.strip():
-                    n.children.append(_Node(c.strip(), n, n.depth + 1))
-
-        async def simulate(n: _Node) -> tuple[float, bool]:
-            nonlocal executed
-            executed += 1
-            sb = sandbox()
-            try:
-                result = await sb.exec(
-                    _shell_exec_argv(os_name, n.command), timeout=bash_timeout
-                )
-                n.exit_code = result.returncode
-                n.stdout = (result.stdout or "")[:400]
-                n.stderr = (result.stderr or "")[:300]
-            except TimeoutError:
-                n.exit_code = 124
-                n.stdout = ""
-                n.stderr = f"TIMEOUT after {bash_timeout}s"
-                n.fatal = True
-            state.messages.append(
-                ChatMessageAssistant(
-                    content=f"[lats] $ {n.command}\nexit={n.exit_code}\n"
-                            f"stdout: {n.stdout}\nstderr: {n.stderr}"
-                )
-            )
-
-            if await _verify_in_sandbox(scenario_path, timeout=verify_timeout, os_name=os_name):
-                return 1.0, True
-
-            score_prompt = (
-                f"Command: {n.command}\nexit={n.exit_code}\n"
-                f"stdout: {n.stdout}\nstderr: {n.stderr}\n\n"
-                'Return JSON: {"score": float in [0,1], "fatal": bool}. '
-                "score=1 means significant progress; fatal=true if container is broken."
-            )
-            try:
-                await get_rate_limiter().acquire()
-                resp = await model.generate(
-                    input=[
-                        ChatMessageSystem(content=sys_text),
-                        ChatMessageUser(content=score_prompt),
-                    ]
-                )
-                obj = _extract_json_obj(resp.completion or "")
-                if obj:
-                    # Parse OK: preserve the original 0.3 default + fatal read
-                    # (semantics-preserving; only the parse became robust).
-                    score = max(0.0, min(1.0, float(obj.get("score", 0.3))))
-                    if obj.get("fatal"):
-                        n.fatal = True
-                else:
-                    score = 0.5 if n.exit_code == 0 else 0.1
-            except Exception:
-                score = 0.5 if n.exit_code == 0 else 0.1
-            return score, False
-
-        def backprop(n: _Node, score: float) -> None:
-            cur = n
-            while cur is not None:
-                cur.visits += 1
-                cur.value += score
-                cur = cur.parent
-
-        # Main MCTS loop
-        while rollout_count < max_rollouts and executed < message_limit:
-            leaf = select_leaf(root)
-            if not leaf.children:
-                await expand(leaf)
-                if not leaf.children:
-                    break
-                leaf = leaf.children[0]
-            score, terminal = await simulate(leaf)
-            backprop(leaf, score)
-            rollout_count += 1
-            if terminal:
-                state.output.completion = "REMEDIATION_COMPLETE"
-                state.metadata["lats_rollouts"] = rollout_count
-                return state
-
-        state.metadata["lats_rollouts"] = rollout_count
-        return state
-
-    return solve
 
 
 # ---------------------------------------------------------------------------
@@ -1292,22 +1116,7 @@ def get_solver(
             ),
             max_attempts,
         )
-    if name == "lats":
-        # One attempt = one full search. Its in-search _verify_in_sandbox stays
-        # uncapped by design: that is the algorithm's terminal reward feeding
-        # backprop/UCB, not a submission. It uses raw sandbox exec, so it emits
-        # no ScoreEvent and cannot corrupt the extracted pass@j curve. LATS
-        # therefore gets more oracle access per attempt than any other solver —
-        # documented, not silently ranked against react on pass@1.
-        return _with_attempts(
-            lats_solver(
-                message_limit=message_limit,
-                bash_timeout=bash_timeout,
-                verify_timeout=verify_timeout,
-            ),
-            max_attempts,
-        )
     raise ValueError(
         f"Unknown solver '{name}'. "
-        "Choose from: react, basic, reflexion, plan_and_solve, lats."
+        "Choose from: react, basic, reflexion, plan_and_solve."
     )

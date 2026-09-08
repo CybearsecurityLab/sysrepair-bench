@@ -75,11 +75,11 @@ def _no_commands(sample) -> bool:
     Counts BOTH routes to the sandbox, because solvers differ:
 
       messages[].tool_calls   react, basic, reflexion -- the model calls a tool
-      SandboxEvent            plan_and_solve, lats -- these drive the sandbox
+      SandboxEvent            plan_and_solve -- this drives the sandbox
                               directly and emit NO tool_calls at all
 
-    Checking only tool_calls classified every plan_and_solve and lats failure as
-    "no action" when they had issued dozens of commands: one sampled lats episode
+    Checking only tool_calls classified every plan_and_solve failure as
+    "no action" when they had issued dozens of commands: one sampled episode
     showed 0 tool_calls against 95 SandboxEvents. That inflated the no-action
     bucket to 65% of day-1 failures.
     """

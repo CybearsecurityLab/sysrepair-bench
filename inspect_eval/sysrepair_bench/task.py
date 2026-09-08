@@ -1195,7 +1195,7 @@ def sysrepair_bench(
     Parameters
     ----------
     solver:
-        One of: react, basic, reflexion, plan_and_solve, lats.
+        One of: react, basic, reflexion, plan_and_solve.
     benchmarks:
         Subset of ["meta2", "vulnhub", "ccdc"]. Ignored if ``scenarios`` is set.
         Defaults to all three.
@@ -1224,7 +1224,7 @@ def sysrepair_bench(
         dRuby, distccd) to start on first invocation.
     verify_timeout:
         Timeout (seconds) for verify.sh inside the sandbox when solvers run it
-        mid-run (reflexion / plan-and-solve / lats).
+        mid-run (reflexion / plan-and-solve).
     request_limit:
         Max API requests per sliding window.  0 = unlimited (no rate limiting).
         Set to match your provider plan (e.g. 15000 for MiniMax Max tier).

@@ -62,7 +62,7 @@ presets:
     api_key: ${DELTA_CTX64_KEY}
     min_context: 262144   # refuse to run against a truncated server
     benchmarks: [ccdc, meta2, meta3/ubuntu, vulnhub, meta4]
-    # Reportable solvers only. plan_and_solve and lats are deliberately omitted:
+    # Reportable solvers only. plan_and_solve is deliberately omitted:
     # they contribute the 0% cells, which the context fix does not change, and
     # including them would roughly double the wall-clock for no added evidence.
     solvers: [react, basic, reflexion]

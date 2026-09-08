@@ -5,7 +5,7 @@
 defaults:
   seeds: [5]
   epochs: 1
-  solvers: [basic, react, reflexion, plan_and_solve, lats]
+  solvers: [basic, react, reflexion, plan_and_solve]
   benchmarks: [ccdc, vulnhub]
   modes: [day1, zero_day]
   max_connections: 4

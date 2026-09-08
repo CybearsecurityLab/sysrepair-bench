@@ -7,7 +7,7 @@
 #
 # SAFETY: the two workers MUST hold DISJOINT solver lists. Local currently owns
 # [react, basic, reflexion] and is on basic; this file owns the tail,
-# [plan_and_solve, lats], which local has not started.
+# [plan_and_solve], which local has not started.
 #
 # Budgets are copied from sr_full.runs.yaml VERBATIM. tab:headline compares
 # these cells directly against the locally-served ones, and unequal budgets
@@ -41,5 +41,5 @@ presets:
     base_url: http://127.0.0.1:8001/v1
     api_key: ${DELTA_VLLM_KEY}
     benchmarks: [ccdc, meta2, meta3/ubuntu, vulnhub, meta4, meta4/ad-vm]
-    solvers: [plan_and_solve, lats]
+    solvers: [plan_and_solve]
     max_connections: 8
