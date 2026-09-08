@@ -11,7 +11,12 @@ For each scenario, given only the running container and Optional(threat descript
 
 Remediation is scored as successful **only if both checks pass**.
 
-The benchmark comprises **313 scenarios across five VM classes** (six suites): `ccdc/` (50), `meta2/` (40), `vulnhub/` (30), `meta3/ubuntu/` (19), `meta3/windows/` (21), and `meta4/` (137, comprising 117 Docker container scenarios + 20 Active Directory VM scenarios) — plus a **16-scenario `hivestorm/` free-roam track** that ships alongside the binary-pass/fail suites and uses weighted partial-credit scoring.
+The benchmark comprises **313 scenarios across five VM classes** (six suites): `ccdc/` (50), `meta2/` (40), `vulnhub/` (30), `meta3/ubuntu/` (19), `meta3/windows/` (21), and **sr-modern** (`meta4/` on disk, 137: 117 Docker container scenarios + 20 Active Directory VM scenarios) — plus a **16-scenario `hivestorm/` free-roam track** that ships alongside the binary-pass/fail suites and uses weighted partial-credit scoring.
+
+> **Naming.** The modern-CVE suite is called **sr-modern**. Its on-disk path
+> stays `meta4/`, and presets, scenario ids and log directories all use that
+> path: the analysis keys runs on the eval_set directory name, so renaming the
+> directory would break run provenance.
 
 | VM Class / Suite | Era | Built | Source |
 |---|---|---|---|
@@ -20,7 +25,7 @@ The benchmark comprises **313 scenarios across five VM classes** (six suites): `
 | [`vulnhub/`](vulnhub/) | 2012–2022 | 30 | Per-VM vulnerability rebuilds (Kioptrix, DC-series, Mr-Robot, SickOs, Symfonos, etc.) on Debian 11 |
 | [`meta3/ubuntu/`](meta3/ubuntu/) | 2014–2020 | 19 | Port of Rapid7 Metasploitable 3 (Ubuntu 14.04) — Drupalgeddon, ProFTPD mod_copy, payroll_app, Docker group escalation, WEBrick, UnrealIRCd, Samba, phpMyAdmin. Vendors the Rapid7 Chef cookbook under BSD-3. |
 | [`meta3/windows/`](meta3/windows/)| 2016–2020 | 21 | Rapid7 Metasploitable 3 (Windows Server) — Struts, Jenkins, ManageEngine, GlassFish, Tomcat, ElasticSearch, IIS WebDAV, SMB. Scoped by the [Windows OpenVAS scan](openvas-scan-reports/metasploitable-3.0-win-openvas.pdf). ⚠ **Windows host only** (see Host Requirements) |
-| **[`meta4/`](meta4/)** | 2022–2026 | 137 | Container suite (117 Docker scenarios) covering modern CVEs (Log4Shell family, Spring4Shell, PwnKit, Dirty Pipe, GameOver(lay), regreSSHion, Leaky Vessels, XZ backdoor, Copy Fail CVE-2026-31431, crAPI/DVGA/VAmPI API surfaces, LocalStack/MinIO/ArgoCD/k3s cloud-on-localhost misconfigs, ImageMagick, Memcached, curl SOCKS5, Redis Lua sandbox, Adminer, Apache Solr, Rsync, Cacti, and more) plus an **Active Directory VM lab** ([`meta4/ad-vm/`](meta4/ad-vm/), 20 scenarios: Zerologon, NoPac, ADCS ESC1–ESC8, Kerberoasting, DCSync, PrintNightmare, PetitPotam, and more). Kernel-coupled scenarios run inside Hyper-V VMs ([`meta4/kernel-vm/`](meta4/kernel-vm/), [`meta4/dirtypipe-vm/`](meta4/dirtypipe-vm/)). |
+| **sr-modern** — [`meta4/`](meta4/) | 2022–2026 | 137 | Container suite (117 Docker scenarios) covering modern CVEs (Log4Shell family, Spring4Shell, PwnKit, Dirty Pipe, GameOver(lay), regreSSHion, Leaky Vessels, XZ backdoor, Copy Fail CVE-2026-31431, crAPI/DVGA/VAmPI API surfaces, LocalStack/MinIO/ArgoCD/k3s cloud-on-localhost misconfigs, ImageMagick, Memcached, curl SOCKS5, Redis Lua sandbox, Adminer, Apache Solr, Rsync, Cacti, and more) plus an **Active Directory VM lab** ([`meta4/ad-vm/`](meta4/ad-vm/), 20 scenarios: Zerologon, NoPac, ADCS ESC1–ESC8, Kerberoasting, DCSync, PrintNightmare, PetitPotam, and more). Kernel-coupled scenarios run inside Hyper-V VMs ([`meta4/kernel-vm/`](meta4/kernel-vm/), [`meta4/dirtypipe-vm/`](meta4/dirtypipe-vm/)). |
 | [`hivestorm/`](hivestorm/) | HS20–HS23 | 16 | **Free-roam** Hivestorm-style scenarios (Debian/Ubuntu/CentOS/Windows Server-Core/FreeBSD/AD-DC). Identities (backdoor account, trojan path, rogue cron, SUID plant) are randomized per build; the scorer emits weighted partial credit via JSONL checks rather than binary pass/fail. |
 
 ### Vulnerability categories
@@ -91,7 +96,7 @@ sysrepair-bench/
 ├── vulnhub/                 # 30 VulnHub-derived scenarios (scenario-01..30)
 ├── meta3/ubuntu/            # 19 Metasploitable 3 (Ubuntu 14.04) scenarios + vendored Chef cookbook (shared/)
 ├── meta3/windows/           # 21 Metasploitable 3 (Windows Server) scenarios (harness validation)
-├── meta4/                   # 137 modern-CVE scenarios (117 Docker + 20 AD-VM)
+├── meta4/                   # sr-modern: 137 modern-CVE scenarios (117 Docker + 20 AD-VM)
 │   ├── kernel-vm/           #   Hyper-V VM for kernel-coupled LPE scenarios (S21, S22, S117; S19 uses dirtypipe-vm/)
 │   └── ad-vm/               #   Hyper-V/AutomatedLab AD lab (Win2019 DC + CA + workstation + attacker VM, S01–S20)
 ├── hivestorm/               # 16 free-roam Hivestorm-style scenarios (weighted partial-credit)

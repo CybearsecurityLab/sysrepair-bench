@@ -149,3 +149,10 @@ inspect_eval/scratchpad/*
 !inspect_eval/scratchpad/*.sh
 claims/*/observed*.tsv
 logs/
+
+# Env backups hold live API keys. `.env` was ignored but `.env.bak.*` was not,
+# so a plain `git add -A` would have committed credentials.
+.env
+.env.*
+*/.env
+*/.env.*
