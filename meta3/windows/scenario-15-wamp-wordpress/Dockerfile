@@ -13,7 +13,19 @@ SHELL ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "$E
 # Install VCRT 2015-2022 (required by PHP)
 # Source URL: https://aka.ms/vs/17/release/vc_redist.x64.exe
 COPY shared/downloads/vc_redist.x64.exe C:/vc.exe
-RUN Start-Process -FilePath 'C:\vc.exe' -ArgumentList '/install','/quiet','/norestart' -Wait ; \
+# PowerShell's `Start-Process -Wait` tracks DESCENDANTS via a Job object, so it
+# does not return while any process the installer spawned survives. The
+# vc_redist bootstrapper exits while its children live, so -Wait blocked
+# forever and the step burned a one-hour timeout without ever erroring. Wait on
+# the process handle directly instead, exactly as scenario-16 does.
+# The DLL assert is load-bearing: without the runtime, php.exe dies with
+# STATUS_DLL_NOT_FOUND, WordPress is never seeded, and verify.ps1 then records
+# the PoC as CLOSED because admin:admin cannot authenticate against a dead
+# service. An unmodified vulnerable image would score a pass.
+RUN $p = Start-Process -FilePath 'C:\vc.exe' -ArgumentList '/install','/quiet','/norestart' -PassThru ; \
+    if (-not $p.WaitForExit(600000)) { throw 'vc.exe did not exit within 10 minutes' } ; \
+    if ($p.ExitCode -notin @(0, 3010, 1638)) { throw ('vc_redist failed: exit ' + $p.ExitCode) } ; \
+    if (-not (Test-Path 'C:\Windows\System32\vcruntime140.dll')) { throw 'vcruntime140.dll missing after vc_redist install' } ; \
     Remove-Item 'C:\vc.exe'
 
 # IIS + CGI (replaces Apache — Apache Lounge downloads are blocked from containers)
