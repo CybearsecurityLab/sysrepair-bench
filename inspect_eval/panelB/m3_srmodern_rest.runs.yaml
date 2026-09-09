@@ -1,0 +1,105 @@
+# MiniMax-M3, sr-modern (meta4) DISCOVERY-REQUIRED remainder.
+# Fills the one non-Delta cell left in tab:results-full: MiniMax-M3 / sr-modern /
+# discovery-required, which stands at 60 of 113 containerised scenarios.
+#
+# WHY THIS IS A SEPARATE PRESET AND NOT A RESUME OF minimax_fs_zeroday.
+# That preset's comment claims a resume "runs only the sr-modern remainder"
+# because benchmarks is a TASK_KEY and narrowing it would fork eval_set identity.
+# The premise is right and the conclusion is wrong, measured 2026-09-08: the
+# resume re-ran vulnhub (28 scenarios) and ccdc (46), both already complete, and
+# advanced meta4 by ZERO. It burned key 1 from 18% to 8% weekly for no coverage.
+# Forking identity is therefore the CHEAPER option, not the expensive one. This
+# lands in its own logs_es dir and pools at fold time, because analyze_cells.py
+# partitions by source_bucket and never lets two buckets compete.
+#
+# SCENARIOS ARE LISTED EXPLICITLY, not as benchmarks: [meta4]. A build or lab
+# failure aborts the whole leg at SETUP, before fail_on_error is consulted, so
+# the preset must name only what this host can actually start. That excludes the
+# four kernel-coupled scenarios (19, 21, 22, 117), which need Hyper-V VMs, and
+# all of meta4/ad-vm, which is one physical AD lab and would take the leg down.
+#
+# message_limit stays 0. A finite cap ends the episode before the k=5 submit
+# attempts materialise and drops every failure out of the pass@k denominator.
+defaults:
+  seeds: [5]
+  # Breadth before depth: one epoch across every cell, then repeat.
+  epochs: 1
+  log_dir: ./logs
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 0.5
+  retry_on_error: 2
+  time_limit: 3600
+  working_limit: 2400
+  message_limit: 0
+  token_limit: 0
+  request_limit: 0
+  preflight: true
+  model_max_retries: 10
+  model_timeout: 420
+  model_attempt_timeout: 300
+  model_client_timeout: 480
+presets:
+  m3_srmodern_rest:
+    model: openai/MiniMax-M3
+    base_url: https://api.minimax.io/v1
+    api_key: ${MINIMAX_API_KEY}
+    solvers: [react]
+    seeds: 5
+    epochs: 1
+    max_connections: 4
+    modes: [zero_day]
+    scenarios:
+    - meta4/scenario-13
+    - meta4/scenario-14
+    - meta4/scenario-15
+    - meta4/scenario-16
+    - meta4/scenario-18
+    - meta4/scenario-20
+    - meta4/scenario-26
+    - meta4/scenario-27
+    - meta4/scenario-28
+    - meta4/scenario-29
+    - meta4/scenario-30
+    - meta4/scenario-31
+    - meta4/scenario-32
+    - meta4/scenario-33
+    - meta4/scenario-34
+    - meta4/scenario-44
+    - meta4/scenario-56
+    - meta4/scenario-60
+    - meta4/scenario-61
+    - meta4/scenario-62
+    - meta4/scenario-63
+    - meta4/scenario-64
+    - meta4/scenario-65
+    - meta4/scenario-66
+    - meta4/scenario-67
+    - meta4/scenario-68
+    - meta4/scenario-69
+    - meta4/scenario-70
+    - meta4/scenario-71
+    - meta4/scenario-72
+    - meta4/scenario-73
+    - meta4/scenario-74
+    - meta4/scenario-75
+    - meta4/scenario-76
+    - meta4/scenario-77
+    - meta4/scenario-78
+    - meta4/scenario-79
+    - meta4/scenario-80
+    - meta4/scenario-81
+    - meta4/scenario-82
+    - meta4/scenario-83
+    - meta4/scenario-84
+    - meta4/scenario-85
+    - meta4/scenario-86
+    - meta4/scenario-87
+    - meta4/scenario-88
+    - meta4/scenario-89
+    - meta4/scenario-90
+    - meta4/scenario-91
+    - meta4/scenario-92
+    - meta4/scenario-107
+    - meta4/scenario-108
+    - meta4/scenario-114
