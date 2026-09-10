@@ -25,6 +25,22 @@
 #SBATCH --output=slurm-vllm-%j.out
 #SBATCH --error=slurm-vllm-%j.err
 
+# Job-state email. Slurm mails on STATE TRANSITIONS, so what you can and cannot
+# get is fixed by Slurm, not by us:
+#   BEGIN          pending -> running. This is the "it started" signal.
+#   END            terminated normally, INCLUDING scancel, so a cancelled job
+#                  does mail. There is no separate DELETED/CANCELLED type.
+#   FAIL           non-zero exit or node failure.
+#   REQUEUE        preempted and requeued. Load-bearing on a -PREEMPT partition,
+#                  which is where this job usually lands.
+#   TIME_LIMIT_90  90% of walltime consumed, i.e. warning before the 12h cliff.
+#   INVALID_DEPEND a dependency can never be satisfied, so it will never run.
+# There is NO notification for entering the pending state: a job is pending from
+# the moment sbatch returns, which is not a transition. To learn WHY it is still
+# pending, use hpc/notify_job.sh, which reports the scheduler's own Reason field.
+#SBATCH --mail-type=BEGIN,END,FAIL,REQUEUE,TIME_LIMIT_90,INVALID_DEPEND
+#SBATCH --mail-user=b.korojo@gmail.com
+
 set -uo pipefail
 module reset
 
