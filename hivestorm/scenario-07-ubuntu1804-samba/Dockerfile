@@ -6,7 +6,7 @@
 #       --render-task hivestorm/scenario-07-ubuntu1804-samba/task.md
 #   docker build hivestorm/scenario-07-ubuntu1804-samba
 
-FROM ubuntu:18.04
+FROM ubuntu@sha256:dca176c9663a7ba4c1f0e710986f5a25e672842963d95b960191e2d9f7185ebe
 
 ARG DEBIAN_FRONTEND=noninteractive
 

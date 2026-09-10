@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu@sha256:281c5745f657873d78e5531fc5ba8575f46ab7769b94550ac99543f122679986
 
 # docker.sock bind-mount — container escape via Docker API (misconfig).
 # An application container with /var/run/docker.sock mounted allows any

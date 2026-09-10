@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:jammy-20230816
+FROM --platform=linux/amd64 ubuntu@sha256:b492494d8e0113c4ad3fe4528a4b5ff89faa5331f7d52c5c138196f69ce176a6
 
 # Looney Tunables — glibc GLIBC_TUNABLES buffer overflow (CVE-2023-4911).
 # Affected: glibc 2.34–2.37 (Ubuntu 22.04 libc6 < 2.35-0ubuntu3.4).

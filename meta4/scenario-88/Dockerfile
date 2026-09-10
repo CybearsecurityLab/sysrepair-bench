@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu@sha256:281c5745f657873d78e5531fc5ba8575f46ab7769b94550ac99543f122679986
 
 # CWE-312: a database password is baked into the image as a WORLD-READABLE
 # plaintext file (/opt/app/app.env, mode 0644). It persists in every image

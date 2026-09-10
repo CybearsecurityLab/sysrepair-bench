@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu@sha256:281c5745f657873d78e5531fc5ba8575f46ab7769b94550ac99543f122679986
 
 # ARG value used in a RUN command is captured in the image layer diff.
 # Even though ARG does not persist in the final image ENV, the value is

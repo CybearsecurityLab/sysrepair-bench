@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 wordpress:6.5-apache
+FROM --platform=linux/amd64 wordpress@sha256:e2142619595f15939794ee5594ee5cb17792bd71901680dd7b81ccbbdf55fffb
 
 # WordPress 6.5 + Really Simple Security (formerly Really Simple SSL)
 # 9.0.0 — authentication bypass (CVE-2024-10924). When "Two-Factor

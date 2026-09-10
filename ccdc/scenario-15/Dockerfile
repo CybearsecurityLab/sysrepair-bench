@@ -1,4 +1,4 @@
-FROM ubuntu:25.10
+FROM ubuntu@sha256:e0b84ef30bbe766773e6056c60a3e706712e4119508e3da12516f1eddd6f761b
 # Scenario 15: vsftpd anonymous upload enabled
 # CWE-434: Unrestricted Upload of File with Dangerous Type
 # Ubuntu 25.10 (Quantal)

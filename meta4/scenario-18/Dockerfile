@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:focal-20210119
+FROM --platform=linux/amd64 ubuntu@sha256:3093096ee188f8ff4531949b8f6115af4747ec1c58858c091c8cb4579c39cc4e
 
 # Baron Samedit — sudo heap overflow (CVE-2021-3156).
 # Affected: sudo 1.8.2–1.8.31p2 and 1.9.0–1.9.5p1.

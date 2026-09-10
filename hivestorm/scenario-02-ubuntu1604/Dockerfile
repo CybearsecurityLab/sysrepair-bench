@@ -9,7 +9,7 @@
 # Ubuntu 16.04 is EOL; repos live on old-releases.ubuntu.com. seed.sh rewrites
 # sources.list before any apt-get.
 
-FROM ubuntu:16.04
+FROM ubuntu@sha256:a3785f78ab8547ae2710c89e627783cfa7ee7824d3468cae6835c9f4eae23ff7
 
 ARG DEBIAN_FRONTEND=noninteractive
 

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:24.04
+FROM --platform=linux/amd64 ubuntu@sha256:a61567bd31828687156d735ea8eb01ba4e37636e225dd6a48ba94136a70d9d61
 
 # Copy Fail — AF_ALG AEAD page-cache overwrite (CVE-2026-31431).
 # A 2017 in-place optimization in algif_aead.c (commit 72548b093ee3) chains

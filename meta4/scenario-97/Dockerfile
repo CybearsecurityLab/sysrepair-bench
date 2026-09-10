@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu@sha256:281c5745f657873d78e5531fc5ba8575f46ab7769b94550ac99543f122679986
 
 # Kibana 6.5.4 / Elasticsearch 6.5.4 — CVE-2019-7609: Timelion prototype
 # pollution leading to RCE. Timelion's expression parser does not sanitise

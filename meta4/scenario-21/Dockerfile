@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu@sha256:281c5745f657873d78e5531fc5ba8575f46ab7769b94550ac99543f122679986
 
 # GameOver(lay) — Ubuntu OverlayFS LPE (CVE-2023-2640 / CVE-2023-32629).
 # Ubuntu's downstream OverlayFS patches skipped permission checks when

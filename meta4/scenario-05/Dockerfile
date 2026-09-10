@@ -14,7 +14,7 @@ COPY src src
 RUN mvn package -DskipTests -B
 
 # ---------- runtime ----------
-FROM --platform=linux/amd64 tomcat:9.0.60-jdk11-openjdk
+FROM --platform=linux/amd64 tomcat@sha256:42b3d86065d6a3f20b937eaca5b30edcb4c3be7ff6b6e77745d4d317df9ea5bc
 
 RUN rm -rf /usr/local/tomcat/webapps/ROOT \
            /usr/local/tomcat/webapps/docs \

@@ -1,4 +1,4 @@
-FROM ubuntu:25.10
+FROM ubuntu@sha256:e0b84ef30bbe766773e6056c60a3e706712e4119508e3da12516f1eddd6f761b
 # Scenario 05: SSH password auth with no key restriction
 # CWE-308: Use of Single-factor Authentication
 

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:focal-20211006
+FROM --platform=linux/amd64 ubuntu@sha256:7cc0576c7c0ec2384de5cbf245f41567e922aab1b075f3e8ad565f508032df17
 
 # PwnKit — polkit pkexec memory corruption LPE (CVE-2021-4034).
 # Affected: policykit-1 ≤ 0.105-26ubuntu1.2 (Ubuntu 20.04 before

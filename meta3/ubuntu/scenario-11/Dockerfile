@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:14.04
+FROM --platform=linux/amd64 ubuntu@sha256:881afbae521c910f764f7187dbfbca3cc10c26f8bafa458c76dda009a901c29d
 
 # Fix repository URLs for EOL 14.04
 RUN sed -i 's|archive.ubuntu.com|mirrors.kernel.org|g; s|security.ubuntu.com|mirrors.kernel.org|g' /etc/apt/sources.list && \

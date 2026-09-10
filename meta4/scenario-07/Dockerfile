@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 tomcat:9.0.98-jdk11-temurin
+FROM --platform=linux/amd64 tomcat@sha256:200c2b8f9b972c45a27bbad329b27a97aaac0fd558fa6e4fcce334534af51983
 
 # Tomcat 9.0.0-9.0.98 — partial-PUT deserialization RCE (CVE-2025-24813).
 # When the default servlet is writable (readonly=false) AND the app uses

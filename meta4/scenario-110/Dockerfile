@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu@sha256:281c5745f657873d78e5531fc5ba8575f46ab7769b94550ac99543f122679986
 
 # ImageMagick with a missing/permissive policy.xml allows dangerous coders
 # (MVG, MSL, URL) — an attacker can trigger RCE via specially crafted images.

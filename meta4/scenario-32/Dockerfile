@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu@sha256:281c5745f657873d78e5531fc5ba8575f46ab7769b94550ac99543f122679986
 
 # OpenSSH 9.5 — Terrapin prefix-truncation attack (CVE-2023-48795).
 # The sshd_config explicitly enables ChaCha20-Poly1305 and CBC+EtM MACs,

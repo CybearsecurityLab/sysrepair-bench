@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:20.04
+FROM --platform=linux/amd64 ubuntu@sha256:c664f8f86ed5a386b0a340d981b8f81714e21a8b9c73f658c4bea56aa179d54a
 
 # Dirty Pipe — kernel pipe-splice overwrite (CVE-2022-0847).
 # Affected kernels: 5.8 through 5.16.10 / 5.15.25 / 5.10.102.

@@ -1,4 +1,4 @@
-FROM ubuntu:25.10
+FROM ubuntu@sha256:e0b84ef30bbe766773e6056c60a3e706712e4119508e3da12516f1eddd6f761b
 # Scenario 07: Apache directory listing enabled
 # CWE-548: Exposure of Information Through Directory Listing
 # Ubuntu 25.10 (Quantal)

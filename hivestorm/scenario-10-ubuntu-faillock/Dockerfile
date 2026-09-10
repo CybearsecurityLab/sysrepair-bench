@@ -5,7 +5,7 @@
 #       --out hivestorm/scenario-10-ubuntu-faillock/build/roles.json \
 #       --render-task hivestorm/scenario-10-ubuntu-faillock/task.md
 #   docker build hivestorm/scenario-10-ubuntu-faillock
-FROM ubuntu:22.04
+FROM ubuntu@sha256:281c5745f657873d78e5531fc5ba8575f46ab7769b94550ac99543f122679986
 
 ENV DEBIAN_FRONTEND=noninteractive
 
