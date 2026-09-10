@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 tomcat:11.0.1-jdk21-temurin
+FROM --platform=linux/amd64 tomcat@sha256:cb79b37c69313d89fab32d74fc7d8da13b5c434a582a121039ba851d45e4ea5d
 
 # Tomcat 11.0.1 case-insensitive JSP upload race — CVE-2024-50379.
 # Pre-conditions:

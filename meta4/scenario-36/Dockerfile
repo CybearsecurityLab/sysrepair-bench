@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 minio/minio:latest
+FROM --platform=linux/amd64 minio/minio@sha256:9966a92a734f9411e32f4f41d7d9d826fcdc0f68c4e20b70295bd4e7c11f8a2f
 
 # MinIO public bucket — anonymous read access (misconfig).
 # A bucket is created with public anonymous download policy,

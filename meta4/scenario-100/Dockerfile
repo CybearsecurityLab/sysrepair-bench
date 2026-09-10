@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.7-slim-bullseye
+FROM --platform=linux/amd64 python@sha256:ea8897698c0955ba96144bd2b7310ef7884ccce4db7a1f97ffc21fb8b89d1673
 
 # SaltStack 3000 — ClearFuncs Auth Bypass (CVE-2020-11651) — Compensating Controls
 # The salt-master ZeroMQ publisher (4505) and return bus (4506) lack authentication

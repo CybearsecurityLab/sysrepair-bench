@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 solr:8.11.0
+FROM --platform=linux/amd64 solr@sha256:f9f6eed52e186f8e8ca0d4b7eae1acdbb94ad382c4d84c8220d78e3020d746c6
 
 # Apache Solr 8.11.0 ships with Log4j 2.14.1 (vulnerable to CVE-2021-44228).
 # This image intentionally pins that version and leaves the default

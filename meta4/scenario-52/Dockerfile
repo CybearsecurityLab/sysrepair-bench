@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 nats:2.7.1 AS nats-bin
+FROM --platform=linux/amd64 nats@sha256:b320fcb71942b77a78f93bd3989db775fed560bb338289167f1cf75323ab6d64 AS nats-bin
 
 FROM --platform=linux/amd64 alpine@sha256:b58899f069c47216f6002a6850143dc6fae0d35eb8b0df9300bbe6327b9c2171
 

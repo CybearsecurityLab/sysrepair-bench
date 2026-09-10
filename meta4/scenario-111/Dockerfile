@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 memcached:1.6.17
+FROM --platform=linux/amd64 memcached@sha256:db45886d2d48f143be64f2d46407e224b0b61df3b0056b9d5b03e8bc6a7cd74e
 
 # Memcached 1.6.17 started with the default command listens on UDP port 11211,
 # enabling a ~50,000x DDoS amplification attack (CVE-2018-1000115 / CWE-406).

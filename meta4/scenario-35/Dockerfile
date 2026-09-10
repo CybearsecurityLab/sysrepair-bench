@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.11-slim
+FROM --platform=linux/amd64 python@sha256:d1053354624536b044162aaab1e418bd000ea35184fb1ae098ab3166b1072e72
 
 # SSRF to IMDSv1 metadata service (misconfig).
 # A Flask app exposes an SSRF-vulnerable /fetch endpoint that can reach

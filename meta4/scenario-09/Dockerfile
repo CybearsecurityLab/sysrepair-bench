@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 httpd:2.4.50
+FROM --platform=linux/amd64 httpd@sha256:a0a1605656b89fe249c6306e5646d3d3c2d50606e134d411d8e8f732527cbdbb
 
 # Apache httpd 2.4.50 — double-encoded traversal bypass (CVE-2021-42013).
 # 2.4.50 patched 41773 but the check could be bypassed with double-encoded

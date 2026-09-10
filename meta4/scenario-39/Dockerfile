@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 mongo:4.4
+FROM --platform=linux/amd64 mongo@sha256:7250955b2354cc6ad3548b428628e441e34625caa39dd64906e85adf369e1942
 
 # MongoDB 4.4 ships with authentication disabled by default.
 # The server listens on 0.0.0.0:27017 — any client can connect,

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 httpd:2.4.49
+FROM --platform=linux/amd64 httpd@sha256:4b5cb7697fea2aa6d398504c381b693a54ae9ad5e6317fcdbb7a2d9b8c3b1364
 
 # Apache 2.4.49 path traversal + RCE via mod_cgi (CVE-2021-41773 / CWE-22).
 # The vulnerable state: mod_cgi enabled, no WAF, Require all granted on /.

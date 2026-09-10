@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 prom/prometheus:v2.40.0 AS prom-bin
+FROM --platform=linux/amd64 prom/prometheus@sha256:eff669d70ee485a191a645caa269530fc4930d0b6c178390c1e1bb378fd200fc AS prom-bin
 
 FROM --platform=linux/amd64 alpine@sha256:b58899f069c47216f6002a6850143dc6fae0d35eb8b0df9300bbe6327b9c2171
 

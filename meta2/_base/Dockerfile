@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 lpenz/ubuntu-hardy-amd64
+FROM --platform=linux/amd64 lpenz/ubuntu-hardy-amd64@sha256:2d30532f659542f73d4487f47248f42f681c510d4a05c77f34a142f7f4d5b816
 
 # Shared base for meta2 (Ubuntu 8.04 Hardy) scenarios.
 #

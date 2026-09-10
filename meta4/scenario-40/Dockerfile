@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 mongo:4.4
+FROM --platform=linux/amd64 mongo@sha256:7250955b2354cc6ad3548b428628e441e34625caa39dd64906e85adf369e1942
 
 # MongoDB 4.4 enables zlib wire compression by default.
 # Misconfiguration: zlib wire-protocol compression can amplify BSON payloads

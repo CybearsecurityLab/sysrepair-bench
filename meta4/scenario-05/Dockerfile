@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 maven:3.8.6-openjdk-11 AS build
+FROM --platform=linux/amd64 maven@sha256:37a94a4fe3b52627748d66c095d013a17d67478bc0594236eca55c8aef33ddaa AS build
 
 # Spring4Shell — CVE-2022-22965.
 # Build a minimal Spring MVC WAR using Spring Framework 5.3.17 (via

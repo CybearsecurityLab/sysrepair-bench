@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 rabbitmq:3.11-management
+FROM --platform=linux/amd64 rabbitmq@sha256:9ec87a13ad889b4557ce25e84bd47bd2b79cd679528d6f252ddf981585115c89
 
 # RabbitMQ management image ships with guest/guest credentials and
 # sets loopback_users.guest = false, making the default creds

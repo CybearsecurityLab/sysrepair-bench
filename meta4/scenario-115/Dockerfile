@@ -1,4 +1,4 @@
-FROM solr:8.8
+FROM solr@sha256:1366313f3cdd7f7acd28b497244d00c0a19c0c5556017a55775350f95511703d
 
 # Apache Solr 8.8 — DataImportHandler RCE (CVE-2019-0193 / CWE-94 / CVSS 7.5).
 # DIH is enabled with no authentication; an attacker-controlled dataConfig

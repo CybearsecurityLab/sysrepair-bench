@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 httpd:2.4.49
+FROM --platform=linux/amd64 httpd@sha256:4b5cb7697fea2aa6d398504c381b693a54ae9ad5e6317fcdbb7a2d9b8c3b1364
 
 # Apache httpd 2.4.49 — path traversal + CGI RCE (CVE-2021-41773).
 # The URL-normalization flaw lets `.%2e/` segments escape aliased

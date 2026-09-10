@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 neo4j:3.4
+FROM --platform=linux/amd64 neo4j@sha256:00260e0406ddbf010391877a7931a0ff1da3a99a384af3ab58f1543658b23d60
 
 # Neo4j 3.4 with the Shell Server enabled.
 # CVE-2021-34371: the Neo4j Shell Server binds an RMI listener on port 1337.

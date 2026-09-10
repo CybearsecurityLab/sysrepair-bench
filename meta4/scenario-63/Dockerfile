@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 roundcube/roundcubemail:1.6.3-apache
+FROM --platform=linux/amd64 roundcube/roundcubemail@sha256:244dc88b1e6dcfe2122d4b484230dd988c78857d8767c9798bcadd7a9b0371ca
 
 # Roundcube 1.6.3 is vulnerable to stored XSS via SVG elements embedded in
 # HTML emails (CVE-2023-5631). This version cannot be replaced by upgrade;

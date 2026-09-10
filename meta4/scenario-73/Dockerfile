@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 registry:2
+FROM --platform=linux/amd64 registry@sha256:46faa9a1ae6813194b53921a370f2f4f8c5e1aae228a89bceafef5847a6a3278
 
 # Docker Registry 2 — No Authentication (misconfig)
 # The registry is started without any authentication backend configured.

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 redis:7-alpine
+FROM --platform=linux/amd64 redis@sha256:1db42ccef14898aa29bae778452d567534b59c107129cbc1163fb552de184d3c
 
 # ArgoCD bundled Redis — no authentication (misconfig).
 # Redis ships with no requirepass, allowing any network client to

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 internetsystemsconsortium/bind9:9.18
+FROM --platform=linux/amd64 internetsystemsconsortium/bind9@sha256:1ffb29c718ee2540c5643c1e8166629a07bbd505f99107baae535e9f86eb7eef
 
 # BIND 9.18 configured as an open recursive resolver.
 # recursion yes; allow-recursion { any; }; permits any host to use this
