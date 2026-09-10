@@ -6,7 +6,7 @@
 #       --render-task hivestorm/scenario-04-win2019/task.md
 #   docker build hivestorm/scenario-04-win2019
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM mcr.microsoft.com/windows/servercore@sha256:8077f3e5b0987c388735917f0d15a3dd5fc773f8b5699c612ccb539d42644185
 
 SHELL ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
 
