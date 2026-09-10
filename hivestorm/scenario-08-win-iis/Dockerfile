@@ -9,7 +9,7 @@
 # Base image ships IIS preinstalled; PHP is mocked via dropped files (scoring
 # is about file/ini state, not interpreter behavior).
 
-FROM mcr.microsoft.com/windows/servercore/iis:windowsservercore-ltsc2019
+FROM mcr.microsoft.com/windows/servercore/iis@sha256:d9f380e6383315b25c1babd41b88b695c40cbe0945efd06dd887a161b83ca65c
 
 SHELL ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
 

@@ -3,7 +3,7 @@
 # Mirrors the common prep that upstream metasploitable3 does on Win2k8R2 before any
 # vulnerable app is installed: firewall off, RDP on, OpenSSH + WinRM reachable,
 # a local admin the benchmark agent can log in as.
-ARG BASE=mcr.microsoft.com/windows/servercore:ltsc2019
+ARG BASE=mcr.microsoft.com/windows/servercore@sha256:8077f3e5b0987c388735917f0d15a3dd5fc773f8b5699c612ccb539d42644185
 FROM ${BASE}
 
 SHELL ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "$ErrorActionPreference='Stop';"]
