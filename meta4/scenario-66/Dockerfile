@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:bookworm-slim
+FROM --platform=linux/amd64 debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 
 # IPMI simulator on UDP 623 exposed on all interfaces.
 # Cipher-zero (algorithm 0) allows unauthenticated session establishment —

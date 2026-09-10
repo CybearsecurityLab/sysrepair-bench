@@ -16,7 +16,7 @@
 # misconfigured daemon.json, user accounts, and the inner workload launch
 # script.
 
-FROM docker:24-dind
+FROM docker@sha256:167bad11bade46d4d9a88646ed7f9b11014dfdb898ba75c5a390eb03f21f0c45
 
 RUN apk upgrade --no-cache && \
     apk add --no-cache bash jq openssh-server openssh-client sshpass \

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 eclipse-mosquitto:2.0
+FROM --platform=linux/amd64 eclipse-mosquitto@sha256:54c90ecc78645241b6aa272b2a5ac8fc20b0eaf02cc4dd431c0cc8d2fd4447dd
 
 # Mosquitto 2.0 default configuration requires allow_anonymous to be
 # explicitly set. When set to true (or left unconfigured with a permissive

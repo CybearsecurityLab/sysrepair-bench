@@ -15,7 +15,7 @@ COPY src src
 RUN mvn package -DskipTests -B
 
 # ---------- runtime ----------
-FROM --platform=linux/amd64 eclipse-temurin:11-jre-jammy
+FROM --platform=linux/amd64 eclipse-temurin@sha256:01f14fc6a7240137b0a0b13de7a17afcc6983b46e7c42389ce1e00e6319d3bed
 COPY --from=build /src/target/scf-demo.jar /opt/app/app.jar
 
 EXPOSE 8080

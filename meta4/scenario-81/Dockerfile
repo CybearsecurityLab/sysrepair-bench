@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 localstack/localstack:3.0
+FROM --platform=linux/amd64 localstack/localstack@sha256:73698e485240939490134aadd7e429ac87ff068cd5ad09f5de8ccb76727c13e1
 
 # AWS SSM Plaintext Parameters (misconfig)
 # Secrets are stored as SSM Parameter type "String" (plaintext) instead of

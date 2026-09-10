@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:bookworm-slim
+FROM --platform=linux/amd64 debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 
 # Metabase 0.46.6 — Pre-auth RCE via H2 JDBC Injection (CVE-2023-38646)
 # Compensating Controls scenario — SIMULATED.

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:bullseye-slim
+FROM --platform=linux/amd64 debian@sha256:70509c95d1857a3704c0a5d92ee2e0adac95f612a9386889d70760bfd7c1ebba
 
 # Exim 4.96 advertises CHUNKING and PIPELINING by default, enabling SMTP
 # smuggling attacks (CVE-2023-51766) that can bypass SPF/DKIM checks.

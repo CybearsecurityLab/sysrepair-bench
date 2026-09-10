@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 localstack/localstack:3.0
+FROM --platform=linux/amd64 localstack/localstack@sha256:73698e485240939490134aadd7e429ac87ff068cd5ad09f5de8ccb76727c13e1
 
 # AWS SNS Open Topic (misconfig)
 # The SNS topic "app-debug-events" publishes internal debug data and has an

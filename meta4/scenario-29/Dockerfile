@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 dolevf/dvga:latest
+FROM --platform=linux/amd64 dolevf/dvga@sha256:040aa33c199d99f3380c9ff9a1ee5d725e9abca7b189c63a35a2a73bda79c957
 
 # DVGA — Damn Vulnerable GraphQL Application. Ships with:
 #   - Introspection enabled (leaks the schema)

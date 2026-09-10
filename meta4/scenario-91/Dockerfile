@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 grafana/grafana:8.3.0
+FROM --platform=linux/amd64 grafana/grafana@sha256:ba33883067355635e6255a4628077cf47dfafb2384f66fe6ccc4dd36359393d2
 
 # Grafana 8.3.0 — CVE-2021-43798: Plugin path traversal allows unauthenticated
 # reads of arbitrary local files via /public/plugins/<name>/../../../../etc/passwd.

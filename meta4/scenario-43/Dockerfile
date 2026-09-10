@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 cassandra:3.11
+FROM --platform=linux/amd64 cassandra@sha256:98f33853b441c314260ae2df91138f102d16e84bb2ac2352863d7ed204121c0d
 
 # Cassandra 3.11 defaults to AllowAllAuthenticator (no credentials required)
 # and AllowAllAuthorizer (no permission checks).  CVE-2021-44521: when

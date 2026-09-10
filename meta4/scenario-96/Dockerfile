@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 apache/airflow:1.10.10
+FROM --platform=linux/amd64 apache/airflow@sha256:b67062e5c67906391f7023b1c0ec7b51f8d4d4be1230e96c1e375d98e696f02a
 
 # Apache Airflow 1.10.10 — CVE-2020-11978: Example DAGs enabled by default.
 # The example DAG 'example_trigger_target_dag' accepts arbitrary bash commands

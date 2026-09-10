@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 couchdb:3.1
+FROM --platform=linux/amd64 couchdb@sha256:41059a5dd8946d8f0f8ef19ce5ec7bbf958cd952bb835c900f4987771ae13dc6
 
 # CouchDB 3.1 with WEAK / WELL-KNOWN ADMIN CREDENTIALS (admin:admin).
 #

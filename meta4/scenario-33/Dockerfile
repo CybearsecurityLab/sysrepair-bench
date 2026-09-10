@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 docker:24-dind
+FROM --platform=linux/amd64 docker@sha256:167bad11bade46d4d9a88646ed7f9b11014dfdb898ba75c5a390eb03f21f0c45
 
 # Docker daemon exposed on TCP 2375 without TLS (misconfig).
 # Anyone who can reach port 2375 has full unauthenticated control

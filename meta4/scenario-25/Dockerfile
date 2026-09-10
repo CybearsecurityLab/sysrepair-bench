@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 moby/buildkit:v0.12.4
+FROM --platform=linux/amd64 moby/buildkit@sha256:0e5755bb0a836068ffe491e2d04d44815a747910e7a14259810b22ac57189bc3
 
 # BuildKit 0.12.4 — arbitrary host-file write via unsanitized cache-mount
 # path during teardown (CVE-2024-23652). The cleanup of a cache mount

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 hashicorp/vault:1.13.3
+FROM --platform=linux/amd64 hashicorp/vault@sha256:4ae5db972c9959e344dc64493b4684f75692ce4f8431177f358c66e6905244fd
 
 # HashiCorp Vault 1.13.3 started in dev mode.
 # Dev mode uses root token "root", no TLS, and in-memory storage —

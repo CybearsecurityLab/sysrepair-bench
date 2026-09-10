@@ -16,7 +16,7 @@
 # offensive toolkit. Those live in srb-attacker:1 on the attacker VM and are
 # the GRADER's instruments, not the agent's. An agent that could run the PoC
 # locally could also discover exactly what is graded.
-FROM debian:bookworm-slim
+FROM debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \

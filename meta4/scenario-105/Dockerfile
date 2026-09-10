@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:bookworm-slim
+FROM --platform=linux/amd64 debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 
 # Next.js middleware auth bypass (CVE-2025-29927)
 # The x-middleware-subrequest header allows skipping middleware auth checks.

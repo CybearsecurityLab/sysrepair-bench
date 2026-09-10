@@ -9,7 +9,7 @@
 # Scored surface: nginx location/fastcgi config, php.ini toggles, pool user,
 # PHP-FPM socket perms, sshd/account hygiene.
 
-FROM debian:12-slim
+FROM debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 
 ARG DEBIAN_FRONTEND=noninteractive
 

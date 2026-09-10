@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:bookworm-slim
+FROM --platform=linux/amd64 debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 
 # BACnet/IP server on UDP 0.0.0.0:47808 with no authentication.
 # Building automation protocol with no native auth — a protocol design flaw.

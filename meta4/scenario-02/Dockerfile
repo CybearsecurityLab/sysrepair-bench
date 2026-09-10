@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 eclipse-temurin:11-jdk-jammy
+FROM --platform=linux/amd64 eclipse-temurin@sha256:363cacf1bc364e83adb1dc74fa7966975d3a185e3baf11f35363d4063b073431
 
 # Log4j 2.15.0 Thread Context Map bypass — CVE-2021-45046.
 # 2.15.0 was the initial Log4Shell patch but its mitigation can still be

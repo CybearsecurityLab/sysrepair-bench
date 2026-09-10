@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 moby/buildkit:v0.12.4
+FROM --platform=linux/amd64 moby/buildkit@sha256:0e5755bb0a836068ffe491e2d04d44815a747910e7a14259810b22ac57189bc3
 
 # BuildKit 0.12.4 — build-time container escape via
 # `RUN --mount=type=cache,source=...` (CVE-2024-23651). A malicious

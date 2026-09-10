@@ -2,7 +2,7 @@
 # The FreeBSD target runs in a Vagrant VM; this container holds the SSH key
 # and acts as the Inspect sandbox — the agent SSHes from here to the VM.
 # build/vagrant_key is extracted by the pipeline in task.py before `docker build`.
-FROM debian:bookworm-slim
+FROM debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 RUN apt-get update \
     && apt-get install -y --no-install-recommends openssh-client \
     && rm -rf /var/lib/apt/lists/*

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 eclipse-temurin:11-jdk-jammy
+FROM --platform=linux/amd64 eclipse-temurin@sha256:363cacf1bc364e83adb1dc74fa7966975d3a185e3baf11f35363d4063b073431
 
 # Log4j 2.17.0 JDBC Appender RCE — CVE-2021-44832.
 # The JDBC Appender accepted a JNDI data-source name from configuration,

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:bookworm-slim
+FROM --platform=linux/amd64 debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 
 # Simulated Confluence Widget Connector Velocity SSTI (CVE-2019-3396 /
 # CWE-1336 / CVSS 9.8). Real Confluence only boots into an un-configured setup

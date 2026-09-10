@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:bookworm-slim
+FROM --platform=linux/amd64 debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 
 # Simulated Confluence OGNL Injection (CVE-2022-26134 / CWE-917 / CVSS 9.8).
 # Real Confluence is too heavy; a Python/Flask app simulates the vulnerable

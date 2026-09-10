@@ -6,7 +6,7 @@
 #       --render-task hivestorm/scenario-05-win2016/task.md
 #   docker build hivestorm/scenario-05-win2016
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2016
+FROM mcr.microsoft.com/windows/servercore@sha256:75e9c1a8a03544a2a3ba2368facf9975db3996f843a22613552722a57c83cf60
 
 SHELL ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
 

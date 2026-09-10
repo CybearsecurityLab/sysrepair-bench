@@ -9,7 +9,7 @@
 # Debian 9 is EOL; seed.sh rewrites sources.list to archive.debian.org before
 # any apt-get.
 
-FROM debian:9
+FROM debian@sha256:16ee3e11da473f6565ef94a715f1a38b3079e0664913be78869c336a71cb6085
 
 ARG DEBIAN_FRONTEND=noninteractive
 

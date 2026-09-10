@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 jenkins/jenkins:2.441
+FROM --platform=linux/amd64 jenkins/jenkins@sha256:01e66c77a577d9c2b09e2e76ed6ef2508d341dc8fa713a272e351e113818d857
 
 # Jenkins LTS 2.441 CLI `@`-expansion arbitrary file read → RCE
 # (CVE-2024-23897). Jenkins uses the args4j library which treats an

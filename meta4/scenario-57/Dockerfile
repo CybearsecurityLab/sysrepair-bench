@@ -1,6 +1,6 @@
-FROM --platform=linux/amd64 coredns/coredns:1.11.1 AS coredns-bin
+FROM --platform=linux/amd64 coredns/coredns@sha256:2169b3b96af988cf69d7dd69efbcc59433eb027320eb185c6110e0850b997870 AS coredns-bin
 
-FROM --platform=linux/amd64 alpine:3.19
+FROM --platform=linux/amd64 alpine@sha256:b58899f069c47216f6002a6850143dc6fae0d35eb8b0df9300bbe6327b9c2171
 
 # CoreDNS 1.11.1 serving on 0.0.0.0 with no ACL or rate limiting.
 # Any host can query without restriction, enabling DNS amplification

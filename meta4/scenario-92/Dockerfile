@@ -1,6 +1,6 @@
 FROM --platform=linux/amd64 prom/prometheus:v2.40.0 AS prom-bin
 
-FROM --platform=linux/amd64 alpine:3.19
+FROM --platform=linux/amd64 alpine@sha256:b58899f069c47216f6002a6850143dc6fae0d35eb8b0df9300bbe6327b9c2171
 
 # Prometheus 2.40.0 — Unauthenticated /metrics and /api/v1/targets endpoints.
 # No authentication is configured by default. Any network client can enumerate

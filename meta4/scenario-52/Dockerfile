@@ -1,6 +1,6 @@
 FROM --platform=linux/amd64 nats:2.7.1 AS nats-bin
 
-FROM --platform=linux/amd64 alpine:3.19
+FROM --platform=linux/amd64 alpine@sha256:b58899f069c47216f6002a6850143dc6fae0d35eb8b0df9300bbe6327b9c2171
 
 # NATS 2.7.1 with no authentication configured. CVE-2022-24450: any
 # unauthenticated client can connect and cross-switch into other

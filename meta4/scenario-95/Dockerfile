@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 apache/airflow:1.10.12
+FROM --platform=linux/amd64 apache/airflow@sha256:9ea9e5ca66bd17632241889ab248fe3852c9f3c830ed299a8ecaa8a13ac2082f
 
 # Apache Airflow 1.10.12 — CVE-2020-17526: Default session secret_key.
 # The default secret_key in airflow.cfg is 'temporary_key' — a publicly

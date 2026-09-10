@@ -11,7 +11,7 @@
 # sshd, httpd, and mariadb directly. firewalld/selinux are represented as
 # config-file state (no kernel enforcement inside the container).
 
-FROM centos:7
+FROM centos@sha256:dead07b4d8ed7e29e98de0f4504d87e8880d4347859d839686a31da35a3b532f
 
 COPY build/roles.json /etc/sysrepair/roles.json
 COPY seed.sh /usr/local/sbin/seed.sh

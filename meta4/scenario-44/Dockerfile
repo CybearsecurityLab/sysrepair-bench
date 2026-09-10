@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 elasticsearch:7.10.1
+FROM --platform=linux/amd64 elasticsearch@sha256:e9a1fe65f68b2d2b9583287d1190f67f23af08582eac4d2a8dc342e4219c7306
 
 # Elasticsearch 7.10.1 with X-Pack security disabled.
 # The REST API on port 9200 is fully open: anyone can read, write, and

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:bookworm-slim
+FROM --platform=linux/amd64 debian@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867
 
 # Erlang/OTP SSH Pre-auth RCE (CVE-2025-32433)
 # The Erlang/OTP SSH daemon accepts unauthenticated connection messages

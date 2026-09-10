@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 couchdb:3.2.1
+FROM --platform=linux/amd64 couchdb@sha256:2c96232290fe0414177909bdb8c30224af32c2f8f7031d868fb832ffaac6cc4f
 
 # CouchDB 3.2.1 with the default/known Erlang distribution cookie "monster"
 # (CVE-2022-24706).  An attacker who knows the cookie connects to EPMD (4369)

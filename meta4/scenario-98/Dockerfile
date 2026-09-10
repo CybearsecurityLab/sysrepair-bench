@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 eclipse-temurin:8-jre-jammy
+FROM --platform=linux/amd64 eclipse-temurin@sha256:4e19eb22beb0710060db5163dd492cf1966d7ba5131295498502b4eff7821926
 
 # Apache Druid 0.20.2 — CVE-2021-25646: JavaScript injection in DataSource
 # input filter. When druid.javascript.enabled=true, the coordinator accepts

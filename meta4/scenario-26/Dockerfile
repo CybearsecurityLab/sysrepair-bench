@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 docker:24.0.7-dind
+FROM --platform=linux/amd64 docker@sha256:074ba42947f2b51dff456322101bf1273bff49c68d54bf3cacb790ebd3ff2d4e
 
 # Docker-socket / `--privileged` container escape — architectural
 # weakness, no CVE. Mounting `/var/run/docker.sock` into a container, or

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 debian:buster-slim
+FROM --platform=linux/amd64 debian@sha256:32220ea48be72979c9f0810d69f3de9145c9584c2ee966c6ec26edbcf4640c0b
 
 # Dovecot 2.3.7 contains a pre-authentication buffer overflow (CVE-2019-11500)
 # via malformed quoted strings in the IMAP/ManageSieve protocols.

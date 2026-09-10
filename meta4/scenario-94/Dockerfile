@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 apache/superset:2.0.0
+FROM --platform=linux/amd64 apache/superset@sha256:ca32ff641daca7447edfe78345e1abbc3b278895b1d4a245e69e28020e3310b7
 
 # Apache Superset 2.0.0 — CVE-2023-27524: Hardcoded default SECRET_KEY.
 # The default SECRET_KEY used to sign Flask sessions is publicly known.

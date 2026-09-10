@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 eclipse-temurin:8-jre-jammy
+FROM --platform=linux/amd64 eclipse-temurin@sha256:4e19eb22beb0710060db5163dd492cf1966d7ba5131295498502b4eff7821926
 
 # Nacos 1.4.0 — Auth Bypass via Spoofed User-Agent (CVE-2021-29441)
 # Compensating Controls scenario.

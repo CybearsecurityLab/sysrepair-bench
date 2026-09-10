@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 rancher/k3s:v1.27.1-k3s1
+FROM --platform=linux/amd64 rancher/k3s@sha256:47d01d1f6b7f10c9f3a929e6c3dca332fb65a3986881c2fb27ff079a995bd14d
 
 # K8s Config Hardening misconfiguration: pods deployed without CPU/memory
 # resource limits allow unbounded resource consumption, enabling noisy-neighbour
