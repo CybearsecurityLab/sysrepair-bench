@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 hashicorp/consul@sha256:4a0a6aca1c02958c8e1362dca12b3b72e4e2019c5df3aaa99c694a6bf2437053
+FROM --platform=linux/amd64 hashicorp/consul@sha256:afc44998dc5ac84bdaea58c3aae34122a59c9fa042ae9615e6641b96a744af2f
 
 # HashiCorp Consul 1.15.4 with ACL system disabled.
 # Any client — authenticated or not — can read, write, and delete every

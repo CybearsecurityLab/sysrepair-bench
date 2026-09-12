@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 hashicorp/vault@sha256:4ae5db972c9959e344dc64493b4684f75692ce4f8431177f358c66e6905244fd
+FROM --platform=linux/amd64 hashicorp/vault@sha256:820bd0930e073d2e07248b4d19b2b05abd32713bfebeef594bfd9720a044a266
 
 # HashiCorp Vault 1.13.3 with a file backend and no seal stanza.
 # Secrets are written to disk unencrypted — any OS-level read of /vault/data

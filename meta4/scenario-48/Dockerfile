@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 apache/activemq-classic@sha256:e88a48bbf2ca8f491c7df43ff6079951b465777cc506168a2e026bc389ca600c
+FROM --platform=linux/amd64 apache/activemq-classic@sha256:3beee62f23a0c2701ae78276efac4712890736d82ad172e82a4c96dda8544761
 
 # ActiveMQ 5.17.5 OpenWire protocol handler deserializes Java objects
 # without class filtering by default. CVE-2023-46604 allows an

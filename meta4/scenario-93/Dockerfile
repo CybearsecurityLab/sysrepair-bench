@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 jupyter/base-notebook@sha256:98d5507615d49d4786bae16cabf4e475aead9ea9e1ce096c4551404a9971a7f7
+FROM --platform=linux/amd64 jupyter/base-notebook@sha256:6bf7e6e661508753977143021abddfbe3bd36229641543c9b029cd00dd4e7e0c
 
 # Jupyter Notebook (python-3.10) — No token/password authentication.
 # When started with --NotebookApp.token='' and no password, the notebook

@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 apache/activemq-classic@sha256:d1874665ba9d9aca380bfda486386fe5da5282250695da70109c0da9f271e398
+FROM --platform=linux/amd64 apache/activemq-classic@sha256:3beee62f23a0c2701ae78276efac4712890736d82ad172e82a4c96dda8544761
 
 # ActiveMQ 6.1.0 exposes the Jolokia/REST API under /api/ without
 # requiring authentication by default. CVE-2024-32114: any unauthenticated
