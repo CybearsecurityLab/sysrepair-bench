@@ -18,16 +18,18 @@ lim = {}
 for l in open(os.path.join(S, "limits.jsonl")):
     d = json.loads(l)
     for r in d["rows"]: lim[(d["base"], r[0], r[1])] = (r[2], r[3])
-raw = [json.loads(l) for l in open(os.path.join(S, "eps_raw.jsonl"))]
-eps = {}; excl = defaultdict(Counter); ran = defaultdict(set)
-for base, model, scaf, mode, sid, ep, outs, sec, reg, bm in raw:
-    if scaf != "react" or sid in NA: continue
-    ran[(model, mode)].add(sid)
-    kind = bad.get((base, sid, ep))
-    if kind is not None:
-        excl[(model, mode)][kind] += 1; continue
-    k = (model, mode, sid, ep)
-    if k not in eps or base > eps[k][0]: eps[k] = (base, outs, sec, reg, bm)
+sys.path.insert(0, S)
+import episode_rule
+_eps, _reasons = episode_rule.load(return_reasons=True)
+eps = {(k[0], k[2], k[3], k[4]): v for k, v in _eps.items()}
+excl = defaultdict(Counter)
+for (model, scaf, mode), why in _reasons.items():
+    excl[(model, mode)].update(why)
+ran = defaultdict(set)
+for l in open(os.path.join(S, "eps_raw.jsonl")):
+    r = json.loads(l)
+    if r[2] == "react" and r[4] not in NA: ran[(r[1], r[3])].add(r[4])
+
 
 def per(model, mode, keep=None):
     d = defaultdict(list)
@@ -53,7 +55,7 @@ for mk, mn in MODELS:
         hit = sum(1 for k, v in E.items() if (lim.get((v[0], k[2], k[3])) or (None,))[0] in ("working", "time"))
         x = excl[(mk, mo)]
         out[f"{mn}|{mo}"] = dict(kept=len(E), excluded=sum(x.values()), ctx=x["context-overflow"], rate=x["rate-limit"],
-                                 exc=x["exception"], S=len({k[2] for k in E}), E_dist=dict(sorted(cnt.items())), budget=hit)
+                                 exc=x["exception"], sup=x["superseded"], S=len({k[2] for k in E}), E_dist=dict(sorted(cnt.items())), budget=hit)
         print(f"{mn:<18}{mo:<9}{len(E):>9}{sum(x.values()):>9}{x['context-overflow']:>5}{x['rate-limit']:>5}{x['exception']:>5}"
               f"{len({k[2] for k in E}):>5}{str(dict(sorted(cnt.items()))):>28}{hit:>11}")
 

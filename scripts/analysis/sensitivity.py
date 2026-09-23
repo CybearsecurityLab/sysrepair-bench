@@ -31,19 +31,11 @@ for line in open(os.path.join(S, "unscored.jsonl")):
 raw = [json.loads(l) for l in open(os.path.join(S, "eps_raw.jsonl"))]
 
 
+sys.path.insert(0, S)
+import episode_rule
+ALL = ("basic", "react", "reflexion", "plan_and_solve")
 def build(mode_excl):
-    """mode_excl: 'exclude' drops unscored episodes; 'fail' keeps them as failures."""
-    eps = {}
-    for base, model, scaf, mode, sid, ep, outs, sec, reg, bm in raw:
-        if sid in NA: continue
-        kind = bad.get((base, sid, ep))
-        if kind is not None:
-            if mode_excl == "exclude": continue
-            outs, sec, reg = [False], None, None
-        k = (model, scaf, mode, sid, ep)
-        if k not in eps or base > eps[k][0]:
-            eps[k] = (base, outs, sec, reg, bm)
-    return eps
+    return episode_rule.load(scaffolds=ALL, unscored_as_failure=(mode_excl == "fail"))
 
 
 def per_scen(eps, model, mode, scaf="react", k=5, keep=None):
@@ -113,7 +105,7 @@ for mk, mn in (("minimax-m2.7", "MiniMax-M2.7"), ("qwen3.5-9b", "Qwen3.5-9B"), (
         if c: print(f"   {sc:<15} n_s={c['n_s']:4d} coll={c['coll']:3d} CDR={c['cdr']:5.1f} CI=[{c['ci'][0]:.1f},{c['ci'][1]:.1f}]")
 
 print("\n== (4) minimum detectable difference per model, CVE-year split (80% power, two-sided 0.05)")
-T = json.load(open(os.path.join(S, "tables_v2.json")))
+T = json.load(open(os.path.join(S, "tables_v3.json")))
 for mn in [m for _, m in MODELS]:
     v = T["contam"].get(f"{mn}|zero_day")
     if not v: continue

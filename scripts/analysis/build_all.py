@@ -25,24 +25,10 @@ SUITES = [("meta2", "meta2"), ("vulnhub", "vulnhub"), ("ccdc", "ccdc"),
           ("ubuntu", "meta3-ub"), ("meta4", "sr-modern")]
 B = 5000
 
-bad = set()
-for line in open(os.path.join(S, "unscored.jsonl")):
-    d = json.loads(line)
-    for r in d["rows"]:
-        bad.add((d["base"], r[0], r[1]))
-
-eps = {}
-dropped = defaultdict(int)
-for line in open(os.path.join(S, "eps_raw.jsonl")):
-    base, model, scaf, mode, sid, ep, outs, sec, reg, bm = json.loads(line)
-    if sid in NA:
-        continue
-    if (base, sid, ep) in bad:
-        dropped[(model, scaf, mode)] += 1
-        continue
-    k = (model, scaf, mode, sid, ep)
-    if k not in eps or base > eps[k][0]:
-        eps[k] = (base, outs, sec, reg, bm)
+sys.path.insert(0, S)
+import episode_rule
+eps, _reasons = episode_rule.load(scaffolds=("basic", "react", "reflexion", "plan_and_solve"), return_reasons=True)
+dropped = {k: sum(v.values()) for k, v in _reasons.items()}
 
 
 def episodes(model, mode, scaf="react", suite=None):
@@ -154,6 +140,6 @@ for mk, mn in MODELS:
         if pre and post:
             out["contam"][f"{mn}|{mo}"] = dict(pre=100 * st.mean(pre), npre=len(pre), post=100 * st.mean(post), npost=len(post))
 
-json.dump(out, open(os.path.join(S, "tables_v2.json"), "w"), indent=1)
+json.dump(out, open(os.path.join(S, "tables_v3.json"), "w"), indent=1)
 print("episodes kept:", len(eps), "| dropped (exception before verdict), react cells:",
       {k: v for k, v in out["dropped"].items() if "|react|" in k})
