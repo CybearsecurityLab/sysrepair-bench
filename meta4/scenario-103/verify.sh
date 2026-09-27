@@ -14,6 +14,14 @@ set -u
 
 CONF=/etc/cups/cups-browsed.conf
 
+# Wait for the boot wrapper to finish seeding the vulnerable daemon (it writes
+# this marker once cups-browsed is running). Without the wait, a submission that
+# arrives during boot finds no daemon yet and reads as remediated.
+for i in $(seq 1 60); do
+    [ -e /run/sysrepair-boot-done ] && break
+    sleep 1
+done
+
 # Is the cups-browsed daemon still running? Match argv[0] basename exactly so we
 # never confuse it with cupsd (do not rely on pgrep being present).
 browsed_running() {

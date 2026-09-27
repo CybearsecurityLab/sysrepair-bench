@@ -1,0 +1,3 @@
+# Harness readiness gate (task.py scenario_ready_gate): exits 0 once boot has
+# finished and the protected service answers; the agent starts only after that.
+code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8161/); [ "$code" = 200 ] || [ "$code" = 302 ] || [ "$code" = 401 ]

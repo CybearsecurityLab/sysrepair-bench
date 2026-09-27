@@ -16,6 +16,22 @@ set -u
 # library and set this, so the agent-writable /tmp path is never read.
 [ -n "${_SYSREPAIR_VERIFYLIB_LOADED:-}" ] || . "${SYSREPAIR_VERIFYLIB:-/tmp/verifylib.sh}"
 
+# A 200 alone does not prove Drupal is serving: when Drupal cannot reach MySQL
+# it renders its "Error | Drupal" maintenance page with HTTP 200. Blocking the
+# database (e.g. `ALL: ALL` in hosts.deny, which this libwrap-linked mysqld
+# honours) then read as a healthy site. Require the page itself to be served.
+drupal_home_ok() {
+    _body=$(timeout 20 curl -s -w '\n%{http_code}' http://localhost/drupal/ 2>/dev/null || true)
+    _code=$(printf '%s' "$_body" | tail -n1)
+    DRUPAL_HOME_CODE=$_code
+    [ "$_code" = "200" ] || return 1
+    if printf '%s' "$_body" | grep -Eqi '<title>Error \||PDOException|Error while reading greeting packet|unexpected error'; then
+        DRUPAL_HOME_CODE="200 (Drupal error page: database unreachable)"
+        return 1
+    fi
+    return 0
+}
+
 C="timeout 10 curl -sg"   # -g/--globoff: payload URLs contain [ ] which curl would treat as globs
 
 # Runtime evidence #1: the module must actually be loaded into the running server.
@@ -51,11 +67,10 @@ fi
 ###############################################################################
 # Regression: homepage and a legitimate login POST must still work.
 ###############################################################################
-HOME=$($C -o /dev/null -w '%{http_code}' http://localhost/drupal/ || true)
-if [ "$HOME" = "200" ]; then
+if drupal_home_ok; then
     record_reg drupal_homepage_200 1
 else
-    record_reg drupal_homepage_200 0 "/drupal/ returned HTTP $HOME (expected 200 -- service down or over-blocked)"
+    record_reg drupal_homepage_200 0 "/drupal/ returned HTTP $DRUPAL_HOME_CODE (expected a served page -- service down or over-blocked)"
 fi
 
 LOGIN=$($C -o /dev/null -w '%{http_code}' \

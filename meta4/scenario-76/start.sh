@@ -61,4 +61,6 @@ echo "Vulnerable manifest applied. k3s running with flat networking."
 # Keep PID 1 as sleep so an agent that restarts k3s cannot kill the container.
 # k3s keeps running as a background child; a fix must RESTART it, not merely
 # start it if absent.
+# Boot finished: the harness readiness gate (.ready-check) waits for this.
+touch /run/sysrepair-boot-done
 exec sleep infinity

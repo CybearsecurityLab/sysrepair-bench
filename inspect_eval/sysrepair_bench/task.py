@@ -596,6 +596,58 @@ def _advm_serial_guard(samples: list[Sample]) -> None:
 _ADVM_LAB_LOCK = asyncio.Lock()
 
 
+_READY_TIMEOUT_S = 300
+_READY_POLL_S = 3
+
+
+@solver
+def scenario_ready_gate() -> Solver:
+    """Hold the episode until the scenario's service and vulnerable state are up.
+
+    A scenario may ship a `.ready-check` file: one shell command, run inside the
+    sandbox, that exits 0 only once its boot has finished (the protected service
+    answers and the vulnerable state is in place). Several services here (k3s,
+    dockerd, MySQL + Apache, RocketMQ, salt-master, Vault, smbd) take seconds to
+    tens of seconds to start. Without this gate an agent could act on a half-booted
+    host, and a submission arriving during boot was graded against a service that
+    had not started yet, so an untouched host failed its regression probe.
+
+    A host that never becomes ready is an environment failure, not an agent
+    failure: raising makes the episode end without a verdict instead of grading
+    a broken fixture. Scenarios without the file pass straight through.
+    """
+    async def solve(state: TaskState, generate):
+        path = state.metadata.get("scenario_path")
+        check = Path(path) / ".ready-check" if path else None
+        if check is None or not check.is_file():
+            return state
+        cmd = "\n".join(
+            ln for ln in check.read_text(encoding="utf-8").splitlines()
+            if ln.strip() and not ln.lstrip().startswith("#")
+        )
+        from inspect_ai.util import sandbox
+        loop = asyncio.get_running_loop()
+        t0 = loop.time()
+        while True:
+            try:
+                res = await sandbox().exec(["sh", "-c", cmd], timeout=60)
+                ok = res.returncode == 0
+            except Exception:
+                ok = False
+            waited = loop.time() - t0
+            if ok:
+                state.metadata["ready_wait_s"] = round(waited, 1)
+                return state
+            if waited >= _READY_TIMEOUT_S:
+                raise RuntimeError(
+                    f"scenario never became ready within {_READY_TIMEOUT_S}s "
+                    f"(.ready-check in {path})"
+                )
+            await asyncio.sleep(_READY_POLL_S)
+
+    return solve
+
+
 @solver
 def advm_lab_setup() -> Solver:
     """Restore + inject the AD lab for THIS sample, immediately before it runs.
@@ -1251,6 +1303,9 @@ def sysrepair_bench(
             # Injects the AD lab for this sample; no-op for everything else.
             # Must precede the agent -- see advm_lab_setup.
             advm_lab_setup(),
+            # Holds the agent until the scenario's boot has finished; no-op for
+            # scenarios without a .ready-check.
+            scenario_ready_gate(),
             get_solver(
                 solver,
                 message_limit=solver_msg_limit,

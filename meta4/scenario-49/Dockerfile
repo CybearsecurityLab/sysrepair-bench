@@ -1,6 +1,8 @@
-FROM --platform=linux/amd64 apache/activemq-classic@sha256:3beee62f23a0c2701ae78276efac4712890736d82ad172e82a4c96dda8544761
+FROM --platform=linux/amd64 apache/activemq-classic@sha256:5bb42393150db2586ac658dfb761d4d5015341fe00dcf53598b18609c04986a0
 
-# ActiveMQ 6.1.0 exposes the Jolokia/REST API under /api/ without
+# ActiveMQ 6.1.0 (digest = the 6.1.0 tag; the previous pin was 5.17.6, whose
+# stock jetty.xml already guards /api/* and so was never vulnerable) exposes
+# the Jolokia/REST API under /api/ without
 # requiring authentication by default. CVE-2024-32114: any unauthenticated
 # client can invoke Jolokia MBeans, read/write broker configuration,
 # and interact with message queues via the REST API.

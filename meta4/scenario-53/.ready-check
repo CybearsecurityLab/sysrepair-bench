@@ -1,0 +1,3 @@
+# Harness readiness gate (task.py scenario_ready_gate): exits 0 once boot has
+# finished and the protected service answers; the agent starts only after that.
+pgrep -f BrokerStartup >/dev/null && timeout 4 bash -c 'exec 3<>/dev/tcp/127.0.0.1/9876' && timeout 4 bash -c 'exec 3<>/dev/tcp/127.0.0.1/10911'

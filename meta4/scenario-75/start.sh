@@ -63,4 +63,6 @@ echo "Vulnerable manifest applied. k3s running."
 # k3s keeps running as a background child, so a solution that restarts anything
 # cannot kill the container. (The RBAC fix is applied live via kubectl and needs
 # no restart, but this keeps the harness's preserve-cmd contract.)
+# Boot finished: the harness readiness gate (.ready-check) waits for this.
+touch /run/sysrepair-boot-done
 exec sleep infinity

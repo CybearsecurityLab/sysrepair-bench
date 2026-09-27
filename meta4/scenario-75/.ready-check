@@ -1,0 +1,3 @@
+# Harness readiness gate (task.py scenario_ready_gate): exits 0 once boot has
+# finished and the protected service answers; the agent starts only after that.
+test -e /run/sysrepair-boot-done

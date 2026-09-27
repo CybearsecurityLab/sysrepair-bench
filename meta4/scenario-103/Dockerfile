@@ -34,4 +34,28 @@ EXPOSE 631
 # cups-browsed daemon in the BACKGROUND, then exec `sleep infinity` so PID 1 is
 # the sleep and both daemons are already running when the agent starts. NOT a
 # bare foreground CMD.
-CMD ["/bin/bash","-c","service cups start; sleep 2; cups-browsed >/var/log/cups-browsed.log 2>&1 & exec sleep infinity"]
+#
+# Once cups-browsed is confirmed running, the wrapper writes
+# /run/sysrepair-boot-done. verify.sh waits for that marker before grading, so a
+# submission that arrives while the daemon is still starting is graded against
+# the vulnerable state rather than an unfinished boot.
+RUN cat > /usr/local/sbin/sysrepair-boot <<'BASH' && chmod +x /usr/local/sbin/sysrepair-boot
+#!/bin/bash
+service cups start
+sleep 2
+cups-browsed >/var/log/cups-browsed.log 2>&1 &
+for i in $(seq 1 60); do
+    for p in /proc/[0-9]*; do
+        a0=$(tr '\0' '\n' < "$p/cmdline" 2>/dev/null | head -1)
+        if [ "${a0##*/}" = "cups-browsed" ]; then
+            touch /run/sysrepair-boot-done
+            exec sleep infinity
+        fi
+    done
+    sleep 1
+done
+echo "cups-browsed did not start" >> /var/log/cups-browsed.log
+touch /run/sysrepair-boot-done
+exec sleep infinity
+BASH
+CMD ["/usr/local/sbin/sysrepair-boot"]

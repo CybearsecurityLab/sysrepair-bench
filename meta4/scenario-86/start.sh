@@ -33,4 +33,6 @@ if [ -n "$ROOT" ]; then
 fi
 
 echo "Vault running (file backend). /vault/data holds on-disk storage."
+# Boot finished: the harness readiness gate (.ready-check) waits for this.
+touch /run/sysrepair-boot-done
 exec sleep infinity

@@ -58,6 +58,8 @@ for i in $(seq 1 60); do
     if [ "$(k get pod unlimited-app -o jsonpath='{.status.phase}' 2>/dev/null)" = "Running" ]; then
         echo "Vulnerable manifest applied. Pods running without resource limits."
         # Keep PID 1 as sleep so restarting k3s cannot kill the container.
+        # Boot finished: the harness readiness gate (.ready-check) waits for this.
+        touch /run/sysrepair-boot-done
         exec sleep infinity
     fi
     sleep 2

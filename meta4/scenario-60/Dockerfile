@@ -8,6 +8,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends postfix curl netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
+# The noninteractive install leaves no /etc/mailname (which mydestination
+# references) and no alias database, so every local recipient fails with
+# "451 4.3.0 Temporary lookup failure": no message is ever queued, the smuggling
+# probe reads as blocked, and legitimate mail is refused on an untouched host.
+RUN echo localhost > /etc/mailname && newaliases
+
 
 EXPOSE 25
 

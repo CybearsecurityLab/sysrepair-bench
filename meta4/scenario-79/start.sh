@@ -47,4 +47,6 @@ echo "Test secret created. k3s running without etcd encryption."
 
 # Keep PID 1 as sleep so an agent that restarts k3s (required to enable
 # encryption-at-rest) cannot kill the container.
+# Boot finished: the harness readiness gate (.ready-check) waits for this.
+touch /run/sysrepair-boot-done
 exec sleep infinity

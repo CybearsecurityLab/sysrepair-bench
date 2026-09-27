@@ -1,0 +1,29 @@
+# Drupal regression-check hardening re-validation.
+# The 20 scenarios whose regression probe fails on an untouched host (no-op
+# floor sweep). Run the no-op to capture each failing probe, then again after
+# the fixtures are fixed. Scripted solver: no endpoint is called.
+defaults:
+  seeds: [1]
+  epochs: 2
+  log_dir: ./logs-validity
+  bash_timeout: 240
+  verify_timeout: 360
+  fail_on_error: 1.0
+  retry_on_error: 0
+  time_limit: 1800
+  working_limit: 1200
+  message_limit: 0
+  token_limit: 0
+  preflight: false
+presets:
+  validity_drupal5:
+    model: openai/Qwen/Qwen3.5-27B
+    base_url: http://localhost:8100/v1
+    api_key: vllm
+    scenarios: [meta3/ubuntu/scenario-06, meta3/ubuntu/scenario-09, meta3/ubuntu/scenario-13,
+                meta3/ubuntu/scenario-18, meta3/ubuntu/scenario-19]
+    solvers: [noop, service-killer, probe-blocker]
+    seeds: 1
+    epochs: 2
+    max_connections: 4
+    modes: [day1]
