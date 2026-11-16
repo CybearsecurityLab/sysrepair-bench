@@ -89,6 +89,22 @@ else
     # denied, a listing counts as access, anything else stays failed-closed.
     if echo "$GUEST_TEST" | grep -q 'NT_STATUS_CONNECTION_DISCONNECTED'; then
         GUEST_TEST=$(smbclient -s /dev/null -m SMB2_10 //127.0.0.1/private -N -c "ls" 2>&1 || true)
+        # An SMB3-only server (`server min protocol = SMB3`) refuses the SMB 2.1
+        # dialect, which says nothing about guest access. The attacker's best
+        # case there is an anonymous SMB3 client that does not ask for
+        # encryption: against a guest-enabled share it gets a listing, against
+        # a closed one smbd drops the tree connect. A drop counts as denied
+        # only while smbd demonstrably serves the share to smbuser, so a broken
+        # daemon cannot pass as a refusal.
+        if echo "$GUEST_TEST" | grep -q 'NT_STATUS_NOT_SUPPORTED'; then
+            GUEST_TEST=$(smbclient -s /dev/null --option='client smb encrypt=off' -m SMB3 \
+                //127.0.0.1/private -N -c "ls" 2>&1 || true)
+            if echo "$GUEST_TEST" | grep -q 'NT_STATUS_CONNECTION_DISCONNECTED' &&
+               smbclient -s /dev/null //127.0.0.1/private -U 'smbuser%smbpass123' \
+                   -c "ls" > /dev/null 2>&1; then
+                GUEST_TEST="NT_STATUS_ACCESS_DENIED (unencrypted anonymous SMB3 tree connect dropped; smbuser served)"
+            fi
+        fi
     fi
     if echo "$GUEST_TEST" | grep -qiE 'NT_STATUS_ACCESS_DENIED|NT_STATUS_LOGON_FAILURE|NT_STATUS_BAD_NETWORK_NAME'; then
         record_poc anon_smb_access_denied 1 "guest SMB access to private share is denied"
