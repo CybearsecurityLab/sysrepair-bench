@@ -17,14 +17,7 @@ and user data.
 
 This is a misconfiguration, not a code vulnerability, but its impact is
 equivalent to a critical authentication bypass: there are no credentials to
-steal and no exploit to craft. A single command such as:
-
-```
-mongosh --quiet --eval "db.adminCommand('listDatabases')"
-```
-
-succeeds without any username or password, returning a full inventory of
-all hosted databases.
+steal and no exploit to craft.
 
 ## Affected Service
 - **Service:** MongoDB 4.4

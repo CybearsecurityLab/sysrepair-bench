@@ -28,12 +28,6 @@ Note: scenario-113 already simulates CVE-2022-26134 (OGNL-in-URI). To avoid a
 duplicate, this scenario targets a **different Confluence CVE, endpoint, and
 vulnerability class** (Widget Connector Velocity SSTI / path traversal).
 
-Exploit (unauthenticated):
-```
-POST /rest/tinymce/1/macro/preview   _template=$exec(id)                 # RCE
-POST /rest/tinymce/1/macro/preview   _template=../../../../etc/passwd    # file read
-```
-
 ## Affected Service
 - **Service:** Confluence Server (simulated with Python/Flask)
 - **Port:** 8090/TCP

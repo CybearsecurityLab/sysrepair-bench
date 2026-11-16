@@ -11,15 +11,8 @@
 Oracle WebLogic Server's administration console is normally protected by
 authentication. CVE-2020-14882 is a path traversal / URL encoding bypass that
 allows an unauthenticated attacker to access the console by crafting a URL
-with double-URL-encoded path separators:
-
-```
-GET /console/css/%252e%252e%252fconsole.portal HTTP/1.1
-```
-
-When WebLogic processes this URL it decodes `%252e` → `%2e` → `.` so the
-effective path becomes `/console/css/../console.portal` — which points at the
-console application. Because the authentication check examines the raw
+with double-URL-encoded path separators. WebLogic decodes `%252e` → `%2e` → `.`,
+so a path under `/console/css/` can resolve to the console application. Because the authentication check examines the raw
 (un-normalised) path, it sees `/console/css/...` and allows the request
 without requiring login.
 

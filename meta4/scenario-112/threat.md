@@ -14,17 +14,13 @@ root and traverse to arbitrary filesystem locations. When `mod_cgi` (or
 `mod_cgid`) is also enabled and the target directory has `Options ExecCGI`,
 the traversal escalates to unauthenticated remote code execution.
 
-A simple HTTP request such as:
-```
-GET /cgi-bin/%2e%2e/%2e%2e/etc/passwd HTTP/1.1
-```
-returns the contents of `/etc/passwd`. When combined with a POST to a cgi-bin
-traversal path, an attacker can execute arbitrary shell commands.
+An unauthenticated attacker can read arbitrary files such as `/etc/passwd`
+and, through the cgi-bin path, execute arbitrary shell commands.
 
 This vulnerability was actively exploited within hours of public disclosure.
 
 ## Affected Service
-- **Service:** Apache HTTP Server 2.4.49 only (fixed in 2.4.51)
+- **Service:** Apache HTTP Server 2.4.49 only
 - **Port:** 80/TCP
 - **Conditions:** `Require all granted` on the root directory AND mod_cgi
   enabled

@@ -21,7 +21,7 @@ local-infile = 1
 ```
 
 ## Impact
-An attacker with MySQL access can use `LOAD DATA LOCAL INFILE '/etc/shadow'` to read arbitrary files from the server filesystem, potentially obtaining password hashes and other sensitive data.
+An attacker with MySQL access can read arbitrary files from the server filesystem, potentially obtaining password hashes and other sensitive data.
 
 ## Source
 TAMU CCDC linuxmonkeys harden_mysql.sh

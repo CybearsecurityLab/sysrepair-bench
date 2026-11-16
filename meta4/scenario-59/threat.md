@@ -32,15 +32,6 @@ Unbound version string and server identity. This assists targeted
 exploitation of known Unbound vulnerabilities by reducing attacker
 reconnaissance effort.
 
-```bash
-# Amplification query (spoofed source = victim)
-dig @<server-ip> ANY isc.org +bufsize=4096
-
-# Version disclosure
-dig @<server-ip> version.bind CHAOS TXT
-dig @<server-ip> id.server CHAOS TXT
-```
-
 ## Affected Service
 - **Service:** Unbound 1.21
 - **Port:** 53/UDP, 53/TCP

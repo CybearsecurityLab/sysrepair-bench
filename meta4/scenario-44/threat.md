@@ -19,14 +19,7 @@ with network access to the host can:
 - Modify security-relevant configuration via the API
 
 There is no network-level protection either: the server binds to all
-interfaces by default. A one-liner attack:
-
-```
-curl http://<host>:9200/_cat/indices?v
-```
-
-returns a full listing of all indices and document counts without any
-authentication.
+interfaces by default.
 
 ## Affected Service
 - **Service:** Elasticsearch 7.10.1

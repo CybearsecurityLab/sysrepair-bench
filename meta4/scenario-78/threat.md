@@ -14,12 +14,7 @@ networks — even though it is an internal application that should only be
 accessible within the cluster.
 
 NodePort services bypass ClusterIP's cluster-internal restriction and expose
-the backend pod directly on a high port of every node:
-
-```bash
-# Reachable from outside the cluster (no credentials needed):
-curl http://<node-ip>:30080
-```
+the backend pod directly on a high port of every node.
 
 Services that should be internal (databases, admin interfaces, metrics
 endpoints) are inadvertently made publicly accessible whenever NodePort is

@@ -12,10 +12,10 @@
 
 ## Description
 GlassFish 4.1.1 shipped an HTTP handler that decoded overlong UTF-8 byte sequences (e.g.
-`%c0%ae` for `.`) **before** the path-normalization check. A single GET request to
-`/theme/META-INF/prototype%c0%ae%c0%ae/%c0%ae%c0%ae/.../<any-file>` on the admin
-listener returns the raw contents of that file relative to the `glassfish/domains/`
-directory — all without authentication.
+`%c0%ae` for `.`) **before** the path-normalization check. Requests under
+`/theme/META-INF/` on the admin listener that contain overlong-encoded parent-directory
+segments return the raw contents of files relative to the `glassfish/domains/`
+directory, all without authentication.
 
 This host makes the impact worse by:
 - Serving the admin listener over **plaintext HTTP** on `:4848` (secure-admin left
@@ -43,16 +43,6 @@ admin;;asadmin
 ```
 No patched build of GlassFish exists (Oracle discontinued the OSS track); CVE-2017-1000028
 is unfixed on the 4.x line.
-
-## Proof
-```
-# 1. Traversal read of domain.xml
-curl --path-as-is \
-  "http://<target>:4848/theme/META-INF/prototype%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/domain.xml"
-
-# 2. Log in as admin with an empty password over the secure-admin REST API
-curl -u admin: "http://<target>:4848/management/domain"
-```
 
 ## Constraints
 - This is a compensating-control scenario: no fixed GlassFish build exists, and

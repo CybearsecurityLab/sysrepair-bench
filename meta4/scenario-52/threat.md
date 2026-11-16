@@ -23,12 +23,6 @@ Combined, these issues mean:
 - Sensitive messages (credentials, telemetry, commands) are exposed to all
   connected clients
 
-There is no exploit to craft for the no-auth case — a plain `nats-server`
-connection without credentials succeeds immediately:
-```
-nats pub test "hello" --server nats://<host>:4222
-```
-
 ## Affected Service
 - **Service:** NATS Server 2.7.1
 - **Port:** 4222/TCP (client connections), 8222/TCP (HTTP monitoring)

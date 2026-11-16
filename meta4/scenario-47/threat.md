@@ -21,14 +21,6 @@ An attacker can:
 - Create or delete users and change their permissions
 - Export the full broker configuration including all credentials
 
-No exploit code is required. A single HTTP request:
-
-```
-curl -u guest:guest http://<host>:15672/api/overview
-```
-
-returns a full broker overview with admin privileges.
-
 ## Affected Service
 - **Service:** RabbitMQ 3.11 with Management Plugin
 - **Ports:** 5672/TCP (AMQP), 15672/TCP (HTTP Management API)

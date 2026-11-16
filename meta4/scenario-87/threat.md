@@ -15,11 +15,7 @@ query the full service catalog, modify intentions, and read Connect
 certificates.
 
 An attacker with network access can exfiltrate all application configuration
-stored in the KV store with a single request:
-
-```
-curl http://consul-host:8500/v1/kv/?recurse
-```
+stored in the KV store with a single request.
 
 They can also inject malicious service records or redirect traffic by
 manipulating service registrations.
@@ -31,4 +27,4 @@ manipulating service registrations.
 
 ## Vulnerable Configuration
 - `acl.enabled = false` — no token enforcement on any API endpoint
-- `acl.default_policy` not set to `"deny"` — unauthenticated requests allowed
+- `acl.default_policy` left at its default: unauthenticated requests allowed

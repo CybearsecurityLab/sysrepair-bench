@@ -20,12 +20,6 @@ This misconfiguration allows an attacker with network access to:
   pipelines, triggering actuators, or corrupting application queues
 - Enumerate topic structure by watching retained messages
 
-There is no exploit to craft — a standard MQTT client suffices:
-```
-mosquitto_sub -h <host> -t '#' -v
-mosquitto_pub -h <host> -t any/topic -m "injected"
-```
-
 No TLS is configured, so traffic is transmitted in plaintext and trivially
 intercepted on any shared network segment.
 

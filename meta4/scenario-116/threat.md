@@ -17,14 +17,7 @@ reach port 873 can:
   cron job, overwrite `/etc/cron.d/`, plant SSH authorized_keys).
 
 No credentials, no exploit, no CVE needed — the service simply has no access
-control configured. A single rsync command:
-
-```
-rsync rsync://target/data/etc/passwd /tmp/stolen-passwd
-```
-
-succeeds without prompting for a password and returns the full content of
-`/etc/passwd`.
+control configured.
 
 ## Affected Service
 - **Service:** rsync daemon (any version)

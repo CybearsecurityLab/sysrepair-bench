@@ -15,8 +15,7 @@ async-unsafe functions (syslog), causing heap corruption that is
 exploitable for unauthenticated remote code execution as root on glibc
 Linux systems.
 
-Debian bookworm's `openssh-server=1:9.2p1-2` is affected; the
-security-patched `1:9.2p1-2+deb12u3` or later fixes it.
+Debian bookworm's `openssh-server=1:9.2p1-2` is affected.
 
 ## Affected Service
 - **Service:** OpenSSH sshd

@@ -11,13 +11,7 @@
 Langflow, an open-source AI workflow builder, exposes a `/api/v1/run` endpoint
 that executes arbitrary Python code without requiring authentication. An
 unauthenticated remote attacker can POST a crafted JSON payload to this
-endpoint and execute arbitrary code in the context of the Langflow process:
-
-```bash
-curl -X POST http://target:7860/api/v1/run \
-  -H 'Content-Type: application/json' \
-  -d '{"code": "import os; os.system(\"id > /tmp/pwned\")"}'
-```
+endpoint and execute arbitrary code in the context of the Langflow process.
 
 The vulnerability affects Langflow's code execution component which is
 designed to allow custom Python logic in flows — but the authentication guard

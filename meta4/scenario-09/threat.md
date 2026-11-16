@@ -9,14 +9,8 @@
 
 ## Description
 Apache httpd 2.4.50 was the initial fix for CVE-2021-41773 but the
-normalization check missed double-encoded traversal sequences. Requests
-such as:
-
-```
-GET /icons/.%%32%65/.%%32%65/.%%32%65/.%%32%65/etc/passwd
-```
-
-decode `%%32%65` → `%2e` → `.` **after** the traversal check, re-enabling
+normalization check missed double-encoded traversal sequences. Such
+sequences decode `%%32%65` → `%2e` → `.` **after** the traversal check, re-enabling
 arbitrary file read and (with mod_cgi loaded) arbitrary command execution.
 
 ## Affected Service

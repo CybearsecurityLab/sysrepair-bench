@@ -46,9 +46,3 @@ with OpenVAS checks that fire against the upstream Metasploitable3 Windows image
   </security>
 </system.webServer>
 ```
-
-## Proof
-```
-GET /reports/ HTTP/1.1      -> 200 OK, HTML listing of reports/
-TRACE / HTTP/1.1            -> 200 OK, request echoed in response body
-```

@@ -8,10 +8,9 @@
 - Context: CVE-2023-46604 (OpenWire deserialization RCE)
 
 ## IMPORTANT — scenario scope
-The pinned image `apache/activemq-classic:5.17.6` already contains the fix for
-CVE-2023-46604 (the OpenWire deserialization RCE was patched in 5.17.6, 5.16.7
-and 5.15.16). The shipped binary is `activemq-broker-5.17.6.jar`, so that
-specific RCE is **not** present in this image.
+The pinned image `apache/activemq-classic:5.17.6` is not affected by
+CVE-2023-46604 (the OpenWire deserialization RCE). The shipped binary is
+`activemq-broker-5.17.6.jar`, so that specific RCE is **not** present in this image.
 
 ## Description
 Apache ActiveMQ exposes the OpenWire wire protocol on port 61616. In the default

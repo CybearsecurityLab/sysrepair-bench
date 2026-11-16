@@ -33,9 +33,7 @@ may have fallen back to unencrypted transport.
 The SSL certificates were generated with a very short validity period and have expired:
 
 ```
-# Certificate generated with -days 0 or -days 1 (already expired or about to expire)
-openssl req -x509 -newkey rsa:2048 -keyout expired.key -out expired.crt \
-    -days 0 -nodes -subj "/CN=localhost"
+# Certificate generated with -days 0 or -days 1 (already expired or about to expire), CN=localhost
 
 # Postfix configured with expired cert
 smtpd_tls_cert_file = /etc/ssl/certs/expired.crt

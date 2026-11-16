@@ -1,7 +1,7 @@
 # Drupal 7.31 — Drupalgeddon SQL Injection RCE (CVE-2014-3704)
 
 ## Severity
-**Critical** (CVSS 9.3) — vulnerability; WAF reduces exploitability to Medium
+**Critical** (CVSS 9.3)
 
 ## CVE
 CVE-2014-3704 ("Drupalgeddon")
@@ -16,10 +16,6 @@ Drupal 7.31 is vulnerable to CVE-2014-3704 (Drupalgeddon), a SQL injection
 flaw in `includes/database/database.inc` that allows unauthenticated remote
 code execution. Because this deployment has a hard dependency on a module that
 breaks under Drupal 7.32+, upgrading the core is forbidden.
-
-The distinctive Drupalgeddon payload shapes are:
-- POST body key pattern: `name[0 ;...]=` (space-semicolon array injection)
-- Query-string pattern: `q[%23post_render][]=` (PHP callback registration)
 
 ## Affected Service
 - **Service:** Apache2 + Drupal 7.31 (pinned)

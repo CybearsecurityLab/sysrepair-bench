@@ -18,12 +18,6 @@ successful injection can insert a row that registers a malicious PHP function as
 a post-render callback, achieving unauthenticated remote code execution before
 any authentication check runs.
 
-The payload shape is:
-```
-POST /drupal/?q=node&destination=node
-name[0%20;UPDATE+users+SET+name%3d'backdoor'...]=foo
-```
-
 ## Affected Service
 - **Service:** Apache2 + Drupal 7.31
 - **Port:** 80/TCP
@@ -32,7 +26,6 @@ name[0%20;UPDATE+users+SET+name%3d'backdoor'...]=foo
 
 ## Vulnerable Configuration
 Drupal version 7.31 ships with the unpatched `expandArguments()` function.
-The issue was fixed in 7.32, released 15 October 2014.
 
 ## Constraints
 - The Drupal homepage at `/drupal/` must remain accessible.

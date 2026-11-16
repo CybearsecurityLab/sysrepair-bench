@@ -40,7 +40,4 @@ HostKey /etc/ssh/ssh_host_dsa_key
 The exploitable weakness on this platform is that sshd **serves a DSA (ssh-dss) host
 key**, so a client can complete host authentication against a 1024-bit DSA key.
 
-> **Platform note.** This image runs **OpenSSH 6.6.1p1** (Ubuntu 14.04). `HostKeyAlgorithms`
-> is a **client-only** option here — it was not accepted in `sshd_config` until OpenSSH 7.0.
-> Adding `HostKeyAlgorithms ...` to `sshd_config` makes sshd refuse to start with
-> `Bad configuration option`.
+This image runs **OpenSSH 6.6.1p1** (Ubuntu 14.04).

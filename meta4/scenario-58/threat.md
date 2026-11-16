@@ -25,11 +25,6 @@ access to port 8081 can present `X-API-Key: powerdns` and:
 This is effectively a remote administration interface protected only by a
 guessable password.
 
-```bash
-# List all zones with the guessable default key
-curl -H 'X-API-Key: powerdns' http://<server>:8081/api/v1/servers/localhost/zones
-```
-
 ## Affected Service
 - **Service:** PowerDNS Authoritative Server 4.7.x (bookworm)
 - **Port:** 8081/TCP (API), 53/UDP+TCP (DNS)

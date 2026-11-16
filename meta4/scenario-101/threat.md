@@ -14,21 +14,14 @@ other Nacos cluster nodes. The check is performed by inspecting the HTTP
 is treated as an internal, pre-authenticated cluster call and all
 authentication enforcement is skipped.
 
-An unauthenticated external attacker can exploit this by simply supplying
-`User-Agent: Nacos-Server` in any HTTP request to the Nacos API, gaining
-full access to configuration management, user administration, and all other
-endpoints without valid credentials:
-
-```bash
-# PoC: list all users without authentication
-curl -s -H 'User-Agent: Nacos-Server' \
-    http://<host>:8848/nacos/v1/auth/users?pageNo=1&pageSize=9
-```
+An unauthenticated external attacker can therefore gain full access to
+configuration management, user administration, and all other endpoints of
+the Nacos API without valid credentials.
 
 ## Affected Service
 - **Service:** Alibaba Nacos 1.4.0
 - **Port:** 8848/TCP
-- **Vulnerable condition:** direct access to port 8848 without a sanitising proxy
+- **Vulnerable condition:** clients reach port 8848 directly, and the `User-Agent` header they send arrives at Nacos as supplied
 
 ## Constraints
 - The affected package must not be upgraded.

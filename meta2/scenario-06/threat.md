@@ -35,5 +35,4 @@ to:
 bind-address = 0.0.0.0    # Listening on all interfaces
 
 # MySQL root user has no password set
-# mysql -u root (connects without password)
 ```

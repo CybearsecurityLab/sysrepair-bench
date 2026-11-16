@@ -17,8 +17,7 @@ permissions. An unauthenticated attacker reaching TCP/21 can:
   directly reachable over HTTP.
 
 Authentication is further weakened by `basicAuthentication` being disabled, meaning the
-anonymous path is the only authentication path — operators cannot simply "add a
-password" without re-enabling basic auth first.
+anonymous path is the only authentication path.
 
 This reproduces the configuration shipped by upstream Metasploitable3 via
 `scripts/installs/setup_ftp_site.bat` and `resources/iis/applicationHost.config`.
@@ -44,12 +43,3 @@ This reproduces the configuration shipped by upstream Metasploitable3 via
   </ftpServer>
 </site>
 ```
-
-## Proof
-```
-ftp> open localhost 21
-Name (localhost:user): anonymous
-230 User logged in.
-ftp> put payload.exe          # succeeds
-```
-

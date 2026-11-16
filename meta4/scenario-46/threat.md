@@ -18,13 +18,7 @@ CVE-2021-34371 exploits the RMI endpoint by sending a crafted serialized Java
 object. The Neo4j runtime deserializes the payload without verifying its
 origin or integrity, which triggers arbitrary code execution in the JVM before
 any authentication check occurs. An attacker with TCP access to port 1337 can
-achieve remote code execution as the `neo4j` OS user using a standard Java
-deserialization gadget chain (e.g., via ysoserial):
-
-```
-java -jar ysoserial.jar CommonsCollections6 "id > /tmp/pwned" | \
-    nc <host> 1337
-```
+achieve remote code execution as the `neo4j` OS user.
 
 No Neo4j credentials are required. The RMI handshake alone is sufficient to
 deliver the malicious payload.

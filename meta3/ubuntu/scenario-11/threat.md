@@ -19,14 +19,7 @@ root on the host system. This is because:
    mounts with no additional privilege checks.
 
 An attacker with shell access to a user account in the `docker` group can
-escape to root in a single command:
-
-```bash
-docker run -v /:/host -it --rm ubuntu:14.04 chroot /host /bin/bash
-```
-
-This mounts the host root filesystem at `/host` inside the container and
-drops the attacker into a chroot with full root privileges over the host.
+gain full root privileges over the host.
 
 In the Metasploitable 3 design, the user `meta3admin` is placed in the
 `docker` group, providing this escalation path to any attacker who gains

@@ -10,12 +10,7 @@
 
 ## Description
 Apache HTTP Server 2.4.49 introduced a URL normalization regression where
-`.%2e/` sequences are decoded after the traversal check. Requests such as:
-
-```
-GET /icons/.%2e/.%2e/.%2e/.%2e/etc/passwd
-```
-
+`.%2e/` sequences are decoded after the traversal check. Crafted requests can
 escape aliased or `Require all granted` directories and read arbitrary
 files. If `mod_cgi`/`mod_cgid` is enabled, the same traversal into
 `/bin/sh` with a POST body yields arbitrary command execution.

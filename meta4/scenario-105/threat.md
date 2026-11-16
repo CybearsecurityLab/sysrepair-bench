@@ -15,15 +15,7 @@ When Next.js sees the header it skips middleware execution entirely, bypassing
 any authentication or authorization logic implemented in `middleware.js`.
 
 An unauthenticated attacker can reach any route that is normally protected by
-middleware by simply adding the header to their HTTP request:
-
-```
-GET /protected HTTP/1.1
-Host: target
-x-middleware-subrequest: middleware
-```
-
-The server returns the protected resource with HTTP 200 instead of the expected
+middleware by simply adding the header to their HTTP request. The server returns the protected resource with HTTP 200 instead of the expected
 401 or redirect.
 
 ## Affected Service

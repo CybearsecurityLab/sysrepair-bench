@@ -11,10 +11,9 @@
 ADCS Web Enrollment exposes `/certsrv/` over HTTP with NTLM authentication.
 Combined with a coercion primitive (PetitPotam EFSRPC, PrinterBug MS-RPRN,
 DFSCoerce MS-DFSNM), an attacker on the LAN can coerce the DC's machine
-account to authenticate over SMB, relay the NTLM blob to
-`/certsrv/?DC-Auth-Cert template=DomainController`, and receive a DC machine
-certificate. PKINIT with that certificate authenticates as the DC, after
-which DCSync against the domain yields every secret in AD.
+account to authenticate, relay that NTLM authentication to `/certsrv/`, and
+receive a DC machine certificate. That certificate authenticates as the DC,
+which exposes every secret in AD.
 
 The vulnerable surface has three required ingredients: (1) the
 `ADCS-Web-Enrollment` role installed and serving `/certsrv/`, (2) NTLM
@@ -22,8 +21,7 @@ explicitly allowed on the IIS Windows Authentication providers (default is
 Negotiate-only, which the relay tooling cannot replay), and (3) Extended
 Protection for Authentication disabled so the relayed NTLM blob is not
 bound to a TLS channel. Microsoft has shipped this combination as the
-default ADCS Web Enrollment install for years; only KB5005413 mitigations
-and a 2022-era hardening guide flagged it as an issue.
+default ADCS Web Enrollment install for years (advisory KB5005413).
 
 ## Attacker starting state
 

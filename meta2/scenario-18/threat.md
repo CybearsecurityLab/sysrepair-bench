@@ -9,7 +9,7 @@ CVE-2016-7144
 ## Description
 UnrealIRCd versions prior to 3.2.10.7 are vulnerable to an authentication spoofing attack. The vulnerability exists in the way UnrealIRCd handles certificate fingerprint verification for server-to-server links and client authentication. An attacker can spoof the authentication of another user or server by exploiting improper validation of SSL/TLS certificate fingerprints, potentially gaining elevated privileges or impersonating trusted servers in an IRC network.
 
-This scenario simulates a vulnerable UnrealIRCd installation by running a service on port 6667 that identifies as version 3.2.10.6, which is below the patched version 3.2.10.7.
+This scenario simulates a vulnerable UnrealIRCd installation by running a service on port 6667 that identifies as version 3.2.10.6.
 
 ## Affected Service / Port
 - **Service:** UnrealIRCd (IRC daemon)

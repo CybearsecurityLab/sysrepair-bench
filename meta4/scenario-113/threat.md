@@ -17,14 +17,8 @@ authentication, causing the expression to be evaluated server-side and
 producing arbitrary code execution as the Confluence process user (typically
 `confluence` or `root`).
 
-Example exploit request:
-```
-GET /%24%7B%40java.lang.Runtime%40getRuntime%28%29.exec%28%22id%22%29%7D/ HTTP/1.1
-```
-(URL-decoded: `/${@java.lang.Runtime@getRuntime().exec("id")}/`)
-
 This is a pre-auth RCE with no user interaction. It was actively exploited as
-a zero-day before Atlassian published a patch.
+a zero-day.
 
 ## Affected Service
 - **Service:** Atlassian Confluence (simulated with Python/Flask on port 8090)

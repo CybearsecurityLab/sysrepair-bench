@@ -27,11 +27,7 @@ In this scenario the bucket `sensitive-data` has the following policy:
 ```
 
 Any client on the network can download `customers.csv` (and any other object)
-without signing the request:
-
-```bash
-curl http://localhost:4566/sensitive-data/customers.csv
-```
+without signing the request.
 
 ## Affected Service
 - **Service:** AWS S3 (LocalStack 3.0)

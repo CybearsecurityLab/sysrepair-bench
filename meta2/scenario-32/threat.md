@@ -10,8 +10,6 @@
 
 The "Ingreslock" backdoor is a malicious root shell bound to TCP port 1524. This is one of the most notorious backdoors found on the original Metasploitable 2 vulnerable VM. When an attacker connects to port 1524, they receive an unauthenticated root shell with full system access.
 
-The backdoor responds to the command `id;` with `uid=0(root) gid=0(root)`, immediately revealing root-level compromise.
-
 ## Affected Service
 
 - **Service:** Backdoor root shell (netcat listener)

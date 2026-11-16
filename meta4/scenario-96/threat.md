@@ -14,12 +14,7 @@ which loads a set of built-in example DAGs at startup. One of these,
 the value of a `message` parameter without any sanitisation. An authenticated
 attacker (or any user granted DAG trigger permissions) can trigger this DAG
 with a crafted `conf` JSON payload and achieve arbitrary OS command execution
-on the Airflow worker:
-
-```
-POST /api/experimental/dags/example_trigger_target_dag/dag_runs
-{"conf": {"message": "$(id > /tmp/pwned)"}}
-```
+on the Airflow worker.
 
 The impact is full remote code execution on the Airflow worker with the
 privileges of the `airflow` OS user.

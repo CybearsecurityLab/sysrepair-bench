@@ -31,7 +31,4 @@ sensitive attributes.
 - **File on disk:** `/var/www/html/drupal/web.config`
 
 ## Vulnerable Configuration
-Apache has no rule denying access to `.config` extension files:
-```
-# GET /drupal/web.config -> 200 OK (file served in full)
-```
+Apache has no rule denying access to `.config` extension files, so `/drupal/web.config` is served in full.

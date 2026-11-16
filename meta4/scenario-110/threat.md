@@ -19,19 +19,12 @@ execution on the host.
 CVE-2023-34152 specifically covers the `url` coder allowing server-side
 request forgery (SSRF) and arbitrary command injection through shell
 metacharacters in filenames handed to `convert` or `identify`. Combined with
-the `mvg:` and `msl:` coders, an attacker can embed payloads such as:
-
-```
-convert 'msl:/tmp/evil.msl' output.png
-convert 'mvg:evil.mvg' output.png
-```
-
-Both succeed silently when no coder restriction is in place, executing
-attacker-controlled commands with the privileges of the ImageMagick process.
+the `mvg:` and `msl:` coders, attacker-controlled input can execute commands
+with the privileges of the ImageMagick process.
 
 ## Affected Service
 - **Service:** ImageMagick (libMagickCore 6.x / 7.x)
 - **Trigger:** Any call to `convert`, `identify`, `montage`, or `mogrify`
   with attacker-controlled input
 - **Vulnerable configuration:** `/etc/ImageMagick-6/policy.xml` absent or
-  containing no `rights="none"` entries for MVG, MSL, URL coders
+  leaving the MVG, MSL and URL coders enabled

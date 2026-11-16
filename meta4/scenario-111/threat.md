@@ -23,10 +23,4 @@ victim's address.
 ## Affected Service
 - **Service:** Memcached 1.6.x (and all prior versions)
 - **Port:** 11211/UDP
-- **Vulnerable configuration:** default startup without `-U 0`
-
-## Attack Scenario
-1. Attacker sends a 15-byte spoofed UDP `stats` packet to Memcached on 11211.
-2. Memcached replies with a ~750 KB response to the spoofed victim IP.
-3. With thousands of open Memcached nodes, the victim receives multi-Tbps
-   traffic — saturating uplinks and causing service outages.
+- **Vulnerable configuration:** default startup, with the UDP interface on 11211 enabled

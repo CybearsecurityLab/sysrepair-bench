@@ -9,11 +9,8 @@
 
 ## Description
 TeamCity On-Premises before 2023.05.4 exposes a code path allowing an
-unauthenticated attacker to mint an administrator-scoped API token:
-```
-POST /app/rest/users/id:1/tokens/RPC2
-```
-With that token the attacker creates a new admin, edits build configs, or
+unauthenticated attacker to mint an administrator-scoped API token at the
+endpoint `/app/rest/users/id:1/tokens/RPC2`. With that token the attacker creates a new admin, edits build configs, or
 injects a build step that runs arbitrary commands. The chain was weaponised in
 2023 by APT29.
 
@@ -24,12 +21,6 @@ harness, so this scenario runs a faithful **Python/Flask simulation** on port
 admin-scoped token without authentication, and that token then authorises a
 privileged action (creating a new administrator — a **real state change**). It
 is a simulation of CVE-2023-42793, not a real TeamCity server.
-
-Exploit (unauthenticated):
-```
-POST /app/rest/users/id:1/tokens/RPC2        -> {"value":"<admin token>"}
-POST /app/rest/users  (Bearer <admin token>) -> creates a new administrator
-```
 
 ## Affected Service
 - **Service:** JetBrains TeamCity On-Premises 2023.05.3 (simulated with Flask)

@@ -21,11 +21,6 @@ An attacker with network access to port 8161 can:
 - Produce malicious messages to any queue via HTTP POST
 - Consume messages intended for legitimate applications
 
-No credentials are required:
-```
-curl http://<host>:8161/api/jolokia/read/java.lang:type=Memory/HeapMemoryUsage
-```
-
 ## Affected Service
 - **Service:** Apache ActiveMQ Classic 6.1.0
 - **Port:** 8161/TCP (Jetty HTTP/Management)

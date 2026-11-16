@@ -9,17 +9,11 @@
 
 ## Description
 Grafana 8.3.0 and earlier versions contain a path traversal vulnerability in the
-plugin static file serving endpoint. The URL pattern
-`/public/plugins/<plugin-id>/../../../../<path>` bypasses the intended directory
-restriction and allows an unauthenticated remote attacker to read arbitrary files
+plugin static file serving endpoint. Traversal sequences in paths under
+`/public/plugins/<plugin-id>/` bypass the intended directory restriction and allows an unauthenticated remote attacker to read arbitrary files
 from the host filesystem. Any file readable by the `grafana` process — including
 `/etc/passwd`, private keys, and configuration files containing credentials — can
 be exfiltrated with a single HTTP GET request requiring no authentication.
-
-Example exploit request:
-```
-GET /public/plugins/alertlist/../../../../etc/passwd HTTP/1.1
-```
 
 ## Affected Service
 - **Service:** Grafana 8.3.0

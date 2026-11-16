@@ -31,9 +31,8 @@ the lifetime of the box.
 
 An unauthenticated attacker who can reach port 22 has two independent paths to
 SYSTEM-equivalent code execution:
-1. `ssh vagrant@<host>` with password `vagrant` — immediate interactive shell as
-   local admin; trivial privilege escalation to `NT AUTHORITY\SYSTEM` via
-   `PsExec -s` or a quick `New-Service` drop.
+1. The `vagrant` / `vagrant` credential gives an immediate interactive shell as
+   local admin, from which escalation to `NT AUTHORITY\SYSTEM` is trivial.
 2. Any of the pre-auth OpenSSH CVEs that a 7.1.0.0-beta build never received a
    patch for — most are DoS/enum, but the overall posture is that of an unsupported
    SSH daemon.

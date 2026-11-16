@@ -7,7 +7,7 @@
 - **CVE-2017-1001000** — 4.7.0 / 4.7.1 REST API unauthenticated content injection
   (privilege escalation to post edit, often chained to RCE via plugin upload).
 - **CVE-2016-10033 / CVE-2016-10045** — PHPMailer RCE reachable from WordPress
-  `wp-mail.php` on this version (and the reason 4.7.2 was released as an emergency).
+  `wp-mail.php` on this version.
 - Weak default credentials `admin / admin` compound every one of the above by
   trivially granting direct admin-panel access even without an exploit.
 
@@ -16,14 +16,10 @@ The upstream metasploitable3-windows build ships WordPress 4.7.1 on WampServer 3
 with a pre-populated administrator account using the password **`admin`**. Any
 unauthenticated attacker that can reach the HTTP listener can either:
 
-1. Log in directly at `/wp-login.php` with `admin:admin` and push a PHP-capable
-   plugin (`shell.php`) to obtain RCE as the web server's service account, or
+1. Log in directly at `/wp-login.php` with `admin:admin`, gaining administrator access
+   that leads to RCE as the web server's service account, or
 2. Abuse the 4.7.0/4.7.1 REST API content-injection bug (CVE-2017-1001000) to
-   overwrite any post and, combined with a shortcode-evaluating theme, pivot to RCE
-   without credentials at all.
-
-Both attacks are publicly automated (Metasploit `wp_admin_shell_upload`, WPScan
-`--passwords rockyou.txt`, the REST-API PoC in exploit-db 41223).
+   overwrite any post, which can lead to RCE without credentials at all.
 
 ## Affected Service
 - **Web server:** IIS (`W3SVC`) serving `C:\wamp\www\wordpress` as the Default Web Site's

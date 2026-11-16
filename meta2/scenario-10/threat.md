@@ -22,9 +22,3 @@ In `/etc/apache2/apache2.conf`, the directive `TraceEnable On` is present (or ab
 ```
 TraceEnable On
 ```
-
-A TRACE request like the following returns the full request headers in the response body:
-```
-TRACE / HTTP/1.1
-Host: target
-```

@@ -9,9 +9,8 @@
 
 ## Description
 CVE-2022-0492 lets an unprivileged process that holds **CAP_SYS_ADMIN** inside a
-container escape to the host: it mounts a cgroup-v1 controller, enables
-`notify_on_release`, writes a payload path to `release_agent`, and triggers it —
-the kernel runs the payload **as root on the host**. The pivotal privilege is
+container escape to the host through the cgroup-v1 `release_agent` mechanism,
+which the kernel runs **as root on the host**. The pivotal privilege is
 `CAP_SYS_ADMIN`, the capability that authorizes `unshare(CLONE_NEWNS)` and
 `mount(2)`.
 
@@ -21,9 +20,7 @@ file capability**. The helper `/usr/local/bin/caphelper` carries
 enforced by the kernel on every `execve(2)`. Any user who runs it — including a
 fully unprivileged one — receives `CAP_SYS_ADMIN` in that process's effective
 set and can perform privileged mounts (the exact primitive CVE-2022-0492 turns
-into a host escape). The helper prints `PRIVOP_OK` only when the privileged mount
-actually succeeds, proving the capability is live and abusable by a non-root
-user.
+into a host escape).
 
 ## Affected Service
 - **Binary:** `/usr/local/bin/caphelper` (`cap_sys_admin+ep` file capability)

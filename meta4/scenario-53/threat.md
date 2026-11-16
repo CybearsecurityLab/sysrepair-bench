@@ -16,14 +16,7 @@ and `rocketmqHome` properties. The broker will then start a filter server
 process using the attacker-controlled path, achieving unauthenticated remote
 code execution as the broker user.
 
-The attack chain:
-1. Attacker sends `UPDATE_BROKER_CONFIG` to port 10911 setting
-   `filterServerNums=1` and `rocketmqHome=<attacker-controlled-path>`
-2. Broker launches a filter server subprocess using the attacker's path
-3. Attacker's binary executes as the `rocketmq` process user
-
-No credentials are required. Public PoC scripts exist that automate this
-attack in a single command.
+No credentials are required.
 
 ## Affected Service
 - **Service:** Apache RocketMQ 5.1.0

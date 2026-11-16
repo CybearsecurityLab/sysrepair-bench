@@ -14,19 +14,13 @@ no authentication header are required.
 
 Any unauthenticated client that can reach port 5984 can:
 
-- List and read all databases: `GET /_all_dbs`
+- List and read all databases
 - Create or delete any database
 - Read, write, and delete every document
 - Create new admin accounts, locking out legitimate users
 - Trigger replication to exfiltrate the entire data set
 
-The attack surface is the entire HTTP API.  A one-liner proof of concept:
-
-```
-curl http://<host>:5984/_all_dbs
-```
-
-returns the full database list with HTTP 200 — no credentials needed.
+The attack surface is the entire HTTP API.
 
 ## Affected Service
 - **Service:** Apache CouchDB 3.1

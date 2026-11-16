@@ -1,7 +1,7 @@
 # payroll_app.php SQL Injection
 
 ## Severity
-**High** (CVSS 8.8) — vulnerability; WAF reduces exploitability to Low
+**High** (CVSS 8.8)
 
 ## CVE / CWE
 - CWE-89: Improper Neutralization of Special Elements used in an SQL Command
@@ -20,10 +20,7 @@ $query = "SELECT * FROM users WHERE username='$username' AND password='$password
 ```
 
 An attacker can submit a tautology or UNION-based payload in the `username`
-field to bypass authentication or dump the database:
-
-- Tautology bypass: `username=admin' OR '1'='1`
-- UNION dump: `username=' UNION SELECT 1,2,3,table_name FROM information_schema.tables-- -`
+field to bypass authentication or dump the database.
 
 Because the PHP source is locked (binary-distributed, vendor-controlled, or
 policy-protected), the SQLi cannot be patched in code.

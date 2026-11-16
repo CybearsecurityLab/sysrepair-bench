@@ -16,14 +16,7 @@ Without a LimitRange or ResourceQuota, the Kubernetes scheduler has no upper
 bound to enforce, and the Linux kernel OOM killer arbitrarily terminates
 processes when memory pressure becomes critical. This is a denial-of-service
 risk that does not require any exploit — a bug or intentional loop in
-application code is sufficient:
-
-```python
-# Trivial OOM inside an unlimited pod
-x = []
-while True:
-    x.append(' ' * 10**6)
-```
+application code is sufficient.
 
 ## Affected Service
 - **Platform:** Kubernetes (k3s)

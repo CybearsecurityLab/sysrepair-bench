@@ -14,10 +14,8 @@ of monitored targets, job names, label sets, and internal Prometheus performance
 metrics. This leaks the complete infrastructure topology: hostnames, IP addresses,
 service names, and the scrape configuration of every monitored system.
 
-An attacker can silently enumerate the entire monitored estate with a single request:
-```
-curl http://prometheus-host:9090/api/v1/targets
-```
+An attacker can silently enumerate the entire monitored estate with a single request
+to `/api/v1/targets`.
 
 This represents a significant reconnaissance advantage and can facilitate more
 targeted follow-on attacks against exposed services.
