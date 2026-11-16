@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import time
@@ -300,7 +301,57 @@ def _build_one(context: Path, tag: str, quiet: bool,
         # hundreds of lines of layer chatter are noise in a summary.
         tail = (proc.stderr or proc.stdout or "").strip().splitlines()
         return BuildResult(name, False, elapsed, tag, " | ".join(tail[-3:])[:300])
+    empty = heredoc_targets_empty(tag, dockerfile or (context / "Dockerfile"),
+                                  docker_context)
+    if empty:
+        return BuildResult(name, False, elapsed, tag,
+                           "heredoc files empty or missing in the built image "
+                           f"(legacy builder?): {', '.join(empty)[:200]}")
     return BuildResult(name, True, elapsed, tag)
+
+
+_HEREDOC_LINE = re.compile(r"<<-?\s*['\"]?\w+['\"]?\s*$")
+_HEREDOC_TARGET = re.compile(r"(?:>>?|\btee(?:\s+-a)?)\s+([\"']?)([^\s\"'<>|;&]+)\1")
+
+
+def heredoc_targets(dockerfile: Path) -> list[str]:
+    """Absolute, literal paths that RUN heredocs write (`cat > P <<EOF`,
+    `tee P <<EOF`). Paths with variables or relative paths are skipped."""
+    out = []
+    try:
+        text = dockerfile.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return out
+    for line in text.splitlines():
+        if not _HEREDOC_LINE.search(line):
+            continue
+        m = _HEREDOC_TARGET.search(line)
+        if m and m.group(2).startswith("/") and "$" not in m.group(2):
+            out.append(m.group(2))
+    return out
+
+
+def heredoc_targets_empty(tag: str, dockerfile: Path,
+                          docker_context: str | None = None) -> list[str]:
+    """Heredoc-written files that are empty or missing in the image.
+
+    The legacy builder accepts RUN heredocs without error and writes the file
+    with no content, so a successful build is not evidence the scenario's
+    configs or service code exist. Checked by reading the image, not the
+    build log. [] when every target has content (or there are none)."""
+    targets = heredoc_targets(dockerfile)
+    if not targets:
+        return []
+    base = ["docker"] + (["--context", docker_context] if docker_context else [])
+    script = "; ".join(f"[ -s '{t}' ] || echo '{t}'" for t in targets)
+    try:
+        r = subprocess.run(base + ["run", "--rm", "--entrypoint", "sh", tag, "-c", script],
+                           capture_output=True, text=True, timeout=300)
+    except subprocess.TimeoutExpired:
+        return ["<check timed out>"]
+    if r.returncode != 0 and not r.stdout:
+        return [f"<check failed: {(r.stderr or '').strip()[:120]}>"]
+    return [ln for ln in r.stdout.splitlines() if ln.strip()]
 
 
 def prebuild(
