@@ -156,3 +156,6 @@ logs/
 .env.*
 */.env
 */.env.*
+
+# Per-session analysis scripts and outputs; not part of the benchmark.
+inspect_eval/scratchpad/
