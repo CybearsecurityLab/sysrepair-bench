@@ -5,6 +5,11 @@ FROM --platform=linux/amd64 httpd@sha256:4b5cb7697fea2aa6d398504c381b693a54ae9ad
 # Remediation (compensating control): deploy ModSecurity + OWASP CRS.
 # Apache version is NOT upgraded — kept at 2.4.49.
 
+# Debian 10 is EOL and gone from the live mirror; archive.debian.org serves it.
+RUN sed -i 's|deb.debian.org|archive.debian.org|g; s|security.debian.org/debian-security|archive.debian.org/debian-security|g; /buster-updates/d' /etc/apt/sources.list && \
+    rm -f /etc/apt/sources.list.d/*.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99archive
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libapache2-mod-security2 \

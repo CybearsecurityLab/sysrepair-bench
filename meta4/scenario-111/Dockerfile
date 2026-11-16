@@ -6,6 +6,14 @@ FROM --platform=linux/amd64 memcached@sha256:db45886d2d48f143be64f2d46407e224b0b
 
 USER root
 
+# Debian 11 reached EOL: bullseye-security packages were removed from the live
+# mirror (404) and have not been ingested into archive.debian.org. snapshot pins
+# the point-in-time state, as in the vulnhub suite. The date must be AT OR AFTER
+# the pinned base image, or apt refuses to downgrade.
+RUN printf 'deb http://snapshot.debian.org/archive/debian/20260901T000000Z bullseye main\ndeb http://snapshot.debian.org/archive/debian-security/20260901T000000Z bullseye-security main\n' > /etc/apt/sources.list && \
+    rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99snapshot
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         iproute2 \
