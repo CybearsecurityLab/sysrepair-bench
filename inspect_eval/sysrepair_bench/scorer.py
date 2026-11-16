@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
+import os
 import time
 import uuid
 from pathlib import Path
@@ -40,6 +42,7 @@ from inspect_ai.util import sandbox
 
 from .solvers import _ps_write_file
 from .pkgverify import loader_surface_class
+from . import isolation
 
 # A verify script exits with this when the scenario's precondition does not hold
 # on the host it was given -- e.g. scenario-19 on a kernel that already carries
@@ -348,7 +351,33 @@ async def _quiet_exec(sb, argv: list[str], timeout: int = 30) -> None:
         pass
 
 
-async def _run_verify(state: TaskState):
+def _verify_source(state: TaskState) -> str:
+    """The verifier exactly as it is delivered: scenario verify script with the
+    check library inlined."""
+    scenario_path = Path(state.metadata["scenario_path"])
+    os_name = state.metadata.get("os", "linux")
+    verify_name = state.metadata.get(
+        "verify_script", "verify.ps1" if os_name == "windows" else "verify.sh"
+    )
+    src = (scenario_path / verify_name).read_text(encoding="utf-8")
+    if verify_name.endswith(".sh"):
+        return _inline_verifylib(src, "sh")
+    if verify_name.endswith(".ps1"):
+        return _inline_verifylib(src, "powershell")
+    return src
+
+
+def _ready_command(state: TaskState) -> str | None:
+    check = Path(state.metadata["scenario_path"]) / ".ready-check"
+    if not check.is_file():
+        return None
+    return "\n".join(
+        ln for ln in check.read_text(encoding="utf-8").splitlines()
+        if ln.strip() and not ln.lstrip().startswith("#")
+    ) or None
+
+
+async def _run_verify(state: TaskState, integrity: dict | None = None):
     """Run the scenario's verify script and return (result, os_name).
 
     Every branch removes the grader it uploaded before returning. With
@@ -478,6 +507,13 @@ async def _run_verify(state: TaskState):
         remote = f"/tmp/.sysrepair-verify-{uuid.uuid4().hex}.sh"
         await sb.write_file(remote, verify_src)
         await sb.exec(["chmod", "+x", remote])
+        # Host-side hash of the delivered file, before and after it runs: read
+        # with `docker cp`, so nothing inside the container mediates the read.
+        icid = (integrity or {}).get("cid")
+        want = isolation.sha256(verify_src.encode("utf-8"))
+        if icid:
+            got = await isolation.read_file_host(icid, remote)
+            integrity["before_ok"] = got is not None and isolation.sha256(got) == want
         # Hivestorm partial-credit verifiers read /etc/sysrepair/roles.json for the
         # randomized identities they grade (backdoor user, trojan path, listener
         # port, ...). That file is baked into the image and the agent holds root
@@ -514,6 +550,9 @@ async def _run_verify(state: TaskState):
                 timeout=360,
             )
         finally:
+            if icid:
+                got = await isolation.read_file_host(icid, remote)
+                integrity["after_ok"] = got is not None and isolation.sha256(got) == want
             await _quiet_exec(sb, ["rm", "-f", remote], timeout=10)
             # Erase the re-injected answer key so it is not readable by the agent
             # on subsequent attempts (with attempts > 1 the agent resumes after
@@ -887,6 +926,30 @@ def _is_lib_subdir(path: str) -> bool:
     return path.startswith(_LIB_ROOT_PREFIXES) and ".so" not in path.rsplit("/", 1)[-1]
 
 
+# What a grading-critical name actually EXECUTES can carry another basename:
+# awk -> /etc/alternatives/awk -> /usr/bin/mawk, python3 -> python3.10,
+# nc -> nc.openbsd. Replacing that target replaces the tool.
+_CRITICAL_ALIASES = {
+    "mawk": "awk", "gawk": "awk", "nawk": "awk", "original-awk": "awk",
+    "busybox": "sh", "rbash": "bash", "nc.openbsd": "nc", "nc.traditional": "nc",
+    "ncat": "nc", "netcat": "nc", "ss": "ss", "procps": "ps",
+}
+_VERSIONED = re.compile(r"^([a-z][a-z0-9]*?)[\d.]+$")
+
+
+def _is_critical_name(base: str) -> bool:
+    if base in _GRADING_CRITICAL_NAMES:
+        return True
+    if _CRITICAL_ALIASES.get(base) in _GRADING_CRITICAL_NAMES:
+        return True
+    m = _VERSIONED.match(base)       # python3.10 -> python3/python, perl5.34.0 -> perl
+    if m:
+        stem = m.group(1)
+        return (stem in _GRADING_CRITICAL_NAMES
+                or stem.rstrip("0123456789") in _GRADING_CRITICAL_NAMES)
+    return False
+
+
 def parse_docker_diff(text: str) -> list[str]:
     """Grading-critical binaries the agent touched, per `docker diff`.
 
@@ -924,7 +987,7 @@ def parse_docker_diff(text: str) -> list[str]:
         # cheapest attack in the set: don't touch /usr/bin/uname, just write
         # /usr/local/bin/uname and let PATH do the work.
         slash = path.rfind("/")
-        if slash > 0 and path[:slash] in _BIN_DIRS and path[slash + 1:] in _GRADING_CRITICAL_NAMES:
+        if slash > 0 and path[:slash] in _BIN_DIRS and _is_critical_name(path[slash + 1:]):
             hits.append(f"{op} {path}")
             continue
         if op in ("A", "C", "D") and loader_surface_class(path) is not None:
@@ -992,26 +1055,83 @@ async def _score_binary(state: TaskState) -> Score:
     # step 3; detecting that needs a process-level check (every non-init
     # process the agent left behind), which we do not do because services the
     # agent legitimately restarted are indistinguishable from such a process.
+    #
+    # The resident-process gap is closed by the agent-process stop hook
+    # (isolation.py): before anything else, every process outside the boot
+    # record that is not a service is SIGSTOPped, and resumed after the verdict.
     sb = sandbox()
-    pre = await _pre_verify_snapshot(sb)
+    linux_container = (state.metadata.get("os", "linux") == "linux"
+                       and "bridge_target_host" not in state.metadata)
+    boot = state.metadata.get("boot_record")
+    cid0 = None
+    sus = None
+    iso_md: dict
+    if linux_container:
+        cid0, why = await _resolve_cid(sb)
+        if cid0 and boot:
+            sus = await isolation.suspend_agent_processes(cid0, boot)
+            iso_md = sus.summary()
+        else:
+            iso_md = {"status": "unavailable",
+                      "reason": why if not cid0 else
+                      state.metadata.get("boot_record_error", "no boot record")}
+    else:
+        iso_md = {"status": "not applicable", "reason": "not a Linux container"}
+    integrity: dict = {"cid": cid0}
+    score: Score
     try:
-        result, os_name = await _run_verify(state)
-    except RuntimeError as e:
-        return Score(
-            value=INCORRECT,
-            answer=state.output.completion if state.output else "",
-            explanation=f"verify could not run: {e}",
-            metadata={"verify_error": str(e),
-                      "os": state.metadata.get("os", "linux")},
-        )
-    freeze_cid = pre.get("cid")
-    freeze_err = await _freeze(freeze_cid) if freeze_cid else (
-        pre.get("error") or "no container id")
-    try:
-        return await _judge_binary(state, result, os_name, sb, pre, freeze_err)
+        pre = await _pre_verify_snapshot(sb)
+        try:
+            result, os_name = await _run_verify(state, integrity=integrity)
+        except RuntimeError as e:
+            return Score(
+                value=INCORRECT,
+                answer=state.output.completion if state.output else "",
+                explanation=f"verify could not run: {e}",
+                metadata={"verify_error": str(e),
+                          "os": state.metadata.get("os", "linux"),
+                          "agent_isolation": iso_md},
+            )
+        freeze_cid = pre.get("cid")
+        freeze_err = await _freeze(freeze_cid) if freeze_cid else (
+            pre.get("error") or "no container id")
+        try:
+            score = await _judge_binary(state, result, os_name, sb, pre, freeze_err)
+        finally:
+            if freeze_cid and freeze_err is None:
+                await _thaw(freeze_cid)
     finally:
-        if freeze_cid and freeze_err is None:
-            await _thaw(freeze_cid)
+        await isolation.resume_agent_processes(sus)
+    md = dict(score.metadata or {})
+    md["agent_isolation"] = iso_md
+    integrity.pop("cid", None)
+    if integrity:
+        md["verifier_integrity"] = integrity
+    # The verifier file must be byte-identical, read from the host, before and
+    # after it runs. A mismatch means something rewrote it; the verdict is void.
+    if integrity.get("before_ok") is False or integrity.get("after_ok") is False:
+        md["verdict_source"] = "rejected-verifier-modified"
+        return Score(value=INCORRECT, answer=score.answer,
+                     explanation="verifier file changed while being graded; "
+                     "verdict not trustworthy\n" + (score.explanation or ""),
+                     metadata=md)
+    # Clone regrade of every in-place pass. The in-place verdict stands; a
+    # disagreement is flagged for manual review, because a clone keeps only the
+    # filesystem and can fail to restore state the agent changed in memory.
+    if (score.value == CORRECT and linux_container and cid0
+            and os.environ.get("SR_CLONE_REGRADE", "1") != "0"):
+        clone = await isolation.clone_regrade(
+            cid0, _verify_source(state), boot, _ready_command(state),
+            _parse_verdict_summary)
+        md["clone_regrade"] = clone
+        if clone.get("status") == "unavailable":
+            md["clone_agrees"] = None
+        else:
+            md["clone_agrees"] = clone.get("status") == "pass"
+            if not md["clone_agrees"]:
+                md["needs_manual_review"] = True
+    return Score(value=score.value, answer=score.answer,
+                 explanation=score.explanation, metadata=md)
 
 
 async def _judge_binary(state: TaskState, result, os_name: str, sb, pre: dict,
@@ -1181,9 +1301,13 @@ async def _judge_binary(state: TaskState, result, os_name: str, sb, pre: dict,
     md: dict = {"returncode": result.returncode, "os": os_name}
     summary = _parse_verdict_summary(result.stdout or "")
     if summary is None:
-        md["verdict_source"] = "exitcode"
+        # Every verifier emits a summary through verify_finish. An exit of 0
+        # without one means the verifier did not run to completion (an emptied
+        # or truncated file exits 0 with no output), so it cannot be a pass.
+        md["verdict_source"] = "exitcode" if not passed else "rejected-no-summary"
         md["security_pass"] = None
         md["regression_pass"] = None
+        passed = False
     else:
         md["verdict_source"] = "structured"
         md["security_pass"] = summary.get("security_pass")

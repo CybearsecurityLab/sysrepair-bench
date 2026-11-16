@@ -649,6 +649,37 @@ def scenario_ready_gate() -> Solver:
 
 
 @solver
+def boot_record_capture() -> Solver:
+    """Record the booted container's processes and listening sockets.
+
+    Runs after scenario_ready_gate and before the agent's first action. The
+    grader's stop hook (isolation.py) suspends every process outside this
+    record that is not a service while a submission is graded, and the clone
+    regrade matches the clone's processes against it. Linux containers only;
+    a failure is recorded, and grading then reports the hook as unavailable.
+    """
+    async def solve(state: TaskState, generate):
+        if (state.metadata.get("os", "linux") != "linux"
+                or "bridge_target_host" in state.metadata
+                or state.metadata.get("scorer") in ("advm",)):
+            return state
+        from inspect_ai.util import sandbox
+        from .isolation import capture_boot_record
+        from .scorer import _resolve_cid
+        try:
+            cid, why = await _resolve_cid(sandbox())
+            if not cid:
+                state.metadata["boot_record_error"] = why or "no container id"
+                return state
+            state.metadata["boot_record"] = await capture_boot_record(cid)
+        except Exception as e:  # noqa: BLE001 -- recorded, never fatal
+            state.metadata["boot_record_error"] = f"{type(e).__name__}: {e}"[:300]
+        return state
+
+    return solve
+
+
+@solver
 def advm_lab_setup() -> Solver:
     """Restore + inject the AD lab for THIS sample, immediately before it runs.
 
@@ -1306,6 +1337,7 @@ def sysrepair_bench(
             # Holds the agent until the scenario's boot has finished; no-op for
             # scenarios without a .ready-check.
             scenario_ready_gate(),
+            boot_record_capture(),
             get_solver(
                 solver,
                 message_limit=solver_msg_limit,

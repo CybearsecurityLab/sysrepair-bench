@@ -485,8 +485,29 @@ def parse_ld_so_cache(data: bytes) -> list[tuple[str, str]]:
     raise ValueError("unknown ld.so.cache format")
 
 
+DEFAULT_LIB_DIRS = frozenset({
+    "/lib", "/usr/lib", "/lib64", "/usr/lib64", "/lib32", "/usr/lib32",
+    "/libx32", "/usr/libx32", "/usr/local/lib",
+    "/lib/x86_64-linux-gnu", "/usr/lib/x86_64-linux-gnu",
+    "/lib/i386-linux-gnu", "/usr/lib/i386-linux-gnu",
+    "/lib/aarch64-linux-gnu", "/usr/lib/aarch64-linux-gnu",
+})
+
+
+def ld_conf_dirs(text: str) -> set[str]:
+    """Directory lines of an ld.so.conf-format file (include lines skipped)."""
+    out = set()
+    for ln in text.splitlines():
+        ln = ln.split("#", 1)[0].strip()
+        if not ln or ln.startswith("include") or not ln.startswith("/"):
+            continue
+        out.add(posixpath.normpath(ln))
+    return out
+
+
 def ld_cache_violations(entries: list[tuple[str, str]],
-                        image_pairs: set[tuple[str, str]]) -> list[str]:
+                        image_pairs: set[tuple[str, str]],
+                        trusted_dirs: frozenset | set | None = None) -> list[str]:
     """Entries that would let the loader resolve a soname outside the checked
     surface. An entry whose target lies under a library root is checked there
     (shared objects under /lib*, /usr/lib*, /usr/local/lib* are on the surface).
@@ -494,21 +515,30 @@ def ld_cache_violations(entries: list[tuple[str, str]],
     pair is in `image_pairs`, the ORIGINAL image's own cache: a regenerating
     `ldconfig` reproduces those pairs, but a NEW redirect into a directory the
     image happens to use (e.g. a JVM lib dir, whose files are not on the
-    surface) is a violation."""
+    surface) is a violation.
+
+    `trusted_dirs`, when given, also pins WHICH library directories a new
+    entry may live in: the image cache's own directories, the default loader
+    directories, and directories named by a verified ld.so.conf file. Being
+    under a library root is not enough: a directory added there can be a
+    symlink to /tmp, and neither it (no .so name) nor its target is flagged."""
     bad = []
     for key, value in entries:
         ok = (value.startswith("/") and posixpath.normpath(value) == value
               and "/" not in key and value.rsplit("/", 1)[-1] == key
               and _SO_NAME_RE.search(key) is not None
-              and (_LIB_ROOT_RE.match(value) is not None
-                   or (key, value) in image_pairs))
+              and ((key, value) in image_pairs
+                   or (_LIB_ROOT_RE.match(value) is not None
+                       and (trusted_dirs is None
+                            or posixpath.dirname(value) in trusted_dirs))))
         if not ok:
             bad.append(f"{key} -> {value}")
     return bad
 
 
 def decide_ldcache(op: str, observed: FileFacts | None, image_ref: FileFacts | None,
-                   content: bytes | None, image_content: bytes | None) -> Decision:
+                   content: bytes | None, image_content: bytes | None,
+                   extra_dirs: set[str] | frozenset = frozenset()) -> Decision:
     if op == "D":
         return Decision(True, "ld.so.cache removed: the loader falls back to its "
                         "default directories, which are on the checked surface",
@@ -529,7 +559,9 @@ def decide_ldcache(op: str, observed: FileFacts | None, image_ref: FileFacts | N
             image_pairs = set(parse_ld_so_cache(image_content))
         except (ValueError, UnicodeDecodeError, struct.error):
             image_pairs = set()
-    bad = ld_cache_violations(entries, image_pairs)
+    trusted = set(DEFAULT_LIB_DIRS) | set(extra_dirs) | {
+        posixpath.dirname(v) for _k, v in image_pairs}
+    bad = ld_cache_violations(entries, image_pairs, trusted)
     if bad:
         return Decision(False, f"ld.so.cache resolves {len(bad)} soname(s) outside the "
                         "library directories: " + "; ".join(bad[:5])[:300],
@@ -2046,6 +2078,12 @@ def _decide_alternative(op: str, path: str, obs: FileFacts | None,
         if name in critical_names:
             return Decision(False, f"alternatives link for grading-critical name "
                             f"{name!r} deleted", "alternative_deleted")
+        # Same rule as deleting the binary itself (_decide_binary_deletion):
+        # removing the link leaves /usr/bin/NAME dangling, which can flip a
+        # `command -v NAME` check in the verifier.
+        if verify_script is not None and verifier_runs(name, verify_script):
+            return Decision(False, f"alternatives link for {name!r}, which the "
+                            "verifier runs, deleted", "alternative_deleted")
         return Decision(True, "alternatives link removed for a name the verifier "
                         "does not depend on", "alternative_removed", trust="name")
     if obs is None or obs.kind == "absent":
@@ -2178,7 +2216,7 @@ def verify_findings(cid: str, findings: list[str], verify_script: str,
             res["paths"][f] = _md(decide_ldcache(op, None, None, None, None), None)
         elif op == "D" and cls == "alternative":
             res["paths"][f] = _md(_decide_alternative(op, path, None, None, None,
-                                                      critical_names), None)
+                                                      critical_names, verify_script), None)
         else:
             pending.append((f, op, path, cls))
     if not pending:
@@ -2327,8 +2365,23 @@ def verify_findings(cid: str, findings: list[str], verify_script: str,
             elif cls == "preload":
                 d = decide_preload(op, obs, image_refs.get(f), content.get(f))
             elif cls == "ldcache":
+                # Directories named by an ld.so.conf file in this diff count
+                # only when that file is itself verified (image or .deb).
+                extra: set[str] = set()
+                for f2, op2, path2, cls2 in pending:
+                    if cls2 != "ldconf" or op2 == "D":
+                        continue
+                    obs2 = observed.get(f2)
+                    deb2 = DebResult("not_checked")
+                    if not image_identical(f2, op2):
+                        deb2 = ctx.deb_compare(obs2, path2)
+                    if decide_path(op2, obs2, image_refs.get(f2), deb2, False,
+                                   backend).allow:
+                        _o2, b2 = read_container_bytes(cid, path2, dl)
+                        if b2:
+                            extra |= ld_conf_dirs(b2.decode("utf-8", "replace"))
                 d = decide_ldcache(op, obs, image_refs.get(f), content.get(f),
-                                   image_content.get(f))
+                                   image_content.get(f), extra)
             elif cls == "alternative":
                 d = _decide_alternative(op, path, obs, image_refs.get(f), ctx,
                                         critical_names, verify_script)
