@@ -25,6 +25,10 @@ from sysrepair_bench.adversarial import (  # noqa: E402
 REPO = Path(__file__).resolve().parents[2]
 SOLUTIONS = REPO / "docs" / "scenario-validation" / "solutions"
 MANIFEST = REPO / "scenarios.jsonl"
+# docs/ is gitignored, so the solution corpus is a local copy and may hold only
+# some suites (a host that cannot build meta2 keeps meta2 only, and vice versa).
+# Tests that pin cross-suite resolution or coverage need the full corpus.
+FULL_CORPUS = all((SOLUTIONS / d).is_dir() for d in ("ccdc", "meta3-ubuntu"))
 
 
 class TestRegistry:
@@ -43,7 +47,7 @@ class TestRegistry:
         assert get_adversarial_solver("Service-Killer") is not None
 
 
-@pytest.mark.skipif(not SOLUTIONS.exists(), reason="solution corpus not present")
+@pytest.mark.skipif(not FULL_CORPUS, reason="full solution corpus not present")
 class TestSolutionResolution:
     def test_flat_suite_resolves(self):
         assert _solution_path("ccdc/scenario-01", SOLUTIONS) is not None
@@ -69,8 +73,8 @@ class TestSolutionResolution:
 
 
 @pytest.mark.skipif(
-    not (SOLUTIONS.exists() and MANIFEST.exists()),
-    reason="needs manifest and solution corpus",
+    not (FULL_CORPUS and MANIFEST.exists()),
+    reason="needs manifest and the full solution corpus",
 )
 class TestOracleCoverage:
     """Pin the oracle's reach so a silent change in coverage is caught."""

@@ -27,6 +27,7 @@ The tag we apply is only a handle for inspection and cleanup.
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -282,7 +283,15 @@ def _build_one(context: Path, tag: str, quiet: bool,
         cmd.append("--quiet")
     start = time.perf_counter()
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+        # BuildKit is required, not preferred. 34 scenario Dockerfiles write
+        # config files and service scripts with RUN heredocs, and the legacy
+        # builder (DOCKER_BUILDKIT=0) accepts them silently and writes every
+        # heredoc file EMPTY: smb.conf, vsftpd.conf, wp-config.php and the
+        # scenario's own server code all came out 0 bytes in images built
+        # that way. Pin it so an inherited environment cannot select it.
+        env = {**os.environ, "DOCKER_BUILDKIT": "1"}
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3600,
+                              env=env)
     except subprocess.TimeoutExpired:
         return BuildResult(name, False, time.perf_counter() - start, tag, "build exceeded 1h")
     elapsed = time.perf_counter() - start

@@ -230,6 +230,11 @@ def test_real_meta3_windows_scenario_widens_context():
     scen = REPO / "meta3" / "windows" / "scenario-04-tomcat"
     if not (scen / "Dockerfile").is_file():
         pytest.skip("meta3/windows/scenario-04-tomcat not present")
+    # The downloads are fetched per Windows build host, not committed. Without
+    # them neither layout resolves and _build_context correctly falls back.
+    if not (REPO / "meta3" / "windows" / "shared" / "downloads"
+            / "apache-tomcat-8.0.33-windows-x64.zip").is_file():
+        pytest.skip("meta3/windows shared downloads not present on this host")
     ctx = prebuild._build_context(scen)
     assert ctx == REPO / "meta3" / "windows", (
         "tomcat COPYs shared/downloads/, so its context must be the benchmark dir"

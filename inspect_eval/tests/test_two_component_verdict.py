@@ -508,11 +508,15 @@ class TestPrefixEstimator:
         assert _prefix_pass_at([False, True, False], 2) == 1.0
         assert _prefix_pass_at([True, False], 1) == 1.0
 
-    def test_returns_none_when_attempts_are_short(self):
-        """A truncated episode must not masquerade as a failure at higher k."""
+    def test_short_episodes_follow_the_unresolved_policy(self):
+        """An episode solved early is a pass at every larger k (the harness
+        stops at the first pass). An unsolved episode cut short counts as a
+        failure by default, and is unknown only under the legacy 'drop'."""
         from sysrepair_bench.passk import _prefix_pass_at
 
-        assert _prefix_pass_at([False, True], 5) is None
+        assert _prefix_pass_at([False, True], 5) == 1.0
+        assert _prefix_pass_at([False, False], 5) == 0.0
+        assert _prefix_pass_at([False, False], 5, unresolved="drop") is None
 
     def test_prefix_is_unbiased_under_feedback_where_chen_is_not(self):
         """Attempt 1 succeeds with p1, later attempts with p2. Ground truth is
