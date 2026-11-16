@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 import uuid
 from pathlib import Path
 
@@ -38,6 +39,7 @@ from inspect_ai.solver import TaskState
 from inspect_ai.util import sandbox
 
 from .solvers import _ps_write_file
+from .pkgverify import loader_surface_class
 
 # A verify script exits with this when the scenario's precondition does not hold
 # on the host it was given -- e.g. scenario-19 on a kernel that already carries
@@ -559,6 +561,15 @@ _GRADING_CRITICAL_NAMES = frozenset({
     "cmp", "diff", "sha256sum", "md5sum", "sort", "uniq", "wc", "tee", "env",
     "expr", "dirname", "basename", "realpath", "file", "strings", "chattr",
     "lsattr",
+    # Scenario-specific probe clients. The behavioural checks ask these tools
+    # what the service does (smbclient/testparm for Samba, php for WordPress,
+    # runuser/su/script/passwd/chpasswd/chage/useradd for the account and PAM
+    # policy probes), so a shim earlier on PATH writes the verdict: an added
+    # /usr/local/bin/smbclient + testparm pair passed the Samba verifier with no
+    # configuration change. A scan of every .eval on disk found no passing
+    # episode whose remediation of its own brief needed to modify these.
+    "smbclient", "testparm", "php", "runuser", "chage", "useradd", "su",
+    "script", "passwd", "chpasswd",
 })
 
 # Directories whose contents can win a PATH lookup. /usr/local/* first: that is
@@ -567,6 +578,194 @@ _BIN_DIRS = (
     "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin",
     "/sbin", "/bin",
 )
+
+
+def _unwrap_sandbox(sb):
+    """The concrete sandbox environment behind inspect_ai's proxy.
+
+    `sandbox()` never returns the DockerSandboxEnvironment itself: since 0.3.x
+    inspect_ai wraps every environment in a SandboxEnvironmentProxy (event
+    recording) that keeps the real one in `_sandbox` (util/_sandbox/events.py;
+    the same attribute in 0.3.206, which the benchmark runs, and 0.3.224, which
+    NeuroPlan imports in-process). Reading `_project`/`_service` off the proxy
+    returns None, which is how the tamper gate below came to report
+    'unavailable' on every sample it was ever asked about. Unwrap a bounded
+    number of times in case a future version nests proxies.
+    """
+    for _ in range(4):
+        inner = getattr(sb, "_sandbox", None)
+        if inner is None or inner is sb:
+            break
+        sb = inner
+    return sb
+
+
+async def _host_tamper_check(sb) -> tuple[list[str] | None, str | None]:
+    """`_host_tamper_findings` plus the reason when the check could not run.
+
+    Returns (findings, None) when the check ran -- findings is [] when clean --
+    and (None, reason) when it could not. The reason is what the verdict
+    metadata records, so an inert gate is visible in the log rather than
+    indistinguishable from a clean one.
+    """
+    findings, reason, _cid = await _host_tamper_scan(sb)
+    return findings, reason
+
+
+async def _resolve_cid(sb) -> tuple[str | None, str | None]:
+    """(container id, None) for the sandbox's compose service, or (None, why)."""
+    try:
+        from inspect_ai.util._sandbox.docker.compose import compose_ps
+
+        sb = _unwrap_sandbox(sb)
+        project = getattr(sb, "_project", None)
+        service = getattr(sb, "_service", None)
+        if project is None or service is None:
+            return None, (
+                f"sandbox {type(sb).__name__} exposes no docker compose "
+                "project/service; host-side docker diff not run"
+            )
+        # A paused container counts: the scorer freezes the episode container
+        # (docker pause) before the post-verify scan, see _score_binary.
+        for status in ("running", "paused"):
+            containers = await compose_ps(project, status=status)
+            # Exact service match first; the substring match is only a fallback,
+            # because a multi-service project can hold a name that merely
+            # contains the service name ('default' in 'attacker-default').
+            for c in containers or []:
+                if c.get("Service") == service:
+                    return c.get("ID") or c.get("Name"), None
+            for c in containers or []:
+                if c.get("Name", "").find(service) >= 0:
+                    return c.get("ID") or c.get("Name"), None
+        return None, f"no running container found for compose service {service!r}"
+    except Exception as e:  # noqa: BLE001 -- recorded, never silently clean
+        return None, f"container lookup raised {type(e).__name__}: {e}"[:300]
+
+
+async def _host_tamper_scan(sb) -> tuple[list[str] | None, str | None, str | None]:
+    """`_host_tamper_check` plus the container id the diff was taken from, which
+    the package verification below needs to read the flagged files host-side."""
+    cid = None
+    try:
+        cid, why = await _resolve_cid(sb)
+        if not cid:
+            return None, why, None
+
+        proc = await asyncio.create_subprocess_exec(
+            "docker", "diff", cid,
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        out, err = await asyncio.wait_for(proc.communicate(), timeout=60)
+        if proc.returncode != 0:
+            return None, (
+                f"docker diff exited {proc.returncode}: "
+                + err.decode("utf-8", "replace").strip()[:200]
+            ), cid
+
+        return parse_docker_diff(out.decode("utf-8", "replace")), None, cid
+    except Exception as e:  # noqa: BLE001 -- recorded, never silently clean
+        return None, f"tamper check raised {type(e).__name__}: {e}"[:300], cid
+
+
+async def _docker_cmd(*args: str, timeout: float = 60) -> tuple[int, str]:
+    proc = await asyncio.create_subprocess_exec(
+        "docker", *args,
+        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        out, err = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.wait()
+        return -1, f"docker {args[0]} timed out"
+    return proc.returncode, (err or out).decode("utf-8", "replace").strip()[:200]
+
+
+async def _freeze(cid: str | None) -> str | None:
+    """`docker pause` the episode container. None on success, else why not.
+
+    Frozen (cgroup freezer), no process inside can run, so the bytes the host
+    reads with docker diff / docker cp are the bytes that were there when the
+    freeze began. docker diff and docker cp both work on a paused container."""
+    if not cid:
+        return "no container id"
+    rc, msg = await _docker_cmd("pause", cid)
+    return None if rc == 0 else f"docker pause exited {rc}: {msg}"
+
+
+async def _thaw(cid: str | None) -> None:
+    """Best-effort `docker unpause`; the agent resumes after scoring when
+    attempts > 1, and teardown needs a running container."""
+    if cid:
+        try:
+            await _docker_cmd("unpause", cid)
+        except Exception:  # noqa: BLE001
+            pass
+
+
+async def _surface_snapshot(cid: str, findings: list[str]) -> dict:
+    """{path: facts-md} for the paths of `findings`, read host-side."""
+    from . import pkgverify
+
+    paths = [f.partition(" ")[2] for f in findings]
+    return await asyncio.to_thread(pkgverify.snapshot, cid, paths, 120.0)
+
+
+async def _pre_verify_snapshot(sb) -> dict:
+    """The grading surface BEFORE verify.sh runs, read with the container
+    frozen: {"cid", "findings", "facts", "freeze", "error"}.
+
+    Comparing it with the same read after verify.sh is what catches a shim
+    that restores the genuine file while (or right after) the verifier runs:
+    a self-restoring binary leaves different bytes, or no docker-diff entry at
+    all, after verify than before it."""
+    out: dict = {"cid": None, "findings": None, "facts": None, "freeze": None,
+                 "error": None}
+    cid, why = await _resolve_cid(sb)
+    out["cid"] = cid
+    if not cid:
+        out["error"] = why
+        return out
+    out["freeze"] = await _freeze(cid)
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "docker", "diff", cid,
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        o, _err = await asyncio.wait_for(proc.communicate(), timeout=60)
+        if proc.returncode != 0:
+            out["error"] = f"docker diff exited {proc.returncode}"
+            return out
+        out["findings"] = parse_docker_diff(o.decode("utf-8", "replace"))
+        snap = await _surface_snapshot(cid, out["findings"])
+        out["facts"] = snap.get("facts")
+        if snap.get("error"):
+            out["error"] = snap["error"]
+            out["facts"] = None
+    except Exception as e:  # noqa: BLE001 -- recorded; no evidence -> fail closed
+        out["error"] = f"pre-verify snapshot raised {type(e).__name__}: {e}"[:300]
+    finally:
+        if out["freeze"] is None:
+            await _thaw(cid)
+    return out
+
+
+def changed_during_verify(pre: dict, post_findings: list[str],
+                          post_facts: dict) -> list[str]:
+    """Findings whose state differs between the frozen reads before and after
+    verify.sh: present on only one side, or different kind/bytes/link/mode."""
+    pre_f = set(pre.get("findings") or [])
+    pre_facts = pre.get("facts") or {}
+    out = []
+    for f in post_findings:
+        path = f.partition(" ")[2]
+        if f not in pre_f or pre_facts.get(path) != post_facts.get(path):
+            out.append(f)
+    for f in pre.get("findings") or []:
+        if f not in post_findings:
+            out.append(f)
+    return out
 
 
 async def _host_tamper_findings(sb) -> list[str] | None:
@@ -583,38 +782,109 @@ async def _host_tamper_findings(sb) -> list[str] | None:
     cannot suppress or forge it. It reports C (changed) / A (added) / D
     (deleted) per path.
 
+    `sb` may be inspect_ai's SandboxEnvironmentProxy (what `sandbox()` returns)
+    or the docker environment itself; see _unwrap_sandbox.
+
     Returns [] when clean, a list of tampered paths when not, and None when the
     check could not run (non-docker sandbox, compose lookup failed). None is
     NOT "clean" -- callers must record the difference, or an unavailable check
     would silently read as a passing one.
     """
-    try:
-        from inspect_ai.util._sandbox.docker.compose import compose_ps
+    findings, _reason = await _host_tamper_check(sb)
+    return findings
 
-        project = getattr(sb, "_project", None)
-        service = getattr(sb, "_service", None)
-        if project is None or service is None:
-            return None
-        containers = await compose_ps(project, status="running")
-        cid = None
-        for c in containers or []:
-            if c.get("Service") == service or c.get("Name", "").find(service) >= 0:
-                cid = c.get("ID") or c.get("Name")
-                break
-        if not cid:
-            return None
 
-        proc = await asyncio.create_subprocess_exec(
-            "docker", "diff", cid,
-            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-        )
-        out, _ = await asyncio.wait_for(proc.communicate(), timeout=60)
-        if proc.returncode != 0:
-            return None
+_ALLOW_MARKER = ".allows-binary-change"
 
-        return parse_docker_diff(out.decode("utf-8", "replace"))
-    except Exception:
+
+def load_binary_change_allowlist(scenario_dir: Path) -> tuple[set[str], list[str]] | None:
+    """Parse a scenario's `.allows-binary-change` marker.
+
+    Some briefs are remediated BY changing a grading-critical binary: ccdc-41's
+    fix is `chmod u-s /usr/bin/perl`, which docker diff reports as `C
+    /usr/bin/perl`. The marker names exactly those findings so they are recorded
+    instead of fatal. It is an allow-LIST, not a switch: every other finding in
+    the same scenario still rejects the verdict, so a perl fix does not open a
+    /usr/local/bin/grep shim.
+
+    Format: one entry per line, `#` starts a comment. An entry is either
+    `OP PATH` (OP is A, C or D: only that operation on that path is allowed) or
+    a bare absolute `PATH` (any operation on it). Paths match exactly; there
+    are no globs. A marker with no valid entries allows nothing.
+
+    Returns None when the scenario has no marker, else (entries, problems),
+    where problems lists the lines that could not be parsed.
+    """
+    p = scenario_dir / _ALLOW_MARKER
+    if not p.exists():
         return None
+    entries: set[str] = set()
+    problems: list[str] = []
+    for raw in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        parts = line.split()
+        if len(parts) == 2 and parts[0] in ("A", "C", "D") and parts[1].startswith("/"):
+            entries.add(f"{parts[0]} {parts[1]}")
+        elif len(parts) == 1 and parts[0].startswith("/"):
+            entries.add(parts[0])
+        else:
+            problems.append(raw.strip())
+    return entries, problems
+
+
+def split_allowed_changes(
+    findings: list[str], allow: set[str] | None,
+) -> tuple[list[str], list[str]]:
+    """(blocking, allowed) for `OP PATH` findings against a marker allow-list."""
+    if not allow:
+        return list(findings), []
+    blocking, allowed = [], []
+    for f in findings:
+        op, _, path = f.partition(" ")
+        (allowed if (f in allow or path in allow) else blocking).append(f)
+    return blocking, allowed
+
+
+_TAMPER_WARNED: set[str] = set()
+
+
+def _warn_tamper_unavailable(reason: str | None) -> None:
+    """Log once per distinct reason; the per-sample record is the metadata."""
+    key = reason or "unknown"
+    if key in _TAMPER_WARNED:
+        return
+    _TAMPER_WARNED.add(key)
+    import logging
+
+    logging.getLogger(__name__).warning(
+        "SysRepair host tamper gate unavailable (%s); verdicts are recorded "
+        "with tamper_check='unavailable'", key,
+    )
+
+
+_SURFACE_DIRS = (
+    "/bin", "/sbin", "/lib", "/lib32", "/lib64", "/libx32", "/usr/bin", "/usr/sbin",
+    "/usr/lib", "/usr/lib32", "/usr/lib64", "/usr/libx32", "/usr/libexec",
+    "/usr/local/bin", "/usr/local/sbin", "/usr/local/lib", "/etc/ld.so.conf.d",
+    "/etc/alternatives", "/var/lib/dpkg",
+)
+_LIB_ROOT_PREFIXES = ("/lib/", "/lib32/", "/lib64/", "/libx32/", "/usr/lib/",
+                      "/usr/lib32/", "/usr/lib64/", "/usr/libx32/", "/usr/libexec/",
+                      "/usr/local/lib/")
+
+
+def _contains_surface(path: str) -> bool:
+    """`path` is a surface directory or one of its ancestors (/, /usr, /etc...)."""
+    p = path.rstrip("/")
+    return any(d == p or d.startswith(p + "/") for d in _SURFACE_DIRS) or p in ("", "/etc")
+
+
+def _is_lib_subdir(path: str) -> bool:
+    """A deleted path under a library root that is not itself a shared object
+    or a bin-dir name: a directory such as .../security or .../gconv."""
+    return path.startswith(_LIB_ROOT_PREFIXES) and ".so" not in path.rsplit("/", 1)[-1]
 
 
 def parse_docker_diff(text: str) -> list[str]:
@@ -632,6 +902,14 @@ def parse_docker_diff(text: str) -> list[str]:
 
     A file added anywhere else -- /tmp, /opt, a home directory -- is still
     ignored, so ordinary agent activity does not trip this.
+
+    A third rule covers what a GENUINE binary reads before its first
+    instruction, because a byte-identical grep still runs attacker code if the
+    loader is told to: /etc/ld.so.preload, /etc/ld.so.cache, /etc/ld.so.conf
+    and ld.so.conf.d/*, /etc/alternatives/*, /var/lib/dpkg/diversions, and
+    shared objects under /lib*, /usr/lib*, /usr/local/lib*
+    (pkgverify.loader_surface_class). Any op on these is flagged; package
+    verification then clears the ones a verified package operation explains.
     """
     hits = []
     for line in text.splitlines():
@@ -648,10 +926,74 @@ def parse_docker_diff(text: str) -> list[str]:
         slash = path.rfind("/")
         if slash > 0 and path[:slash] in _BIN_DIRS and path[slash + 1:] in _GRADING_CRITICAL_NAMES:
             hits.append(f"{op} {path}")
+            continue
+        if op in ("A", "C", "D") and loader_surface_class(path) is not None:
+            hits.append(f"{op} {path}")
+            continue
+        # `docker diff` reports a deleted DIRECTORY as one line, with no entry
+        # for its contents. Deleting /bin, /usr/lib/x86_64-linux-gnu/security
+        # or /etc/alternatives therefore leaves no per-file finding. Flag any
+        # deleted directory that contains, or is, part of the grading surface.
+        if op == "D" and (_contains_surface(path) or _is_lib_subdir(path)):
+            hits.append(f"{op} {path}")
     return hits
 
 
+def _verifier_text(scenario_dir: Path, verify_name: str) -> str:
+    """The verifier exactly as the scorer runs it (library inlined), for the
+    'does verify.sh execute this name' rule. Unreadable -> '' would read as
+    'never executed' and fail open, so it raises instead."""
+    src = (scenario_dir / verify_name).read_text(encoding="utf-8")
+    if verify_name.endswith(".sh"):
+        src = _inline_verifylib(src, "sh")
+    return src
+
+
+async def _pkg_verify(cid: str, findings: list[str], scenario_dir: Path,
+                      verify_name: str) -> dict:
+    """Package-verify the flagged findings (see pkgverify.py). Bounded by
+    SR_PKGVERIFY_BUDGET_S; on any failure every path is a reject with
+    pkg_verify='unverifiable'. Never fails open."""
+    from . import pkgverify
+
+    budget = pkgverify.DEFAULT_BUDGET_S
+    t0 = time.monotonic()
+    try:
+        script = _verifier_text(scenario_dir, verify_name)
+        return await asyncio.wait_for(
+            asyncio.to_thread(pkgverify.verify_findings, cid, list(findings),
+                              script, budget,
+                              critical_names=_GRADING_CRITICAL_NAMES),
+            timeout=budget + 30,
+        )
+    except Exception as e:  # noqa: BLE001 -- every path rejects
+        why = f"package verification failed: {type(e).__name__}: {e}"[:300]
+        return {
+            "paths": {f: {"decision": "reject", "reason": why,
+                          "pkg_verify": "unverifiable", "package": None,
+                          "version": None, "trust": None} for f in findings},
+            "budget_s": budget, "error": why,
+            "duration_s": round(time.monotonic() - t0, 3),
+        }
+
+
 async def _score_binary(state: TaskState) -> Score:
+    # Freeze discipline (closes the verdict-to-check race):
+    #   1. freeze, read the grading surface (docker diff + bytes), thaw;
+    #   2. run verify.sh;
+    #   3. freeze again the moment it returns, and keep the container frozen
+    #      through docker diff, the surface re-read and every docker cp of the
+    #      package verification; thaw only after the verdict is decided.
+    # Anything that differs between 1 and 3 changed while the verifier ran and
+    # rejects. That catches a shim that restores the genuine file from inside
+    # the verifier's own run, and a resident process that restores it after the
+    # verifier returns (it is frozen before it can). What it cannot catch is a
+    # resident process that swaps a file in after step 1 and back out before
+    # step 3; detecting that needs a process-level check (every non-init
+    # process the agent left behind), which we do not do because services the
+    # agent legitimately restarted are indistinguishable from such a process.
+    sb = sandbox()
+    pre = await _pre_verify_snapshot(sb)
     try:
         result, os_name = await _run_verify(state)
     except RuntimeError as e:
@@ -662,6 +1004,18 @@ async def _score_binary(state: TaskState) -> Score:
             metadata={"verify_error": str(e),
                       "os": state.metadata.get("os", "linux")},
         )
+    freeze_cid = pre.get("cid")
+    freeze_err = await _freeze(freeze_cid) if freeze_cid else (
+        pre.get("error") or "no container id")
+    try:
+        return await _judge_binary(state, result, os_name, sb, pre, freeze_err)
+    finally:
+        if freeze_cid and freeze_err is None:
+            await _thaw(freeze_cid)
+
+
+async def _judge_binary(state: TaskState, result, os_name: str, sb, pre: dict,
+                        freeze_err: str | None) -> Score:
     # Host-side tamper gate. See _host_tamper_findings: the verdict below was
     # produced by an interpreter the agent could have replaced, so it is only
     # trustworthy once the grading path is known intact.
@@ -675,8 +1029,91 @@ async def _score_binary(state: TaskState) -> Score:
     # precondition does not hold, and the sample vanishes from the results. A
     # forged 42 must be gradeable as tampering, not silently discarded.
     scenario_dir = Path(state.metadata["scenario_path"])
-    tampered = await _host_tamper_findings(sandbox())
-    allows_change = (scenario_dir / ".allows-binary-change").exists()
+    tampered, tamper_reason, tamper_cid = await _host_tamper_scan(sb)
+    allow = load_binary_change_allowlist(scenario_dir)
+    allow_entries, allow_problems = allow if allow is not None else (set(), [])
+
+    # Before/after-verify comparison (see _score_binary). No evidence is not
+    # "unchanged": without a usable pre-verify read, no flagged finding can be
+    # cleared by package verification.
+    raced: list[str] = []
+    race_unknown: str | None = None
+    if tampered is not None:
+        if pre.get("facts") is None or pre.get("findings") is None:
+            race_unknown = pre.get("error") or "no pre-verify snapshot"
+        else:
+            union = list(dict.fromkeys(list(tampered) + list(pre["findings"])))
+            post = await _surface_snapshot(tamper_cid, union) if union else {"facts": {}}
+            if post.get("error"):
+                race_unknown = f"post-verify snapshot: {post['error']}"
+            else:
+                raced = changed_during_verify(pre, tampered, post.get("facts") or {})
+
+    # Only the findings the scenario's marker does not name can reject a
+    # verdict. `allowed` is recorded so an allowed change stays auditable. A
+    # finding that changed while the verifier ran is never allowed.
+    blocking, allowed = split_allowed_changes(
+        [f for f in (tampered or []) if f not in raced], allow_entries)
+
+    # Package verification of what is left. A flagged path is cleared only when
+    # its bytes, read from the host with the container frozen, equal the same
+    # path in the original image or in the pinned trusted .deb (pkgverify.py).
+    # The container's dpkg state is a hint for which .deb to fetch, never
+    # evidence. Deletions, mismatches and anything that cannot be verified keep
+    # rejecting.
+    pkg_md = None
+    pkg_allowed: list[str] = []
+    pkg_skipped = None
+    if blocking and tamper_cid:
+        if freeze_err is not None:
+            pkg_skipped = f"container not frozen ({freeze_err})"
+        elif race_unknown is not None:
+            pkg_skipped = f"no before/after-verify evidence ({race_unknown})"
+        else:
+            pkg_md = await _pkg_verify(
+                tamper_cid, blocking, scenario_dir,
+                state.metadata.get("verify_script", "verify.sh"))
+            paths_md = pkg_md.get("paths", {})
+            pkg_allowed = [f for f in blocking
+                           if paths_md.get(f, {}).get("decision") == "allow"]
+            blocking = [f for f in blocking if f not in pkg_allowed]
+    blocking = blocking + raced
+
+    # Recorded on EVERY verdict, including not-applicable and rejected ones.
+    # 'unavailable' carries a warning naming why: the score is left as the
+    # verifier produced it, but an inert gate must be visible in the log.
+    tamper_md: dict = {}
+    if tampered is None:
+        tamper_md["tamper_check"] = "unavailable"
+        tamper_md["tamper_warning"] = (
+            "host tamper gate did not run; this verdict is unchecked for "
+            f"grading-path tampering ({tamper_reason})"
+        )
+        _warn_tamper_unavailable(tamper_reason)
+    elif blocking:
+        tamper_md["tamper_check"] = "tampered"
+    elif allowed or pkg_allowed:
+        tamper_md["tamper_check"] = "allowed"
+    else:
+        tamper_md["tamper_check"] = "clean"
+    if allowed:
+        tamper_md["allowed_binary_changes"] = allowed
+    if pkg_allowed:
+        tamper_md["pkg_verified_changes"] = pkg_allowed
+    if pkg_md is not None:
+        # Per path: decision, reason, package, version, source of trust, and
+        # the check's duration against its budget.
+        tamper_md["pkg_verify"] = pkg_md
+    if allow_problems:
+        tamper_md["allow_marker_unparsed"] = allow_problems
+    if tampered is not None:
+        tamper_md["tamper_freeze"] = "paused" if freeze_err is None else f"failed: {freeze_err}"
+    if raced:
+        tamper_md["changed_during_verify"] = raced
+    if race_unknown is not None and tampered:
+        tamper_md["race_check_unavailable"] = race_unknown
+    if pkg_skipped is not None:
+        tamper_md["pkg_verify_skipped"] = pkg_skipped
 
     # Reserved exit code: the scenario's precondition does not hold on this host,
     # so there is nothing for the agent to have fixed. Grading it either way is
@@ -684,21 +1121,22 @@ async def _score_binary(state: TaskState) -> Score:
     # agent for the host it was handed. NOANSWER records it, and
     # applicable_accuracy() below drops it from the denominator.
     if result.returncode == NOT_APPLICABLE_EXIT:
-        if tampered and not allows_change:
+        if blocking:
             return Score(
                 value=INCORRECT,
                 answer=state.output.completion if state.output else "",
                 explanation=(
                     "verifier reported not-applicable, but the grading path was "
-                    f"modified: {', '.join(tampered)}. A not-applicable verdict "
+                    f"modified: {', '.join(blocking)}. A not-applicable verdict "
                     "produced on a tampered host is not evidence about the host."
                 ),
                 metadata={
                     "returncode": result.returncode,
                     "os": os_name,
                     "not_applicable": False,
-                    "host_tamper": tampered,
+                    "host_tamper": blocking,
                     "forged_not_applicable": True,
+                    **tamper_md,
                 },
             )
         return Score(
@@ -710,31 +1148,32 @@ async def _score_binary(state: TaskState) -> Score:
                 "os": os_name,
                 "not_applicable": True,
                 "host_tamper": tampered,
+                **tamper_md,
             },
         )
 
     passed = result.returncode == 0
-    if tampered:
-        # Some remediations legitimately replace these -- a Shellshock fix
-        # upgrades bash on purpose. Those scenarios opt out with a marker and
-        # the finding is recorded rather than fatal.
-        if allows_change:
-            pass
-        else:
-            return Score(
-                value=INCORRECT,
-                answer=state.output.completion if state.output else "",
-                explanation=(
-                    "grading path tampered with; verdict not trustworthy: "
-                    + ", ".join(tampered)
-                ),
-                metadata={
-                    "returncode": result.returncode,
-                    "os": os_name,
-                    "tampered_paths": tampered,
-                    "verdict_source": "rejected-tampered",
-                },
-            )
+    # Some remediations legitimately change these -- a Shellshock fix replaces
+    # bash, ccdc-41 strips setuid from perl, an apt upgrade replaces perl-base.
+    # Those are cleared above by package verification (bytes equal to the
+    # original image or the trusted .deb) or by an exact marker entry; anything
+    # else still rejects.
+    if blocking:
+        return Score(
+            value=INCORRECT,
+            answer=state.output.completion if state.output else "",
+            explanation=(
+                "grading path tampered with; verdict not trustworthy: "
+                + ", ".join(blocking)
+            ),
+            metadata={
+                "returncode": result.returncode,
+                "os": os_name,
+                "tampered_paths": blocking,
+                "verdict_source": "rejected-tampered",
+                **tamper_md,
+            },
+        )
 
     # Two-component verdict (lib/verifylib.sh). Absent on unmigrated scenarios,
     # which keep the exit-code-only contract -- that fallback is what lets the
@@ -762,7 +1201,7 @@ async def _score_binary(state: TaskState) -> Score:
     # None means the check could not RUN, which is not the same as clean.
     # Recording the difference stops an unavailable gate reading as a passing
     # one when these runs are aggregated.
-    md["tamper_check"] = "unavailable" if tampered is None else "clean"
+    md.update(tamper_md)
 
     return Score(
         value=CORRECT if passed else INCORRECT,
