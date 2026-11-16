@@ -3,6 +3,8 @@
 ## Vulnerability
 Samba is configured with `guest ok = yes` and `map to guest = Bad User`, allowing anonymous/guest access to shares including a private share. This permits unauthenticated users to read and write files.
 
+Anonymous (null-session) connections are also accepted, so an unauthenticated client can enumerate the server's shares.
+
 ## CWE Classification
 **CWE-284**: Improper Access Control
 
@@ -16,14 +18,18 @@ Samba (SMB/CIFS)
 ```
 [global]
     map to guest = Bad User
-    guest account = nobody
 
 [private]
     guest ok = yes
 ```
 
+The guest account is `nobody`, the Samba default.
+
 ## Impact
 Any network user can access, read, and modify files on Samba shares without authentication, potentially exposing sensitive data and allowing malicious file placement.
+
+## Constraints
+- The local Samba account `smbuser` must keep authenticated access to the `[private]` share.
 
 ## Source
 TAMU CCDC linuxmonkeys harden_samba.sh

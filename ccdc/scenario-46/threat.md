@@ -18,9 +18,11 @@ Without proper password aging, compromised credentials can be used indefinitely.
 
 ## Constraints
 - Existing users must still be able to change their passwords afterwards.
+- Organisational policy: a password older than 365 days is non-compliant, a password must stay in place for at least 1 day before it can be changed again, and users must be warned at least 7 days before it expires.
 
-## Affected Files
+## Affected Files and Accounts
 - `/etc/login.defs` -- system-wide password aging configuration
+- `/etc/shadow` -- existing accounts, such as `testuser`, carry the same aging values (maximum 99999, minimum 0, warning 0)
 
 ## Source Reference
 - TAMU `login_defs.sh`

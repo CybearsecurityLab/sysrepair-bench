@@ -20,6 +20,7 @@ This allows users to set trivially weak passwords like "a", "1", or common dicti
 
 ## Constraints
 - Users must still be able to change their passwords afterwards.
+- Organisational policy: a password shorter than 14 characters is non-compliant.
 
 ## Affected Files
 - `/etc/security/pwquality.conf` -- password quality configuration

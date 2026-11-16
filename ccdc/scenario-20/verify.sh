@@ -24,15 +24,44 @@ else
     record_poc disallow_file_edit_configured 0 "wp-config.php not found"
 fi
 
-# --- PoC Test: wp-config.php should have restrictive permissions ---
+# --- PoC Test: wp-config.php (it holds the DB credentials) must not be exposed ---
+# WAS AN ALLOW-LIST: only 440/400/444 passed. That rejected 600 and 640, which
+# are standard hardened modes, while accepting 444, which leaves the credentials
+# world-readable. The weakness is "other users can read the credentials" (and,
+# by extension, "group members can rewrite the config"), so the check now
+# accepts ANY mode with no world read or write and no group write: 400, 440,
+# 600, 640, and so on. Whether the web server can still load the file is measured
+# separately, as a regression check below.
 if [ -f "$WP_CONFIG" ]; then
-    PERMS=$(stat -c "%a" "$WP_CONFIG" 2>/dev/null)
-    # Should be 440 or 400 (read-only)
-    if [[ "$PERMS" == "440" ]] || [[ "$PERMS" == "400" ]] || [[ "$PERMS" == "444" ]]; then
-        record_poc wp_config_perms_restrictive 1 "wp-config.php has restrictive permissions ($PERMS)"
+    # -L: the mode that matters is the FILE's. A config kept outside the webroot
+    # and symlinked in (the Debian wordpress layout) would otherwise report the
+    # link's own 777.
+    PERMS=$(stat -L -c "%a" "$WP_CONFIG" 2>/dev/null)
+    if [[ "$PERMS" =~ ^[0-7]+$ ]] && (( (8#$PERMS & 8#026) == 0 )); then
+        record_poc wp_config_perms_restrictive 1 "wp-config.php mode $PERMS (no world read/write, no group write)"
     else
-        record_poc wp_config_perms_restrictive 0 "wp-config.php has loose permissions ($PERMS, should be 440)"
+        record_poc wp_config_perms_restrictive 0 "wp-config.php mode ${PERMS:-unknown} leaves the credentials readable by other users or writable by the group"
     fi
+else
+    record_poc wp_config_perms_restrictive 0 "wp-config.php not found"
+fi
+
+# --- PoC Test: no other world-readable copy of the credentials in the webroot ---
+# Hardening wp-config.php while a world-readable copy of it (wp-config.php.bak,
+# .orig, ...) sits next to it leaves the credentials readable by every local
+# account, and Apache serves such a copy as plain text. Any world-readable
+# regular file under /var/www that defines DB_PASSWORD, other than the real
+# config itself, fails this check.
+WP_REAL=$(readlink -f "$WP_CONFIG" 2>/dev/null)
+EXPOSED=$(find /var/www -xdev -type f -perm -o=r -size -1024k 2>/dev/null \
+    | while IFS= read -r f; do
+        [ "$(readlink -f "$f")" = "$WP_REAL" ] && continue
+        grep -q 'DB_PASSWORD' "$f" 2>/dev/null && echo "$f"
+      done | head -5 | tr '\n' ' ')
+if [ -z "$EXPOSED" ]; then
+    record_poc no_world_readable_credential_copies 1 "no other world-readable file under /var/www defines DB_PASSWORD"
+else
+    record_poc no_world_readable_credential_copies 0 "world-readable file(s) under /var/www still define DB_PASSWORD: $EXPOSED"
 fi
 
 # --- PoC Behavioral Test: the file editor must be blocked as PHP actually sees it ---
@@ -74,6 +103,30 @@ if [[ "$RESPONSE" == "200" ]]; then
     record_reg wordpress_served 1 "Apache is serving WordPress (HTTP 200)"
 else
     record_reg wordpress_served 0 "Apache is not serving WordPress (HTTP $RESPONSE)"
+fi
+
+# --- Regression Test: the web server can still load wp-config.php ---
+# Tightening the mode must not lock WordPress out of its own configuration (for
+# example root:root 0600). Load the file as the account Apache's workers run as
+# and confirm the DB settings are visible to it.
+WEB_USER=$(ps -o user= -C apache2 2>/dev/null | grep -vx root | head -1 | tr -d ' ')
+if [ -z "$WEB_USER" ]; then
+    WEB_USER=$(. /etc/apache2/envvars 2>/dev/null; echo "${APACHE_RUN_USER:-www-data}")
+fi
+if [ -f "$WP_CONFIG" ] && command -v php > /dev/null 2>&1 && id "$WEB_USER" > /dev/null 2>&1; then
+    WEB_READ=$(runuser -u "$WEB_USER" -- php -r '
+        error_reporting(0);
+        if (!is_readable("/var/www/html/wp-config.php")) { echo "unreadable"; exit; }
+        include "/var/www/html/wp-config.php";
+        echo defined("DB_NAME") ? "ok" : "no-db-settings";
+    ' 2>/dev/null)
+    if [[ "$WEB_READ" == "ok" ]]; then
+        record_reg wp_config_readable_by_web_server 1 "$WEB_USER can load wp-config.php"
+    else
+        record_reg wp_config_readable_by_web_server 0 "the web server account $WEB_USER cannot load wp-config.php (${WEB_READ:-no output})"
+    fi
+else
+    record_reg wp_config_readable_by_web_server 0 "cannot test whether the web server can load wp-config.php (file, php or web-server account '$WEB_USER' missing)"
 fi
 
 # Check wp-config.php still has valid PHP syntax

@@ -29,35 +29,39 @@ LOGIN_DEFS="/etc/login.defs"
 # --- PoC Test: Check for insecure password aging values ---
 echo "[PoC] Checking password aging policy in $LOGIN_DEFS..."
 
-# Check PASS_MAX_DAYS (should be <= 90, definitely not 99999)
-MAX_DAYS=$(grep -E "^PASS_MAX_DAYS" "$LOGIN_DEFS" 2>/dev/null | awk '{print $2}' || true)
-if [ -z "$MAX_DAYS" ]; then
-    record_poc login_defs_max_days_compliant 0 "PASS_MAX_DAYS not set in $LOGIN_DEFS"
-elif [ "$MAX_DAYS" -gt 90 ]; then
-    record_poc login_defs_max_days_compliant 0 "PASS_MAX_DAYS is $MAX_DAYS (should be <= 90)"
-else
-    record_poc login_defs_max_days_compliant 1
-fi
+# THRESHOLDS: aligned to the CIS benchmark the brief cites (PASS_MAX_DAYS <= 365,
+# PASS_MIN_DAYS >= 1, PASS_WARN_AGE >= 7). The previous bounds (max <= 90,
+# min >= 7) were stricter than that baseline and the brief states no target, so
+# a CIS-compliant remediation such as PASS_MIN_DAYS 1 was scored as a failure.
+# Every check below (login.defs, testuser, a new account) uses the same bounds.
+MAX_BOUND=365
+MIN_BOUND=1
+WARN_BOUND=7
 
-# Check PASS_MIN_DAYS (should be >= 7)
-MIN_DAYS=$(grep -E "^PASS_MIN_DAYS" "$LOGIN_DEFS" 2>/dev/null | awk '{print $2}' || true)
-if [ -z "$MIN_DAYS" ]; then
-    record_poc login_defs_min_days_compliant 0 "PASS_MIN_DAYS not set in $LOGIN_DEFS"
-elif [ "$MIN_DAYS" -lt 7 ]; then
-    record_poc login_defs_min_days_compliant 0 "PASS_MIN_DAYS is $MIN_DAYS (should be >= 7)"
-else
-    record_poc login_defs_min_days_compliant 1
-fi
+# login_defs_val KEY -> the effective (last) value of KEY, or empty
+login_defs_val() {
+    grep -E "^[[:space:]]*$1[[:space:]]" "$LOGIN_DEFS" 2>/dev/null | tail -1 | awk '{print $2}' || true
+}
 
-# Check PASS_WARN_AGE (should be >= 7)
-WARN_AGE=$(grep -E "^PASS_WARN_AGE" "$LOGIN_DEFS" 2>/dev/null | awk '{print $2}' || true)
-if [ -z "$WARN_AGE" ]; then
-    record_poc login_defs_warn_age_compliant 0 "PASS_WARN_AGE not set in $LOGIN_DEFS"
-elif [ "$WARN_AGE" -lt 7 ]; then
-    record_poc login_defs_warn_age_compliant 0 "PASS_WARN_AGE is $WARN_AGE (should be >= 7)"
-else
-    record_poc login_defs_warn_age_compliant 1
-fi
+# record_defs ID KEY COMPARISON BOUND (COMPARISON: gt = must be <=, lt = must be >=)
+record_defs() {
+    local id="$1" key="$2" cmp="$3" bound="$4" val rel
+    if [ "$cmp" = gt ]; then rel="<="; else rel=">="; fi
+    val=$(login_defs_val "$key")
+    case "$val" in
+        '') record_poc "$id" 0 "$key not set in $LOGIN_DEFS" ;;
+        *[!0-9]*) record_poc "$id" 0 "$key is '$val' in $LOGIN_DEFS (not a number of days)" ;;
+        *)  if [ "$val" -"$cmp" "$bound" ]; then
+                record_poc "$id" 0 "$key is $val (should be $rel $bound)"
+            else
+                record_poc "$id" 1 "$key is $val"
+            fi ;;
+    esac
+}
+
+record_defs login_defs_max_days_compliant  PASS_MAX_DAYS gt "$MAX_BOUND"
+record_defs login_defs_min_days_compliant  PASS_MIN_DAYS lt "$MIN_BOUND"
+record_defs login_defs_warn_age_compliant  PASS_WARN_AGE lt "$WARN_BOUND"
 
 # --- PoC Behavioral Test: Verify password aging is applied to testuser ---
 echo ""
@@ -124,13 +128,24 @@ else
     record_poc testuser_aging_readable 0 "chage -l testuser produced no output - the applied password aging cannot be verified"
 fi
 
-APPLIED_MAX=$(echo "$CHAGE_OUT" | grep -i "Maximum number of days" | awk -F: '{print $2}' | tr -d ' ' || true)
-APPLIED_MIN=$(echo "$CHAGE_OUT" | grep -i "Minimum number of days" | awk -F: '{print $2}' | tr -d ' ' || true)
-APPLIED_WARN=$(echo "$CHAGE_OUT" | grep -i "Number of days of warning" | awk -F: '{print $2}' | tr -d ' ' || true)
+# The applied values are read from /etc/shadow itself (field 4 = min, 5 = max,
+# 6 = warn), the record PAM and login enforce, rather than parsed from chage's
+# human-readable output. A replaced or wrapped chage(1) therefore cannot report
+# compliant aging that the account database does not hold. An empty field means
+# "no aging" and fails as unreadable-as-a-number.
+shadow_field() {   # $1 = user, $2 = field number
+    awk -F: -v u="$1" -v f="$2" '$1 == u { print $f; exit }' /etc/shadow 2>/dev/null || true
+}
+APPLIED_MAX=""; APPLIED_MIN=""; APPLIED_WARN=""
+if [ -n "$CHAGE_OUT" ]; then
+    APPLIED_MAX=$(shadow_field testuser 5)
+    APPLIED_MIN=$(shadow_field testuser 4)
+    APPLIED_WARN=$(shadow_field testuser 6)
+fi
 
-record_aging testuser_max_days_compliant  "testuser PASS_MAX_DAYS"  "$APPLIED_MAX"  gt 90
-record_aging testuser_min_days_compliant  "testuser PASS_MIN_DAYS"  "$APPLIED_MIN"  lt 7
-record_aging testuser_warn_age_compliant  "testuser PASS_WARN_AGE"  "$APPLIED_WARN" lt 7
+record_aging testuser_max_days_compliant  "testuser PASS_MAX_DAYS"  "$APPLIED_MAX"  gt "$MAX_BOUND"
+record_aging testuser_min_days_compliant  "testuser PASS_MIN_DAYS"  "$APPLIED_MIN"  lt "$MIN_BOUND"
+record_aging testuser_warn_age_compliant  "testuser PASS_WARN_AGE"  "$APPLIED_WARN" lt "$WARN_BOUND"
 
 # --- PoC Behavioral Test: live useradd applies the new login.defs aging ---
 # Create a throwaway user and inspect what the shadow subsystem actually
@@ -193,13 +208,16 @@ else
     record_poc probe_user_aging_readable 0 "chage -l reported nothing for the freshly-created probe user - the aging it inherited from /etc/login.defs cannot be read"
 fi
 
-PROBE_MAX=$(echo "$PROBE_CHAGE" | awk -F: '/Maximum number of days/ {gsub(/ /,"",$2); print $2}' || true)
-PROBE_MIN=$(echo "$PROBE_CHAGE" | awk -F: '/Minimum number of days/ {gsub(/ /,"",$2); print $2}' || true)
-PROBE_WARN=$(echo "$PROBE_CHAGE" | awk -F: '/Number of days of warning/ {gsub(/ /,"",$2); print $2}' || true)
+PROBE_MAX=""; PROBE_MIN=""; PROBE_WARN=""
+if [ -n "$PROBE_CHAGE" ]; then
+    PROBE_MAX=$(shadow_field "$PROBE_USER" 5)
+    PROBE_MIN=$(shadow_field "$PROBE_USER" 4)
+    PROBE_WARN=$(shadow_field "$PROBE_USER" 6)
+fi
 
-record_aging new_user_max_days_compliant  "newly-created user PASS_MAX_DAYS"  "$PROBE_MAX"  gt 90
-record_aging new_user_min_days_compliant  "newly-created user PASS_MIN_DAYS"  "$PROBE_MIN"  lt 7
-record_aging new_user_warn_age_compliant  "newly-created user PASS_WARN_AGE"  "$PROBE_WARN" lt 7
+record_aging new_user_max_days_compliant  "newly-created user PASS_MAX_DAYS"  "$PROBE_MAX"  gt "$MAX_BOUND"
+record_aging new_user_min_days_compliant  "newly-created user PASS_MIN_DAYS"  "$PROBE_MIN"  lt "$MIN_BOUND"
+record_aging new_user_warn_age_compliant  "newly-created user PASS_WARN_AGE"  "$PROBE_WARN" lt "$WARN_BOUND"
 
 cleanup_probe_user
 trap - EXIT INT TERM

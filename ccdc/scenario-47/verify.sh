@@ -41,9 +41,32 @@ else
     record_poc pwquality_conf_present 0 "$PWQUALITY_CONF does not exist -- pwquality not configured"
 fi
 
+# The active pam_pwquality line, if any. Options given to the module as
+# arguments (`pam_pwquality.so minlen=14 dcredit=-1 ...`, the classic Debian
+# form) override pwquality.conf, so the EFFECTIVE value of a key is the last
+# `key=` argument on that line, falling back to the config file.
+PAM_PWQ_LINE=""
+for pam_file in /etc/pam.d/common-password /etc/pam.d/system-auth /etc/pam.d/passwd; do
+    if [ -f "$pam_file" ]; then
+        PAM_PWQ_LINE=$(grep -E '^[[:space:]]*[^#[:space:]].*pam_pwquality\.so' "$pam_file" 2>/dev/null | tail -1 || true)
+        # Linux-PAM treats everything from a `#` to the end of the line as a
+        # comment, so arguments written after one never reach the module. Strip
+        # it before tokenising, and drop the line if the module name itself was
+        # only in the comment.
+        PAM_PWQ_LINE=${PAM_PWQ_LINE%%#*}
+        case "$PAM_PWQ_LINE" in *pam_pwquality.so*) ;; *) PAM_PWQ_LINE="" ;; esac
+        [ -n "$PAM_PWQ_LINE" ] && break
+    fi
+done
+
 # Helper: get last effective value for a key (ignoring comments)
 get_pwquality_val() {
-    local key="$1"
+    local key="$1" v
+    v=$(echo "${PAM_PWQ_LINE#*pam_pwquality.so}" | tr -s ' \t' '\n\n' | grep -E "^${key}=" | tail -1 | cut -d= -f2- || true)
+    if [ -n "$v" ]; then
+        echo "$v"
+        return 0
+    fi
     grep -E "^\s*${key}\s*=" "$PWQUALITY_CONF" 2>/dev/null | tail -1 | sed 's/.*=\s*//' | tr -d ' ' || true
 }
 
@@ -81,6 +104,11 @@ for key in dcredit ucredit lcredit ocredit; do
         else
             record_poc "${key}_requires_class" 0 "$key is not set - the pwquality default (+1) does NOT require that character class"
         fi
+    elif $CLASS_COVERED && [ "$VAL" -le 0 ] 2>/dev/null; then
+        # minclass >= 4 already requires this class. A credit of 0 earns no
+        # length credit and is equivalent to leaving it unset; only a POSITIVE
+        # credit would let a shorter password through, so only that fails.
+        record_poc "${key}_requires_class" 1 "$key is $VAL; minclass $MINCLASS requires every class"
     elif [ "$VAL" -ge 0 ] 2>/dev/null; then
         record_poc "${key}_requires_class" 0 "$key is $VAL (should be <= -1 to require that character class)"
     else
@@ -147,9 +175,20 @@ fi
 echo ""
 echo "[PoC] Probing live password-quality enforcement through PAM (passwd as testuser)..."
 
-WEAK_CANDIDATE='abcdefghijkl'          # 12 chars, lowercase only - no digit/upper/special
+# The weak candidate must be one cracklib ACCEPTS, so that only the length and
+# character-class policy can refuse it. A sequential string such as
+# 'abcdefghijkl' is refused by cracklib's own simplistic/systematic rule, which
+# dictcheck alone triggers, and then earned this check with minlen=1 and no
+# class requirement in force.
+WEAK_CANDIDATE='qzmwkxtrplvb'          # 12 chars, lowercase only, non-sequential, cracklib-clean
 PROBE_CURRENT='Zq7#vNp2Lk9@wTxR'       # complies with any sane policy
-STRONG_CANDIDATE='Xk9#mQr2Vt7@Lp'      # 14 chars, all four classes
+# WAS 14 CHARACTERS: the old strong candidate was exactly minlen 14 long, so any
+# policy with minlen >= 15 (the DISA STIG value among them) rejected it and failed
+# the regression check. Exactly one minlen value (14) could pass. The candidate is
+# now 32 distinct characters cycling all four classes (no class run longer than
+# one, no repeats, no sequences, no dictionary word), so every sane policy up to
+# minlen 32 accepts it.
+STRONG_CANDIDATE='Xk9#mQ2@vT7!pL4$wR8%nZ3^bH6&jD5*'   # 32 chars, all four classes
 
 if command -v script >/dev/null 2>&1 && id testuser >/dev/null 2>&1; then
     SHADOW_BAK=$(mktemp /tmp/shadowbak.XXXXXX)
@@ -157,8 +196,21 @@ if command -v script >/dev/null 2>&1 && id testuser >/dev/null 2>&1; then
 
     # Root-driven chpasswd bypasses pam_pwquality (root is exempt), so this only
     # establishes a known current password for the probe.
-    echo "testuser:${PROBE_CURRENT}" | chpasswd 2>/dev/null
+    # WAS FATAL UNDER set -e: when the PAM password stack is broken (for example
+    # the pam_pwquality line deleted while pam_unix keeps use_authtok), chpasswd
+    # fails and the script died here with no summary record, so the two-component
+    # verdict was lost. A failed chpasswd is recorded instead: password changes do
+    # not work, which is a regression, and the live PoC probe cannot run.
+    PROBE_SETUP_OK=1
+    echo "testuser:${PROBE_CURRENT}" | chpasswd 2>/dev/null || PROBE_SETUP_OK=0
+fi
 
+if [ "${PROBE_SETUP_OK:-1}" -eq 0 ]; then
+    cat "$SHADOW_BAK" > /etc/shadow
+    rm -f "$SHADOW_BAK"
+    record_poc weak_password_rejected 0 "cannot run the live enforcement probe: chpasswd could not set the probe password"
+    record_reg strong_password_still_accepted 0 "chpasswd failed - the PAM password stack no longer lets passwords be changed"
+elif command -v script >/dev/null 2>&1 && id testuser >/dev/null 2>&1; then
     pw_change() {
         local newpw="$1"
         ( sleep 1; printf '%s\n' "$PROBE_CURRENT"
@@ -169,19 +221,31 @@ if command -v script >/dev/null 2>&1 && id testuser >/dev/null 2>&1; then
 
     WEAK_OUT=$(pw_change "$WEAK_CANDIDATE" || true)
     cat "$SHADOW_BAK" > /etc/shadow
-    echo "testuser:${PROBE_CURRENT}" | chpasswd 2>/dev/null
-
-    if echo "$WEAK_OUT" | grep -q 'password updated successfully'; then
-        record_poc weak_password_rejected 0 "PAM accepted the weak password '$WEAK_CANDIDATE' (12 chars, one character class)"
-    else
-        record_poc weak_password_rejected 1
-        echo "$WEAK_OUT" | grep -E 'BAD PASSWORD|must choose' | head -1 | sed 's/^/    /' || true
-    fi
+    echo "testuser:${PROBE_CURRENT}" | chpasswd 2>/dev/null || true
 
     # Regression side of the same probe: a genuinely strong password must still
     # be accepted, or the policy is unusable rather than merely strict.
     STRONG_OUT=$(pw_change "$STRONG_CANDIDATE" || true)
-    if echo "$STRONG_OUT" | grep -q 'password updated successfully'; then
+    STRONG_OK=0
+    echo "$STRONG_OUT" | grep -q 'password updated successfully' && STRONG_OK=1
+
+    # WAS FAIL-OPEN: the weak password counted as rejected whenever the output
+    # lacked "password updated successfully", which is also what happens when
+    # su/passwd never ran at all (testuser's shell set to nologin, a broken PAM
+    # stack). Credit now needs POSITIVE evidence: passwd itself reported a
+    # quality refusal, AND the strong change through the same path succeeded,
+    # which proves the probe really exercised PAM.
+    if echo "$WEAK_OUT" | grep -q 'password updated successfully'; then
+        record_poc weak_password_rejected 0 "PAM accepted the weak password '$WEAK_CANDIDATE' (12 chars, one character class)"
+    elif ! echo "$WEAK_OUT" | grep -qE 'BAD PASSWORD|must choose|password unchanged'; then
+        record_poc weak_password_rejected 0 "probe did not run: passwd gave no rejection for the weak password ($(echo "$WEAK_OUT" | grep -v '^[[:space:]]*$' | tail -1 | cut -c1-120))"
+    elif [ "$STRONG_OK" -ne 1 ]; then
+        record_poc weak_password_rejected 0 "weak password refused, but the strong change through the same probe also failed, so enforcement is not demonstrated"
+    else
+        record_poc weak_password_rejected 1 "$(echo "$WEAK_OUT" | grep -E 'BAD PASSWORD|must choose|password unchanged' | head -1)"
+    fi
+
+    if [ "$STRONG_OK" -eq 1 ]; then
         record_reg strong_password_still_accepted 1
     else
         record_reg strong_password_still_accepted 0 "PAM rejected a compliant strong password - password changes are broken"
