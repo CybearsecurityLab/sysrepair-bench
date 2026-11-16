@@ -263,6 +263,7 @@ def plan_stop(boot: dict, snap: Snapshot, mode: str = "inplace"
     from collections import Counter
     boot_keys = set(boot.get("procs", []))
     quota = Counter(boot.get("idents", []))
+    boot_ident_set = set(quota)
     boot_listen = set(boot.get("listen", []))
     service_inodes: set[str] = set()
     for key, inodes in snap.listen.items():
@@ -294,6 +295,15 @@ def plan_stop(boot: dict, snap: Snapshot, mode: str = "inplace"
             continue
         if mode == "inplace":
             if p.key in boot_keys:
+                continue
+            # A boot-time loop (a CMD that polls with `sleep 1`, a supervisor
+            # re-running a check) keeps forking short-lived children. A child
+            # of a boot-record process whose exact identity was also present
+            # at boot is that loop, not the agent. A process the agent launders
+            # through a boot process (a cron job) has a new identity and is
+            # still stopped.
+            parent = snap.procs.get(p.ppid)
+            if parent is not None and parent.key in boot_keys and p.ident in boot_ident_set:
                 continue
         elif quota[p.ident] > 0:
             quota[p.ident] -= 1
@@ -336,14 +346,50 @@ async def snapshot(cid: str, helper: str) -> Snapshot:
     return parse_snapshot(out)
 
 
+BOOT_SETTLE_POLL_S = float(os.environ.get("SR_BOOT_SETTLE_POLL_S", "3"))
+BOOT_SETTLE_STABLE = int(os.environ.get("SR_BOOT_SETTLE_STABLE", "3"))
+BOOT_SETTLE_MAX_S = float(os.environ.get("SR_BOOT_SETTLE_MAX_S", "180"))
+
+
+def _settle_signature(rec: dict) -> tuple:
+    """What must stop changing before boot counts as finished: the listening
+    sockets and the set of process identities (PIDs of short-lived children
+    may churn; identities and listeners must not)."""
+    return (tuple(rec["listen"]), tuple(sorted(set(rec["idents"]))))
+
+
 async def capture_boot_record(cid: str) -> dict:
+    """Record the booted container, once its boot has SETTLED.
+
+    A container's services start after the container does, and many scenarios
+    have no readiness probe. Recording the first snapshot would leave a
+    late-starting daemon (postfix, a web app behind a supervisor) outside the
+    record, and the stop hook would then suspend it at grading time. So poll
+    until the listening sockets and the set of process identities are
+    unchanged across BOOT_SETTLE_STABLE consecutive snapshots, up to
+    BOOT_SETTLE_MAX_S, and record the last one. `settled` and `settle_s` say
+    how it ended."""
     helper = await _install_helper(cid)
+    loop = asyncio.get_running_loop()
+    t0 = loop.time()
     try:
-        snap = await snapshot(cid, helper)
-        rec = boot_record_from(snap)
-        if not rec["procs"]:
-            raise RuntimeError("empty process table")
-        return rec
+        rec = None
+        sig = None
+        same = 0
+        while True:
+            snap = await snapshot(cid, helper)
+            cur = boot_record_from(snap)
+            if not cur["procs"]:
+                raise RuntimeError("empty process table")
+            csig = _settle_signature(cur)
+            same = same + 1 if csig == sig else 1
+            sig, rec = csig, cur
+            waited = loop.time() - t0
+            if same >= BOOT_SETTLE_STABLE or waited >= BOOT_SETTLE_MAX_S:
+                rec["settled"] = same >= BOOT_SETTLE_STABLE
+                rec["settle_s"] = round(waited, 1)
+                return rec
+            await asyncio.sleep(BOOT_SETTLE_POLL_S)
     finally:
         await _remove_helper(cid, helper)
 

@@ -1,0 +1,4 @@
+# Harness readiness gate (task.py scenario_ready_gate): exits 0 once boot has
+# finished and the protected service answers; the agent starts only after that.
+# The core (and its /dataimport handler) is created after the node starts.
+[ "$(curl -s -o /dev/null -w %{http_code} "http://localhost:8983/solr/testcore/select?q=*:*")" = 200 ]

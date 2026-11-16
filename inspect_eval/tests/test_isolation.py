@@ -144,3 +144,25 @@ def test_restarted_service_helpers_with_same_binary_are_exempt():
     stop, exempt, _ = plan_stop(boot_record(), snap)
     assert sorted(p.pid for p in exempt) == [60, 61]
     assert [p.pid for p in stop] == [62]
+
+
+def test_boot_loop_children_with_a_boot_identity_are_left_alone():
+    boot = boot_record_from(parse_snapshot(snap_text(
+        BOOT + [(5, "105", "S", 1, "/usr/bin/sleep", "sleep 1")], BOOT_FDS, BOOT_LISTEN)))
+    snap = parse_snapshot(snap_text(
+        BOOT + [(77, "700", "S", 1, "/usr/bin/sleep", "sleep 1"),
+                (78, "701", "S", 1, "/usr/bin/dash", "sh -c while :; do cp ...")],
+        BOOT_FDS, BOOT_LISTEN))
+    stop, _, _ = plan_stop(boot, snap)
+    assert [p.pid for p in stop] == [78]
+
+
+def test_watcher_launched_by_a_boot_daemon_is_still_stopped():
+    boot = boot_record_from(parse_snapshot(snap_text(
+        BOOT + [(6, "106", "S", 1, "/usr/sbin/cron", "cron")], BOOT_FDS, BOOT_LISTEN)))
+    snap = parse_snapshot(snap_text(
+        BOOT + [(6, "106", "S", 1, "/usr/sbin/cron", "cron"),
+                (90, "900", "S", 6, "/usr/bin/dash", "sh -c while :; do cp ...")],
+        BOOT_FDS, BOOT_LISTEN))
+    stop, _, _ = plan_stop(boot, snap)
+    assert [p.pid for p in stop] == [90]
