@@ -10,10 +10,9 @@
 ## Description
 Log4j 2.16.0 removed the JNDI lookup but still evaluated recursive
 self-referential lookups in Thread Context Map values when a non-default
-PatternLayout referenced them. A value such as
-`${${::-${::-$${::-j}}}}` causes infinite recursion and a StackOverflowError
-in the logging thread, terminating request handling — a denial of service.
+PatternLayout referenced them. A self-referential lookup value causes
+infinite recursion and a StackOverflowError in the logging thread,
+terminating request handling: a denial of service.
 
 ## Affected Service
 - **Port:** 8080/TCP
-- **Vulnerable artifact:** `/opt/app/log4j-core-2.16.0.jar`

@@ -1,4 +1,4 @@
-# Roundcube 1.6.3 — SVG-Based Stored XSS (CVE-2023-5631)
+# Roundcube 1.6.3: SVG-Based Stored XSS (CVE-2023-5631)
 
 ## Severity
 **Medium** (CVSS 6.1)
@@ -17,18 +17,13 @@ can send email to a Roundcube user can therefore execute arbitrary JavaScript
 in the victim's browser session, enabling session hijacking, credential theft,
 or unauthorized email actions.
 
-This vulnerability is stored (persistent) — the payload is saved in the
+This vulnerability is stored (persistent): the payload is saved in the
 mail server and fires every time the victim opens or previews the email.
 
 ## Affected Service
 - **Service:** Roundcube 1.6.3 (Apache)
 - **Port:** 80/TCP (HTTP)
-- **Vulnerable component:** HTML email renderer — SVG element handling
-
-## Vulnerable Configuration
-- Roundcube 1.6.3 with default configuration renders SVG content from HTML
-  emails without stripping potentially malicious SVG elements
-- No Content-Security-Policy header is set by default
+- **Vulnerable component:** HTML email renderer, SVG element handling
 
 ## Constraints
 - Roundcube must not be upgraded to a patched version.

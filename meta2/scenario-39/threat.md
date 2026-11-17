@@ -1,7 +1,7 @@
 # Ubuntu 8.04 End-of-Life
 
 ## Severity
-**High** — no upstream security patches available
+**High**, no upstream security patches available
 
 ## Category
 Compensating Controls (the host cannot be upgraded without breaking the application

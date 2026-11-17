@@ -1,4 +1,4 @@
-# S7comm — Unauthenticated PLC Access (protocol design flaw)
+# S7comm: Unauthenticated PLC Access (protocol design flaw)
 
 ## Severity
 **Critical** (CVSS 9.1)
@@ -21,13 +21,12 @@ Any host that can reach TCP port 102 can:
 - Cause physical process disruption or equipment damage
 
 The Stuxnet worm exploited unauthenticated S7comm access to reprogram Siemens PLCs
-controlling uranium centrifuges. In this scenario the simulator listens on
-`0.0.0.0:102`, exposing it to all network interfaces without restriction.
+controlling uranium centrifuges. In this scenario the simulator is exposed on
+all network interfaces without restriction.
 
 ## Affected Service
 - **Service:** S7comm TCP simulator
 - **Port:** 102/TCP
-- **Vulnerable configuration:** server bound to `0.0.0.0` with no firewall
 
 ## Constraints
 - The PLC must remain running and must keep completing the S7/COTP handshake

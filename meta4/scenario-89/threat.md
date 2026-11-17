@@ -8,29 +8,16 @@
 
 ## Description
 Docker `ARG` instructions pass build-time variables into `RUN` commands. Unlike
-`ENV`, the value does not appear in the final image's environment — but it is
+`ENV`, the value does not appear in the final image's environment, but it is
 permanently embedded in the image layer created by the `RUN` instruction that
-consumed it. Anyone with access to the image can recover the secret with:
+consumed it. Anyone with access to the image can recover the secret from the
+image history.
 
-```
-docker history --no-trunc <image>
-```
-
-The layer diff shows the full shell command including the argument value, e.g.:
-
-```
-/bin/sh -c echo "token=ghp_abc123def456" > /etc/app/config.ini
-```
-
+The layer diff shows the full shell command including the argument value.
 Even if a subsequent `RUN` step overwrites or deletes the file, the original
 layer (and thus the secret) remains in the image and is recoverable by
 exporting the image tarball and inspecting individual layer tarballs.
 
 ## Affected Service
 - **Service:** Ubuntu 22.04 application container
-- **Vulnerable configuration:** `ARG SECRET_TOKEN=ghp_abc123def456` passed to `RUN echo`
-
-## Vulnerable Configuration
-- `ARG SECRET_TOKEN` with a default value baked into the Dockerfile
-- `RUN echo "token=${SECRET_TOKEN}"` writes the secret to a file in a layer
-- Secret recoverable via `docker history`, image export, or layer inspection
+- **Weakness:** a build-time secret argument embedded in an image layer

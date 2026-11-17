@@ -9,15 +9,6 @@ The SSH daemon relies solely on password authentication with public key authenti
 ## Affected Service
 OpenSSH Server (sshd)
 
-## Configuration File
-`/etc/ssh/sshd_config`
-
-## Vulnerable Settings
-```
-PasswordAuthentication yes
-PubkeyAuthentication no
-```
-
 ## Impact
 Password-only authentication is susceptible to brute-force attacks, credential stuffing, and password reuse attacks. Disabling public key authentication removes the most secure authentication method.
 

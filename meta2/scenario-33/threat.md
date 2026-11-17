@@ -8,11 +8,7 @@
 
 ## Description
 
-Java Remote Method Invocation (RMI) is a Java API for distributed computing. Before Java 7 Update 21, the RMI registry and RMI-IIOP implementations had a critical insecure default configuration:
-
-- `java.rmi.server.useCodebaseOnly` defaulted to `false`
-
-This allows the RMI registry to load classes from remote HTTP URLs specified by clients, enabling **unauthenticated remote code execution**. An attacker can send a specially crafted RMI request that causes the server to download and execute arbitrary Java code from an attacker-controlled HTTP server.
+Java Remote Method Invocation (RMI) is a Java API for distributed computing. Before Java 7 Update 21, the RMI registry and RMI-IIOP implementations had a critical insecure default configuration that allows the RMI registry to load classes from remote HTTP URLs specified by clients, enabling **unauthenticated remote code execution**. An attacker can send a specially crafted RMI request that causes the server to download and execute arbitrary Java code from an attacker-controlled HTTP server.
 
 ## Affected Service
 
@@ -20,19 +16,6 @@ This allows the RMI registry to load classes from remote HTTP URLs specified by 
 - **Port:** 1099/tcp (default RMI registry port)
 - **Vulnerable Versions:** Java < 7u21 (most significantly)
 - **Ubuntu 8.04 Version:** OpenJDK 1.6 (vulnerable)
-
-## Vulnerable Configuration
-
-The RMI registry is started with default settings:
-
-```bash
-rmiregistry 1099
-```
-
-With Java versions prior to 7u21, this automatically enables remote codebase loading:
-```
-java.rmi.server.useCodebaseOnly=false  (insecure default)
-```
 
 ## Impact
 

@@ -1,4 +1,4 @@
-# RocketMQ 5.1.0 — Unauthenticated Config RCE (CVE-2023-33246)
+# RocketMQ 5.1.0: Unauthenticated Config RCE (CVE-2023-33246)
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -22,11 +22,6 @@ No credentials are required.
 - **Service:** Apache RocketMQ 5.1.0
 - **Ports:** 10911/TCP (broker administration), 9876/TCP (NameServer)
 - **Vulnerable component:** Broker administration command handler, ACL disabled
-
-## Vulnerable Configuration
-- `aclEnable=false` in `broker.conf`
-- Port 10911 accessible from untrusted networks
-- No iptables rules restricting access to the broker administration port
 
 ## Constraints
 - The RocketMQ broker and its NameServer on port 9876 must remain operational

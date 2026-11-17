@@ -17,6 +17,3 @@ yielding remote code execution.
 
 ## Affected Service
 - **Port:** 8080/TCP
-- **Vulnerable artifact:** `/opt/app/log4j-core-2.17.0.jar`
-- **Vulnerable configuration:** `log4j2.xml` JDBC Appender with
-  `DataSource jndiName="..."`

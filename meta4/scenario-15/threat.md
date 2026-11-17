@@ -13,18 +13,13 @@ expands any argument beginning with `@` by reading the referenced file and
 splitting its content as additional arguments. The Jenkins CLI never
 disabled this behavior, so any CLI command reachable to a user (including
 anonymous, if the job is discoverable) can be made to read arbitrary files
-from the controller filesystem:
+from the controller filesystem.
 
-```
-java -jar jenkins-cli.jar -s http://target:8080 help "@/etc/passwd"
-```
-
-Reading `/var/jenkins_home/secrets/master.key` and related secret files
-permits offline decryption of stored credentials, which can then be used
-to trigger RCE through a configured SSH/agent key or pipeline script.
+Reading the controller's secret files permits offline decryption of stored
+credentials, which can then be used to trigger RCE through a configured
+SSH/agent key or pipeline script.
 
 ## Affected Service
 - **Service:** Jenkins LTS
 - **Port:** 8080/TCP
-- **Vulnerable versions:** LTS ≤ 2.426.2, weekly ≤ 2.441
-- **Binary:** `/usr/share/jenkins/jenkins.war`
+- **Vulnerable versions:** LTS up to 2.426.2, weekly up to 2.441

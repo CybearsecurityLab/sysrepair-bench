@@ -1,4 +1,4 @@
-# Apache Solr 8.8 — DataImportHandler RCE (CVE-2019-0193)
+# Apache Solr 8.8: DataImportHandler RCE (CVE-2019-0193)
 
 ## Severity
 **High** (CVSS 7.5)
@@ -21,7 +21,6 @@ No authentication is required in the default Solr configuration.
 - **Service:** Apache Solr 8.8 (and all versions with DIH before security
   controls were added)
 - **Port:** 8983/TCP
-- **Vulnerable endpoint:** `/solr/<core>/dataimport`
 
 ## Constraints
 - Solr must not be upgraded; it stays at version 8.8.

@@ -11,10 +11,10 @@
 Oracle WebLogic Server's administration console is normally protected by
 authentication. CVE-2020-14882 is a path traversal / URL encoding bypass that
 allows an unauthenticated attacker to access the console by crafting a URL
-with double-URL-encoded path separators. WebLogic decodes `%252e` → `%2e` → `.`,
-so a path under `/console/css/` can resolve to the console application. Because the authentication check examines the raw
-(un-normalised) path, it sees `/console/css/...` and allows the request
-without requiring login.
+with double-URL-encoded path separators. Because the authentication check
+examines the raw (un-normalised) path, it sees an unprotected static-resource
+path and allows the request without requiring login, while the decoded path
+resolves to the console application.
 
 Combined with CVE-2020-14883 (post-auth RCE gadget), this yields an
 unauthenticated Remote Code Execution chain against the full WebLogic stack.
@@ -23,10 +23,6 @@ unauthenticated Remote Code Execution chain against the full WebLogic stack.
 - **Service:** Oracle WebLogic Server admin console (simulated)
 - **Port:** 7001/TCP (WebLogic default admin port)
 - **Vulnerable versions:** WebLogic 10.3.6.0, 12.1.3.0, 12.2.1.3, 12.2.1.4, 14.1.1.0
-
-## Vulnerable Configuration
-The console is reachable on port 7001 with no upstream proxy normalising or
-blocking encoded traversal paths.
 
 ## Constraints
 - The service on port 7001/TCP must remain running and reachable.

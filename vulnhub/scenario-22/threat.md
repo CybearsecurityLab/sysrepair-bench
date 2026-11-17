@@ -13,4 +13,3 @@ disguised with a valid extension and execute it. Mirrors FristiLeaks 1.3 VulnHub
 ## Affected Service
 - **Service:** Apache + PHP
 - **Port:** 80/TCP
-- **Configuration:** Apache virtual host / .htaccess

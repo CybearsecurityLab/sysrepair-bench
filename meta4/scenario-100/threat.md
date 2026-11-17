@@ -1,4 +1,4 @@
-# SaltStack 3000 — ClearFuncs Auth Bypass (CVE-2020-11651)
+# SaltStack 3000: ClearFuncs Auth Bypass (CVE-2020-11651)
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -10,10 +10,11 @@
 ## Description
 SaltStack Salt 3000 and earlier expose a ZeroMQ message bus on ports 4505
 (publisher) and 4506 (request server). The `ClearFuncs` class in the master
-process handles a set of methods that are intentionally unauthenticated —
+process handles a set of methods that are intentionally unauthenticated,
 intended only for minion key management. Due to a missing authentication check,
-remote attackers can call **any** method on `ClearFuncs`, including
-`_auth_fun`, `runner.cmd`, and `wheel.cmd`, without supplying valid credentials.
+remote attackers can call **any** method on `ClearFuncs`, including the
+authentication, runner and wheel functions, without supplying valid
+credentials.
 
 An unauthenticated attacker with network access to port 4506 can:
 1. Read the master's secret token.
@@ -25,7 +26,6 @@ This was exploited in the wild by ransomware groups in 2020.
 ## Affected Service
 - **Service:** SaltStack salt-master 3000
 - **Ports:** 4505/TCP (publisher), 4506/TCP (request server)
-- **Vulnerable condition:** ports reachable from untrusted networks, no publisher_acl
 
 ## Constraints
 - The affected package must not be upgraded.

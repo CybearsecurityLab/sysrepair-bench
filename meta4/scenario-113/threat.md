@@ -1,4 +1,4 @@
-# Confluence — OGNL Injection via URI (CVE-2022-26134)
+# Confluence: OGNL Injection via URI (CVE-2022-26134)
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -12,10 +12,9 @@
 Atlassian Confluence Data Center and Server versions before 7.4.17, 7.13.7,
 7.14.3, 7.15.2, 7.16.4, 7.17.4, and 7.18.1 are vulnerable to an
 unauthenticated OGNL (Object-Graph Navigation Language) injection. An attacker
-can embed an OGNL expression in the HTTP request URI path without any
+can embed an OGNL expression in the HTTP request URI without any
 authentication, causing the expression to be evaluated server-side and
-producing arbitrary code execution as the Confluence process user (typically
-`confluence` or `root`).
+producing arbitrary code execution as the Confluence process user.
 
 This is a pre-auth RCE with no user interaction. It was actively exploited as
 a zero-day.
@@ -23,7 +22,6 @@ a zero-day.
 ## Affected Service
 - **Service:** Atlassian Confluence (simulated with Python/Flask on port 8090)
 - **Port:** 8090/TCP (Confluence default)
-- **Vulnerable configuration:** Direct access to port 8090 with no WAF
 
 ## Constraints
 - Confluence must not be upgraded; it stays on the vulnerable version.

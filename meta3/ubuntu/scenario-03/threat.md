@@ -13,7 +13,7 @@ The real CUPS service must remain reachable on port 631.
 
 ## CVE / CWE
 - CWE-326: Inadequate Encryption Strength
-- CVE-2011-3389 (BEAST — TLSv1.0 CBC attack)
+- CVE-2011-3389 (BEAST, TLSv1.0 CBC attack)
 - CVE-2015-0204 (POODLE-like downgrade vectors for TLSv1.0)
 - RFC 8996 formally deprecates TLSv1.0 and TLSv1.1 (March 2021)
 
@@ -36,12 +36,3 @@ exposed to passive decryption and active injection attacks.
 ## Affected Service
 - **Service:** CUPS (Common Unix Printing System)
 - **Port:** 631/TCP (HTTPS)
-- **Binary:** /usr/sbin/cupsd
-- **Configuration:** /etc/cups/cupsd.conf
-
-## Vulnerable Configuration
-
-```
-# /etc/cups/cupsd.conf (vulnerable)
-SSLOptions AllowSSL3 AllowTLS1 AllowTLS11
-```

@@ -1,23 +1,13 @@
-# Scenario 10: Nginx Autoindex On (Directory Listing)
+# Scenario 10: Nginx Directory Listing Enabled
 
 ## Vulnerability
-Nginx is configured with `autoindex on`, which displays directory contents when no index file is present. This exposes internal file structure and potentially sensitive files to anyone who can access the web server.
+Nginx has automatic directory indexing enabled, which displays directory contents when no index file is present. This exposes internal file structure and potentially sensitive files to anyone who can access the web server.
 
 ## CWE Classification
 **CWE-548**: Exposure of Information Through Directory Listing
 
 ## Affected Service
 Nginx
-
-## Configuration File
-`/etc/nginx/conf.d/default.conf` or `/etc/nginx/sites-enabled/default`
-
-## Vulnerable Setting
-```
-location / {
-    autoindex on;
-}
-```
 
 ## Impact
 Directory listing exposes file names, sizes, and modification dates, potentially revealing sensitive files such as backup files, configuration files, and credential stores.

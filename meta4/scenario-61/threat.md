@@ -1,4 +1,4 @@
-# Exim 4.96 — SMTP Smuggling (CVE-2023-51766)
+# Exim 4.96: SMTP Smuggling (CVE-2023-51766)
 
 ## Severity
 **Medium** (CVSS 5.3)
@@ -23,9 +23,3 @@ authenticated mail from a trusted sender.
 ## Affected Service
 - **Service:** Exim 4.96
 - **Port:** 25/TCP (SMTP)
-- **Vulnerable configuration:** Default Exim config advertises CHUNKING and
-  PIPELINING to all hosts
-
-## Vulnerable Configuration
-- `chunking_advertise_hosts = *` (Exim default) — advertises CHUNKING to all
-- `pipelining_advertise_hosts = *` (Exim default) — advertises PIPELINING to all

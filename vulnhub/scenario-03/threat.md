@@ -1,4 +1,4 @@
-# MySQL No secure_file_priv - OUTFILE Exploit
+# MySQL Unrestricted File Import and Export
 
 ## Severity
 **High** (CVSS 7.5)
@@ -7,8 +7,8 @@
 N/A (configuration weakness)
 
 ## Description
-MySQL/MariaDB is configured with an empty `secure_file_priv` directive, allowing the
-database to read and write files to any directory on the filesystem. Combined with a
+MySQL/MariaDB places no restriction on the directories the database may read from and write
+to, allowing the database to read and write files anywhere on the filesystem. Combined with a
 database user having the FILE privilege, an attacker can use `SELECT ... INTO OUTFILE`
 to write arbitrary files (such as webshells) or `LOAD DATA INFILE` to read sensitive
 system files.
@@ -19,10 +19,3 @@ configurations.
 ## Affected Service
 - **Service:** MariaDB/MySQL
 - **Port:** 3306/TCP
-- **Configuration:** /etc/mysql/mariadb.conf.d/99-vulnerable.cnf
-
-## Vulnerable Configuration
-```
-[mysqld]
-secure_file_priv=
-```

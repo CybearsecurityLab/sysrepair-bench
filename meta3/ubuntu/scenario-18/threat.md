@@ -5,14 +5,14 @@
 
 ## CVE / CWE
 - CWE-538: Insertion of Sensitive Information into Externally-Accessible File or Directory
-- OpenVAS: "Sensitive File Disclosure (HTTP)" — `/drupal/web.config`
+- OpenVAS: "Sensitive File Disclosure (HTTP)"
 
 ## Description
 Metasploitable 3's Drupal installation includes a `web.config` file in the
-Drupal root (`/var/www/html/drupal/web.config`). This file is an IIS URL
-Rewrite configuration artifact that is bundled with the Drupal distribution for
-use on Windows/IIS deployments. On Apache it has no functional role but Apache
-serves it as a plain XML file to any client that requests it.
+Drupal root. This file is an IIS URL Rewrite configuration artifact that is
+bundled with the Drupal distribution for use on Windows/IIS deployments. On
+Apache it has no functional role but Apache serves it as a plain XML file to
+any client that requests it.
 
 The `web.config` file reveals:
 - The internal URL rewrite rules and application routing structure
@@ -27,8 +27,3 @@ sensitive attributes.
 ## Affected Service
 - **Service:** Apache2 + Drupal 7.31
 - **Port:** 80/TCP
-- **Path:** `/drupal/web.config`
-- **File on disk:** `/var/www/html/drupal/web.config`
-
-## Vulnerable Configuration
-Apache has no rule denying access to `.config` extension files, so `/drupal/web.config` is served in full.

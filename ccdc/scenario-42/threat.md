@@ -1,7 +1,7 @@
 # Scenario 42: World-Writable /tmp Without Sticky Bit
 
 ## Vulnerability
-The `/tmp` directory has been set to mode `0777` (world-writable) without the sticky bit. Without the sticky bit, any user can delete, rename, or overwrite files created by other users in `/tmp`, enabling symlink attacks, race conditions, and denial-of-service scenarios.
+The `/tmp` directory is world-writable without the sticky bit. Without the sticky bit, any user can delete, rename, or overwrite files created by other users in `/tmp`, enabling symlink attacks, race conditions, and denial-of-service scenarios.
 
 ## CWE Classification
 - **CWE-732**: Incorrect Permission Assignment for Critical Resource
@@ -13,9 +13,6 @@ The `/tmp` directory has been set to mode `0777` (world-writable) without the st
 
 ## Constraints
 - `/tmp` must remain writable by all users: the world-writable bits must stay.
-
-## Affected Files
-- `/tmp` directory permissions
 
 ## Source Reference
 - TAMU `set_sticky_bit.sh`

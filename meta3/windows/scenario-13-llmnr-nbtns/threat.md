@@ -1,10 +1,10 @@
 # LLMNR and NBT-NS Enabled (Responder / NTLM-Relay Bait)
 
 ## Severity
-**High** (CVSS 8.1 class — credential theft + relay staging)
+**High** (CVSS 8.1 class, credential theft + relay staging)
 
 ## CVE / Reference
-- No single CVE — configuration-class weakness tracked by CIS Microsoft Windows
+- No single CVE, configuration-class weakness tracked by CIS Microsoft Windows
   Server Benchmark §18.5.4.x (LLMNR) and §18.5.10.x (NetBT).
 - The operational pivot enabled by this misconfig is the entire
   `Responder` / `inveigh` / `ntlmrelayx` tooling family.
@@ -21,7 +21,7 @@ first reply. An attacker on the same broadcast domain runs Responder, replies to
 every `wpad`, `proxy`, mistyped share name, etc., and collects the NTLMv2 challenge/
 response when the victim authenticates to the attacker's fake service. That material
 is either cracked offline (`hashcat -m 5600`) or relayed live via `ntlmrelayx` against
-targets that do not require SMB/LDAP signing — see scenario-11 for the matching
+targets that do not require SMB/LDAP signing, see scenario-11 for the matching
 server-side gap.
 
 Modern domains disable both by GPO. A member server that re-enables them single-
@@ -31,12 +31,3 @@ segment is hardened.
 ## Affected Service
 - **LLMNR:** `dnscache` (client-side), multicast UDP/5355.
 - **NBT-NS:** `netbt.sys` on each interface, UDP/137-138 + TCP/139.
-- **Configuration surfaces:**
-  - `HKLM\Software\Policies\Microsoft\Windows NT\DNSClient\EnableMulticast`
-  - `HKLM\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces\{GUID}\NetbiosOptions`
-
-## Vulnerable Configuration
-```
-EnableMulticast      = 1     # LLMNR on
-NetbiosOptions       = 1     # NBT-NS on (per interface)
-```

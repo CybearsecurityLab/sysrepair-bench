@@ -16,11 +16,3 @@ within a localized web application backed by MySQL.
 ## Affected Service
 - **Service:** Apache HTTP Server + PHP
 - **Port:** 80/TCP
-- **Binary:** /usr/sbin/apache2
-- **Configuration:** /var/www/html/search.php, /etc/apache2/
-
-## Vulnerable Configuration
-```php
-$q = $_GET["q"];
-$result = $db->query("SELECT * FROM users WHERE name = '$q'");
-```

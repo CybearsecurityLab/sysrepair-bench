@@ -1,4 +1,4 @@
-# Copy Fail — Linux Kernel AF_ALG AEAD Page-Cache Overwrite (CVE-2026-31431)
+# Copy Fail: Linux Kernel AF_ALG AEAD Page-Cache Overwrite (CVE-2026-31431)
 
 ## Severity
 **High** (CVSS 7.8)

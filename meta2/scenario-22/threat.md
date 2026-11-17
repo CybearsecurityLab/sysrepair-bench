@@ -17,9 +17,7 @@ Multiple SMTP servers including Postfix versions prior to 2.8.4 contain a vulner
 - **Vulnerable Version:** Postfix < 2.5.13, < 2.6.10, < 2.7.4, < 2.8.4
 - **Ubuntu 8.04 Version:** Postfix 2.5.1 (vulnerable)
 
-## Vulnerable Configuration
-
-The default Postfix installation on Ubuntu 8.04 ships with version 2.5.1, which is vulnerable to the STARTTLS command injection attack. When TLS is enabled with `smtpd_use_tls=yes`, the vulnerability can be exploited.
+The default Postfix installation on Ubuntu 8.04 ships with version 2.5.1, which is vulnerable to the STARTTLS command injection attack when TLS is enabled.
 
 ## Impact
 

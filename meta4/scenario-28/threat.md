@@ -1,10 +1,10 @@
-# OWASP crAPI — BOLA & Mass-Assignment
+# OWASP crAPI: BOLA and Mass-Assignment
 
 ## Severity
-**High** (CVSS 8.1 — authenticated horizontal privilege escalation)
+**High** (CVSS 8.1, authenticated horizontal privilege escalation)
 
 ## CVE / CWE
-- No CVE — OWASP API Security Top 10 2023
+- No CVE: OWASP API Security Top 10 2023
 - CWE-639: Authorization Bypass Through User-Controlled Key (BOLA)
 - CWE-915: Improperly Controlled Modification of Dynamically-Determined
   Object Attributes (mass-assignment)
@@ -13,15 +13,14 @@
 This scenario runs a Flask API that mirrors two canonical flaws from
 OWASP's crAPI teaching app:
 
-1. **BOLA (Broken Object-Level Authorization)** on
-   `GET /videos/<vid>`: the handler returns any video by id without
-   checking that the requesting user owns the object. Alice can fetch
-   Bob's private video just by incrementing the id.
+1. **BOLA (Broken Object-Level Authorization)** on the video retrieval
+   handler: it returns any video by id without checking that the requesting
+   user owns the object, so one user can fetch another user's private video
+   just by incrementing the id.
 
-2. **Mass-Assignment** on `POST /profile`: the handler calls
-   `u.update(body)` on arbitrary JSON, so a client can set
-   `{"is_admin": true, "balance": 1e9}` and elevate themselves.
+2. **Mass-Assignment** on the profile update handler: it applies the
+   client's arbitrary JSON body directly to the user record, so a client can
+   set privileged attributes and elevate themselves.
 
 ## Affected Service
 - **Port:** 8888/TCP
-- **Code:** `/app/app.py` — `get_video`, `update_profile`

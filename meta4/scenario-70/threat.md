@@ -1,4 +1,4 @@
-# Cgroup-Escape Capability (CAP_SYS_ADMIN) on a Helper Binary — CVE-2022-0492 / CWE-250
+# Cgroup-Escape Capability (CAP_SYS_ADMIN) on a Helper Binary, CVE-2022-0492 / CWE-250
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -15,17 +15,11 @@ which the kernel runs **as root on the host**. The pivotal privilege is
 `mount(2)`.
 
 In this scenario an unprivileged user obtains `CAP_SYS_ADMIN` through a **Linux
-file capability**. The helper `/usr/local/bin/caphelper` carries
-`cap_sys_admin+ep`, stored in its `security.capability` extended attribute and
-enforced by the kernel on every `execve(2)`. Any user who runs it — including a
-fully unprivileged one — receives `CAP_SYS_ADMIN` in that process's effective
-set and can perform privileged mounts (the exact primitive CVE-2022-0492 turns
-into a host escape).
+file capability** on a helper binary. The capability is stored in an extended
+attribute and enforced by the kernel on every `execve(2)`. Any user who runs
+the helper, including a fully unprivileged one, receives `CAP_SYS_ADMIN` in
+that process's effective set and can perform privileged mounts (the exact
+primitive CVE-2022-0492 turns into a host escape).
 
 ## Affected Service
-- **Binary:** `/usr/local/bin/caphelper` (`cap_sys_admin+ep` file capability)
-- **Kernel bit:** CAP_SYS_ADMIN = bit 21
-
-## Vulnerable Configuration
-- `setcap cap_sys_admin+ep /usr/local/bin/caphelper` on a world-executable binary
-- An unprivileged user (`appuser`) can exec it to perform a CAP_SYS_ADMIN mount
+- **Service:** a local helper binary carrying a Linux file capability

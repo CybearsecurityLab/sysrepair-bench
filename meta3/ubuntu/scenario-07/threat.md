@@ -11,9 +11,9 @@ ProFTPD 1.3.5 ships with `mod_copy` enabled by default. The `mod_copy` module
 implements the `SITE CPFR` (copy from) and `SITE CPTO` (copy to) FTP commands,
 which allow any unauthenticated client to read and write arbitrary files on the
 server filesystem. Because ProFTPD runs as root or a service account with broad
-filesystem access, an attacker can read sensitive files such as `/etc/passwd`
-or SSH private keys, place attacker-controlled content in the web root to
-execute arbitrary commands, and overwrite critical system files.
+filesystem access, an attacker can read sensitive system files or SSH private
+keys, place attacker-controlled content in the web root to execute arbitrary
+commands, and overwrite critical system files.
 
 No authentication is required. The commands are processed in the pre-authentication
 context of the FTP session.
@@ -21,13 +21,4 @@ context of the FTP session.
 ## Affected Service
 - **Service:** ProFTPD 1.3.5
 - **Port:** 21/TCP
-- **Binary:** /opt/proftpd/sbin/proftpd
-- **Module:** mod_copy.so
-
-## Vulnerable Configuration
-ProFTPD 1.3.5 compiled with `--with-modules=mod_copy`. The module is active
-by default once compiled in. No `LoadModule` directive is required; the module
-is statically linked.
-
-> The running ProFTPD is a **source build under `/opt/proftpd`** (vulnerable 1.3.5), with
-> **no dpkg entry**.
+- **Module:** mod_copy

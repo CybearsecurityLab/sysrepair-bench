@@ -1,4 +1,4 @@
-# Dirty Pipe — Linux Pipe Splice Overwrite (CVE-2022-0847)
+# Dirty Pipe: Linux Pipe Splice Overwrite (CVE-2022-0847)
 
 ## Severity
 **High** (CVSS 7.8)
@@ -13,12 +13,10 @@ flag (`PIPE_BUF_FLAG_CAN_MERGE`) that was not zero-initialized when the
 buffer came from `copy_page_to_iter_pipe` or `push_pipe`. An unprivileged
 process can splice data from a read-only file into a pipe and then write
 to the pipe, causing the kernel to overwrite the page cache of the
-original file — bypassing file permissions (including read-only mounts,
+original file, bypassing file permissions (including read-only mounts,
 SUID root binaries, and bind mounts).
 
 This scenario is **kernel-level**: a container shares its host's kernel.
-The container carries the userspace primitives (a SUID root marker file,
-PoC reference).
 
 ## Affected Service
 - **Vulnerable kernels:** Linux 5.8 through 5.16.10 / 5.15.25 / 5.10.102

@@ -1,46 +1,34 @@
-# Oracle GlassFish 4.1.1 — Admin Traversal + Exposed Admin Listener with Empty Password
+# Oracle GlassFish 4.1.1, Admin Traversal + Exposed Admin Listener with Empty Password
 
 ## Severity
 **Critical** (CVSS 9.8)
 
 ## CVE
-- **CVE-2017-1000028** — Unauthenticated directory-traversal (`%c0%ae%c0%ae/`) on the
-  admin listener allows arbitrary file read, including `domain.xml` / master-password
+- **CVE-2017-1000028**, Unauthenticated directory traversal on the admin listener
+  allows arbitrary file read, including domain configuration / master-password
   files and ultimately the admin credentials themselves.
 - Compounding weakness: **empty admin password** on a plaintext admin listener →
   remote administrative access once traversal or brute-force reveals the realm is unlocked.
 
 ## Description
-GlassFish 4.1.1 shipped an HTTP handler that decoded overlong UTF-8 byte sequences (e.g.
-`%c0%ae` for `.`) **before** the path-normalization check. Requests under
-`/theme/META-INF/` on the admin listener that contain overlong-encoded parent-directory
-segments return the raw contents of files relative to the `glassfish/domains/`
-directory, all without authentication.
+GlassFish 4.1.1 shipped an HTTP handler that decoded overlong UTF-8 byte sequences
+**before** the path-normalization check. Requests to the admin listener that contain
+overlong-encoded parent-directory segments return the raw contents of files outside the
+intended directory, all without authentication.
 
 This host makes the impact worse by:
-- Serving the admin listener over **plaintext HTTP** on `:4848` (secure-admin left
-  disabled), so the overlong-UTF-8 traversal probe reaches the admin console directly.
-- Leaving the admin realm user (`admin`) with an **empty password** (the keyfile line
-  is `admin;;asadmin`), so once traversal discovers the realm configuration — or once an
-  attacker simply tries `admin:""` — full administrative access is granted.
+- Serving the admin listener over **plaintext HTTP** on `:4848` (secure admin left
+  disabled), so the traversal probe reaches the admin console directly.
+- Leaving the admin realm user with an **empty password**, so once traversal discovers
+  the realm configuration, or once an attacker simply tries an empty password, full
+  administrative access is granted.
 
-This reproduces the configuration baked by upstream Metasploitable3
-(`scripts/installs/setup_glassfish.bat` + the bundled `admin-keyfile` / `domain.xml`).
+This reproduces the configuration baked by upstream Metasploitable3.
 
 ## Affected Service
 - **Service:** Oracle GlassFish 4.1.1 (`domain1`)
 - **Ports:** 4848/TCP (admin, plaintext HTTP), 8080/TCP (applications)
-- **Config:** `C:\glassfish4\glassfish\domains\domain1\config\{domain.xml,admin-keyfile}`
 
-## Vulnerable Configuration
-```
-# admin-listener served over plaintext HTTP on :4848 (secure-admin NOT enabled),
-# so the %c0%ae traversal on /theme/META-INF/ is reachable unauthenticated.
-```
-```
-# admin-keyfile — admin user with an empty password (no hash field)
-admin;;asadmin
-```
 No patched build of GlassFish exists (Oracle discontinued the OSS track); CVE-2017-1000028
 is unfixed on the 4.x line.
 

@@ -1,4 +1,4 @@
-# Apache Axis2 1.6.0 — Default `admin` / `axis2` Credentials → Service Upload RCE
+# Apache Axis2 1.6.0, Default Administrative Credentials → Service Upload RCE
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -8,10 +8,9 @@ N/A (configuration weakness, tracked under CWE-798 Use of Hard-coded
 Credentials.)
 
 ## Description
-The Axis2 1.6.0 web application deployed at `/axis2/` ships with a hard-coded
-administrative credential pair (`admin` / `axis2`) defined in
-`WEB-INF/conf/axis2.xml`. That password is never prompted for at install time and
-the default upstream build does not change it.
+The Axis2 1.6.0 web application ships with a hard-coded
+administrative credential pair that is well known. That password is never prompted for
+at install time and the default upstream build does not change it.
 
 Any unauthenticated attacker who can reach port 8080/TCP can use these credentials
 to obtain an administrative session and upload an Axis Archive (`*.aar`), which Axis2
@@ -21,16 +20,6 @@ service account.
 ## Affected Service
 - **Service:** Apache Axis2 1.6.0 hosted on Tomcat
 - **Port:** 8080/TCP
-- **Admin endpoint:** `/axis2/axis2-admin/login`
-- **Credentials:** `admin` / `axis2`
-- **Config:** `C:\tomcat\webapps\axis2\WEB-INF\conf\axis2.xml`
-
-## Vulnerable Configuration
-```xml
-<!-- axis2.xml (default, shipped) -->
-<parameter name="userName">admin</parameter>
-<parameter name="password">axis2</parameter>
-```
 
 ## Constraints
 - Tomcat must be answering on `http://localhost:8080/` when you are done; a stopped Tomcat is a broken service, not a fixed one.

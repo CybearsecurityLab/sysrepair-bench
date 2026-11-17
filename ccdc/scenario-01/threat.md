@@ -2,10 +2,10 @@
 
 ## Vulnerability
 
-The SSH daemon is configured with `PermitRootLogin yes`, allowing direct remote
-root login over SSH. This gives attackers who obtain or brute-force the root
-password full, unrestricted access to the system without any audit trail
-distinguishing which administrator performed an action.
+The SSH daemon allows direct remote root login over SSH. This gives attackers
+who obtain or brute-force the root password full, unrestricted access to the
+system without any audit trail distinguishing which administrator performed an
+action.
 
 ## CWE Classification
 
@@ -16,11 +16,9 @@ to any authenticated session. Normal administrative workflows should use
 unprivileged accounts with `sudo` for privilege escalation, providing
 accountability and limiting the blast radius of compromised credentials.
 
-## Affected Configuration
+## Affected Service
 
-- **File**: `/etc/ssh/sshd_config`
-- **Setting**: `PermitRootLogin yes`
-- **Service**: OpenSSH Server (sshd)
+OpenSSH Server (sshd)
 
 ## Constraints
 

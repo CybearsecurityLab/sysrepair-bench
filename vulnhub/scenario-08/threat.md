@@ -16,4 +16,3 @@ Mirrors the DC-2 VulnHub VM with weak WordPress credentials.
 ## Affected Service
 - **Service:** WordPress / MariaDB
 - **Port:** 80/TCP, 3306/TCP
-- **Configuration:** wordpress.wp_users database table

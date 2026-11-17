@@ -11,26 +11,17 @@
 The rlogin (remote login) service is a legacy BSD remote access protocol that suffers from multiple critical security flaws:
 
 1. **No Encryption**: All traffic including authentication credentials is transmitted in cleartext
-2. **Weak Authentication**: Relies on `.rhosts` and `/etc/hosts.equiv` files for trust-based authentication
+2. **Weak Authentication**: Relies on host-based trust files for trust-based authentication
 3. **Passwordless Login**: Can allow access without any password if trust relationships are configured
 4. **Host-Based Authentication**: Trusts the client-provided hostname without cryptographic verification
+
+The rlogin service is enabled and its trust configuration allows any user from any host to log in without a password.
 
 ## Affected Service
 
 - **Service:** rlogind (Remote Login Daemon)
 - **Port:** 513/tcp
 - **Protocol:** rlogin (unencrypted, obsolete)
-
-## Vulnerable Configuration
-
-The rlogin service is enabled in xinetd with a dangerous `/etc/hosts.equiv` configuration:
-
-```
-/etc/hosts.equiv:
-+ +
-```
-
-This configuration allows **ANY user from ANY host** to login without a password.
 
 ## Impact
 

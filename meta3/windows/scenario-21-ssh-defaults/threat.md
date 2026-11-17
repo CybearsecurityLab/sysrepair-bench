@@ -1,54 +1,45 @@
-# OpenSSH-Win32 Legacy Build + Default `vagrant:vagrant` Admin Credentials
+# OpenSSH-Win32 Legacy Build + Default Administrator Credentials
 
 ## Severity
-**Critical** (CVSS 9.8 — unauthenticated-to-root/SYSTEM via guessable creds;
+**Critical** (CVSS 9.8, unauthenticated-to-root/SYSTEM via guessable creds;
 multiple unpatched pre-auth CVEs on the SSH server itself)
 
 ## CVE
 OpenVAS flagged the following on this host's port 22, all traceable to the same
 legacy Win32-OpenSSH 7.1.0.0-p1-beta binary Rapid7 ships:
 
-- **CVE-2016-1908** — OpenSSH unauthenticated X11 forwarding trust bypass.
-- **CVE-2016-6210** — OpenSSH user-enumeration via response-time oracle.
-- **CVE-2016-6515** — OpenSSH pre-auth DoS via overlong password.
-- **CVE-2016-10009 / 10010 / 10011 / 10012** — OpenSSH 7.3 privilege-separation and
+- **CVE-2016-1908**, OpenSSH unauthenticated X11 forwarding trust bypass.
+- **CVE-2016-6210**, OpenSSH user-enumeration via response-time oracle.
+- **CVE-2016-6515**, OpenSSH pre-auth DoS via overlong password.
+- **CVE-2016-10009 / 10010 / 10011 / 10012**, OpenSSH 7.3 privilege-separation and
   agent-forwarding issues.
-- **CVE-2017-15906** — OpenSSH sftp-server read-only bypass (< 7.6).
-- **CVE-2018-15473 / 15919** — OpenSSH 7.7 user enumeration.
+- **CVE-2017-15906**, OpenSSH sftp-server read-only bypass (< 7.6).
+- **CVE-2018-15473 / 15919**, OpenSSH 7.7 user enumeration.
 - Additional user-enumeration and DoS variants up through the 2024/2025 lineage
   that stale Win32-OpenSSH has never received back-ported fixes for.
 
-Independent of the CVEs, the **vagrant / vagrant** local administrator account —
-installed by the Rapid7 provisioner and never rotated — grants full interactive and
-network logon via this same SSH listener.
+Independent of the CVEs, a default local administrator account with a well-known
+password, installed by the Rapid7 provisioner and never rotated, grants full interactive
+and network logon via this same SSH listener.
 
 ## Description
 Rapid7's metasploitable3-windows Vagrant build installs the Microsoft
 Win32-OpenSSH 7.1.0.0-beta release so Vagrant can drive provisioning. The account
-it authenticates with is `vagrant:vagrant`, a local member of
-`BUILTIN\Administrators`. Neither the binary nor the password is ever rotated for
+it authenticates with is a local member of `BUILTIN\Administrators` that keeps its
+default password. Neither the binary nor the password is ever rotated for
 the lifetime of the box.
 
 An unauthenticated attacker who can reach port 22 has two independent paths to
 SYSTEM-equivalent code execution:
-1. The `vagrant` / `vagrant` credential gives an immediate interactive shell as
+1. The default credential gives an immediate interactive shell as
    local admin, from which escalation to `NT AUTHORITY\SYSTEM` is trivial.
 2. Any of the pre-auth OpenSSH CVEs that a 7.1.0.0-beta build never received a
-   patch for — most are DoS/enum, but the overall posture is that of an unsupported
+   patch for, most are DoS/enum, but the overall posture is that of an unsupported
    SSH daemon.
 
 ## Affected Service
 - **Service:** `sshd` (Win32-OpenSSH 7.1.0.0-p1-beta)
 - **Port:** 22/TCP
-- **Binary path:** `C:\Program Files\OpenSSH\sshd.exe`
-- **Credential:** `vagrant:vagrant` in `Administrators`
-
-## Vulnerable Configuration
-```
-OpenSSH for Windows version : 7.1.0.0-p1-Beta (released 2015)
-vagrant local user          : password = "vagrant", member of Administrators
-sshd                        : LISTEN 0.0.0.0:22, password auth enabled
-```
 
 ## Constraints
 - This container has no outbound network access.

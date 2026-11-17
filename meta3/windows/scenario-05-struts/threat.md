@@ -1,10 +1,10 @@
-# Apache Struts 2 — Jakarta Multipart Parser OGNL RCE (CVE-2017-5638 / S2-045)
+# Apache Struts 2, Jakarta Multipart Parser OGNL RCE (CVE-2017-5638 / S2-045)
 
 ## Severity
 **Critical** (CVSS 10.0)
 
 ## CVE
-- **CVE-2017-5638** — S2-045 Jakarta Multipart parser OGNL injection
+- **CVE-2017-5638**, S2-045 Jakarta Multipart parser OGNL injection
 - Related: **S2-046** (filename-header vector on the same parser)
 
 ## Description
@@ -20,12 +20,6 @@ against the upstream Metasploitable3 Windows build.
 ## Affected Service
 - **Service:** Apache Tomcat 8.0.33 hosting the Struts 2 REST Showcase
 - **Port:** 8080/TCP
-- **App context:** `/struts2-rest-showcase/`
-- **Library:** `C:\tomcat\webapps\struts2-rest-showcase\WEB-INF\lib\struts2-core-2.3.20.1.jar`
-
-## Vulnerable Configuration
-The application bundles `struts2-core-2.3.20.1.jar`. The WAR is deployed with the
-default configuration.
 
 ## Constraints
 - This host has no outbound network access, and no fixed Struts distribution is staged on it.

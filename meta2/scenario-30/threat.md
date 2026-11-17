@@ -10,22 +10,13 @@
 
 Telnet is a legacy remote access protocol that transmits all data, including usernames and passwords, in cleartext over the network. Unlike SSH, Telnet provides no encryption, making it trivial for attackers to intercept credentials and session data through network sniffing.
 
+The telnet service is enabled, and all authentication credentials and session traffic are transmitted without encryption.
+
 ## Affected Service
 
 - **Service:** telnetd (Telnet Daemon)
 - **Port:** 23/tcp
 - **Protocol:** Telnet (unencrypted)
-
-## Vulnerable Configuration
-
-The telnet service is enabled in xinetd:
-
-```
-/etc/xinetd.d/telnet:
-disable = no
-```
-
-All authentication credentials and session traffic are transmitted without encryption.
 
 ## Impact
 

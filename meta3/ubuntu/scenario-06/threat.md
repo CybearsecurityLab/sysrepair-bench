@@ -8,10 +8,10 @@ CVE-2014-3704 ("Drupalgeddon")
 
 ## Description
 Drupal 7.31 contains a SQL injection vulnerability in the database abstraction
-layer. The `expandArguments()` function in `includes/database/database.inc`
-does not properly sanitize array keys supplied in query placeholders. An
-unauthenticated attacker can craft an HTTP POST request to `/drupal/?q=node`
-that injects arbitrary SQL into the underlying MySQL database.
+layer. The `expandArguments()` function does not properly sanitize array keys
+supplied in query placeholders. An unauthenticated attacker can craft an HTTP
+POST request to the Drupal front page that injects arbitrary SQL into the
+underlying MySQL database.
 
 Because Drupal's form system evaluates PHP callbacks stored in the database, a
 successful injection can insert a row that registers a malicious PHP function as
@@ -21,11 +21,6 @@ any authentication check runs.
 ## Affected Service
 - **Service:** Apache2 + Drupal 7.31
 - **Port:** 80/TCP
-- **Path:** `/drupal/`
-- **File:** `/var/www/html/drupal/includes/database/database.inc`
-
-## Vulnerable Configuration
-Drupal version 7.31 ships with the unpatched `expandArguments()` function.
 
 ## Constraints
 - The Drupal homepage at `/drupal/` must remain accessible.

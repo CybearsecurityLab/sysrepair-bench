@@ -7,9 +7,9 @@
 N/A (configuration weakness)
 
 ## Description
-A custom service is bound to 0.0.0.0:8888 instead of localhost, exposing it to external
+A custom service is bound to all network interfaces instead of localhost, exposing it to external
 networks. Mirrors De-ICE S1.120 VulnHub VM.
 
 ## Affected Service
-- **Binary:** /usr/local/bin/custom-service.sh
+- **Service:** custom service
 - **Port:** 8888/TCP

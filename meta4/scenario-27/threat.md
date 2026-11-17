@@ -9,8 +9,8 @@
 - CWE-912: Hidden Functionality
 
 ## Description
-The upstream release tarballs of xz-utils **5.6.0** and **5.6.1** — but
-not the corresponding git commits — contained a multi-stage backdoor
+The upstream release tarballs of xz-utils **5.6.0** and **5.6.1**, but
+not the corresponding git commits, contained a multi-stage backdoor
 inserted through a multi-year social-engineering campaign. On systems
 where `sshd` indirectly links `liblzma` through `libsystemd`, the
 backdoor's ifunc resolver hijacked OpenSSH's RSA public-key verification
@@ -24,5 +24,4 @@ This container installs xz 5.6.1. The binary genuinely reports
 `xz (XZ Utils) 5.6.1`.
 
 ## Affected Service
-- **Binary:** `/usr/bin/xz` and `/usr/bin/lzma` (version 5.6.1)
-- **Library:** `/usr/lib/x86_64-linux-gnu/liblzma.so.5`
+- **Component:** xz and liblzma, version 5.6.1

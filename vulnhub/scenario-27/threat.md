@@ -7,10 +7,9 @@
 N/A (configuration weakness)
 
 ## Description
-The sudoers file allows user 'bob' to run awk, tar, nmap, and find as root without
-password. All of these allow shell escapes (e.g., `sudo awk 'BEGIN {system("/bin/sh")}'`).
+The sudo policy allows a local user to run several programs that offer shell escapes
+as root without a password, giving that user unrestricted root access.
 Mirrors LinSecurity VulnHub VM.
 
 ## Affected Service
 - **Service:** sudo
-- **Configuration:** /etc/sudoers

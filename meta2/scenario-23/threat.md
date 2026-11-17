@@ -10,21 +10,14 @@
 
 The POODLE (Padding Oracle On Downgraded Legacy Encryption) vulnerability affects SSLv3 protocol CBC cipher suites. PostgreSQL compiled against vulnerable OpenSSL versions (< 0.9.8za, < 1.0.0m, < 1.0.1h) allows SSLv3 connections, enabling attackers to decrypt encrypted traffic through a padding oracle attack.
 
+Ubuntu 8.04 ships with OpenSSL 0.9.8g which enables SSLv3 protocol by default. When PostgreSQL has SSL enabled, it inherits this vulnerability.
+
 ## Affected Service
 
 - **Service:** PostgreSQL Database Server
 - **Port:** 5432/tcp
 - **Vulnerable Component:** OpenSSL 0.9.8g (Ubuntu 8.04)
 - **Protocol:** SSLv3
-
-## Vulnerable Configuration
-
-Ubuntu 8.04 ships with OpenSSL 0.9.8g which enables SSLv3 protocol by default. When PostgreSQL is configured with `ssl = on`, it inherits this vulnerability:
-
-```
-/etc/postgresql/8.3/main/postgresql.conf:
-ssl = on
-```
 
 ## Impact
 

@@ -1,4 +1,4 @@
-# Confluence Widget Connector SSTI -> RCE (CVE-2019-3396, simulated)
+# Confluence Widget Connector SSTI to RCE (CVE-2019-3396, simulated)
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -10,17 +10,17 @@
 ## Description
 The Widget Connector macro in Atlassian Confluence Server/Data Center before
 6.6.12, 6.12.x < 6.12.3, 6.13.x < 6.13.3 and 6.14.x < 6.14.2 lets an
-unauthenticated attacker POST to `/rest/tinymce/1/macro/preview` with a
-`_template` parameter that is loaded and evaluated as a server-side Velocity
-template. A path-traversal path yields arbitrary file read; an embedded
-directive yields remote code execution. It was mass-exploited in 2019 to drop
-GandCrab ransomware and cryptominers.
+unauthenticated attacker supply a template parameter to the macro preview
+handler that is loaded and evaluated as a server-side Velocity template. A
+path-traversal value yields arbitrary file read; an embedded directive yields
+remote code execution. It was mass-exploited in 2019 to drop GandCrab
+ransomware and cryptominers.
 
 ## This scenario is a SIMULATION (and a re-point)
 Real Confluence only boots into an un-configured setup wizard inside the
 harness, so this scenario runs a faithful **Python/Flask simulation** on port
 8090 that reproduces the CVE's actual behaviour: the macro-preview handler
-evaluates the attacker-supplied `_template`, so the sim **actually executes the
+evaluates the attacker-supplied template, so the sim **actually executes the
 embedded command / reads the traversed file**. It is a simulation of
 CVE-2019-3396, not a real Confluence server.
 

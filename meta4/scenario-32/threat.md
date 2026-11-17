@@ -13,7 +13,7 @@ prefix-truncation attack dubbed "Terrapin." An active
 man-in-the-middle attacker can delete consecutive messages at the
 beginning of the encrypted channel without the endpoints detecting the
 manipulation. This effectively strips security-critical handshake
-messages such as the `EXT_INFO` extension negotiation, downgrading the
+messages such as the extension negotiation, downgrading the
 connection's security guarantees.
 
 The attack is possible when the connection uses **ChaCha20-Poly1305**
@@ -24,6 +24,3 @@ attacker to adjust counters after deletion.
 ## Affected Service
 - **Service:** OpenSSH (sshd)
 - **Port:** 22/TCP
-- **Config:** `/etc/ssh/sshd_config`
-- **Vulnerable ciphers:** `chacha20-poly1305@openssh.com`
-- **Vulnerable MACs:** any `*-etm@openssh.com` variant

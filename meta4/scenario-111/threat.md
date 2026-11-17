@@ -1,4 +1,4 @@
-# Memcached 1.6 — UDP Amplification (CVE-2018-1000115)
+# Memcached 1.6: UDP Amplification (CVE-2018-1000115)
 
 ## Severity
 **High** (CVSS 7.5)
@@ -11,9 +11,9 @@
 Memcached's UDP interface (port 11211) allows unauthenticated clients to send
 small requests that return disproportionately large responses. This property
 was exploited in the largest DDoS attack recorded at the time (1.35 Tbps,
-GitHub, February 2018). An attacker sends a spoofed UDP `stats` or `get`
-request of ~15 bytes; Memcached reflects a response of up to 750 KB,
-achieving an amplification factor of approximately **50,000×**.
+GitHub, February 2018). An attacker sends a spoofed UDP request of ~15 bytes;
+Memcached reflects a response of up to 750 KB, achieving an amplification
+factor of approximately **50,000×**.
 
 Because Memcached has no authentication on UDP, any publicly reachable instance
 can be weaponised as a reflector/amplifier without any prior access. The
@@ -23,4 +23,3 @@ victim's address.
 ## Affected Service
 - **Service:** Memcached 1.6.x (and all prior versions)
 - **Port:** 11211/UDP
-- **Vulnerable configuration:** default startup, with the UDP interface on 11211 enabled

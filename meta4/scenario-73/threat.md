@@ -1,4 +1,4 @@
-# Docker Registry 2 — No Authentication (misconfig)
+# Docker Registry 2: No Authentication (misconfig)
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -8,11 +8,11 @@
 
 ## Description
 Docker Registry 2 (the reference implementation) ships with authentication
-disabled by default. When no `REGISTRY_AUTH` environment variable is set, the
-registry's `/v2/` API accepts all requests without credentials. Any client with
-network access to port 5000 can:
+disabled by default. With no authentication configured, the registry's API
+accepts all requests without credentials. Any client with network access to
+port 5000 can:
 
-- **List all images:** `GET /v2/_catalog` returns the full image inventory.
+- **List all images:** the catalog returns the full image inventory.
 - **Pull any image:** Download proprietary, sensitive, or internal container
   images without authorization.
 - **Push malicious images:** Upload backdoored or malware-laden images that
@@ -27,8 +27,3 @@ credentials embedded in layers.
 ## Affected Service
 - **Service:** Docker Registry v2
 - **Port:** 5000/TCP
-- **Vulnerable endpoint:** `GET /v2/_catalog` returns 200 without credentials
-
-## Vulnerable Configuration
-- Registry started without `REGISTRY_AUTH` environment variable
-- `curl http://localhost:5000/v2/_catalog` returns HTTP 200

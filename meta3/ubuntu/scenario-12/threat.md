@@ -1,4 +1,4 @@
-# WEBrick Admin HTTP Endpoint Bound to 0.0.0.0:3500
+# WEBrick Admin HTTP Endpoint Exposed on All Interfaces
 
 ## Severity
 **High** (CVSS 7.5)
@@ -10,8 +10,7 @@
 
 ## Description
 The Metasploitable 3 Ubuntu target runs a Ruby WEBrick HTTP server exposing an
-admin control panel at `/admin` on port 3500. The server is configured with
-`:BindAddress => '0.0.0.0'`, which causes it to listen on all network interfaces,
+admin control panel on port 3500. The server listens on all network interfaces,
 including the externally-reachable one.
 
 Any host on the network that can reach port 3500 can access the admin panel
@@ -26,17 +25,6 @@ uses it as a foothold for lateral movement.
 ## Affected Service
 - **Service:** WEBrick HTTP server (Ruby)
 - **Port:** 3500/TCP
-- **Script:** /opt/admin_app.rb
-- **Bind address (vulnerable):** 0.0.0.0
-
-## Vulnerable Configuration
-```ruby
-# /opt/admin_app.rb (vulnerable)
-server = WEBrick::HTTPServer.new(
-  :BindAddress => '0.0.0.0',
-  :Port        => 3500
-)
-```
 
 ## Constraints
 - The admin application must remain running and reachable on port 3500 from the host

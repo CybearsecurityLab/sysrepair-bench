@@ -17,7 +17,7 @@ FTP service (login, LIST, RETR, STOR) must continue to work for legitimate clien
 
 ## Description
 This build ships **ProFTPD 1.3.5a**, which already fixed the *unauthenticated* form of
-CVE-2015-3306 — a pre-auth `SITE CPFR` now returns `530 Please login with USER and PASS`.
+CVE-2015-3306, a pre-auth `SITE CPFR` now returns `530 Please login with USER and PASS`.
 The residual exposure is that an **authenticated** user can still use `SITE CPFR`/`SITE CPTO`
 to copy arbitrary files readable/writable by the ProFTPD process, outside their own
 directory.
@@ -25,5 +25,4 @@ directory.
 ## Affected Service
 - **Service:** ProFTPD 1.3.5a (pinned; `mod_copy` statically compiled)
 - **Port:** 21/TCP
-- **Config:** /opt/proftpd/etc/proftpd.conf
-- **Vulnerable capability:** authenticated `SITE CPFR` / `SITE CPTO` (CopyEngine on)
+- **Vulnerable capability:** authenticated `SITE CPFR` / `SITE CPTO`

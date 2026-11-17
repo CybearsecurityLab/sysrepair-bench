@@ -20,9 +20,9 @@ execute arbitrary shell commands as the user running `nmbd` (typically root).
 **CVE-2025-9640 (streams_xattr infoleak):**
 The `vfs_streams_xattr` VFS module, when loaded, exposes extended attribute streams
 as alternate data streams. A logic flaw allows a client with read access to any
-share to request the `::$DATA` alternate stream of a file outside the share's
+share to request the alternate data stream of a file outside the share's
 chroot-equivalent path, leaking the content of arbitrary files accessible to the
-Samba process (e.g., `/etc/shadow`, private keys).
+Samba process (e.g., system password hashes, private keys).
 
 Both CVEs are addressed in the Samba packages distributed via Ubuntu Security
 Notice USN-7826-2.
@@ -32,13 +32,5 @@ Notice USN-7826-2.
 - **Port:** 445/TCP (SMB), 137/UDP (WINS/NetBIOS)
 - **Package:** samba (Ubuntu 14.04: 2:4.1.6+dfsg-1ubuntu2 and earlier)
 
-## Vulnerable Configuration
-```
-[global]
-    wins support = yes
-    wins hook = /usr/local/bin/wins-notify.sh   # if present
-    vfs objects = streams_xattr                  # if present on any share
-```
-The container ships with the vulnerable package version. `wins support` and
-`streams_xattr` are not explicitly enabled in the seed config, but the binaries
-contain the unpatched code paths.
+The container ships with the vulnerable package version, whose binaries contain
+the unpatched code paths.

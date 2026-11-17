@@ -1,10 +1,10 @@
 # RDP Network Level Authentication (NLA) Disabled
 
 ## Severity
-**High** (CVSS 8.1 class — pre-auth RDP surface)
+**High** (CVSS 8.1 class, pre-auth RDP surface)
 
 ## CVE / Reference
-- Microsoft baseline: **MS17-017** era and later — NLA required on every RDP
+- Microsoft baseline: **MS17-017** era and later, NLA required on every RDP
   listener.
 - Historically what made CVE-2019-0708 ("BlueKeep") and CVE-2019-1181/1182
   ("DejaBlue") *pre-auth* wormable: NLA would have forced authentication before the
@@ -14,27 +14,16 @@
   each attempt does not require an NTLM/Kerberos handshake first.
 
 ## Description
-With `UserAuthentication = 0` and `SecurityLayer = 1`, the Remote Desktop listener
-accepts TCP/3389 connections and presents the graphical logon prompt **before** any
-authentication occurs. That means:
+With Network Level Authentication disabled and a weak security layer negotiated, the
+Remote Desktop listener accepts TCP/3389 connections and presents the graphical logon
+prompt **before** any authentication occurs. That means:
 
-- The full RDP protocol state machine — historically a source of pre-auth RCEs
-  (BlueKeep, DejaBlue) — is reachable by any unauthenticated attacker on the network.
+- The full RDP protocol state machine, historically a source of pre-auth RCEs
+  (BlueKeep, DejaBlue), is reachable by any unauthenticated attacker on the network.
 - Credential theft and brute force have no authentication pre-check to gate them.
-- The session is protected only by RDP-layer encryption (SecurityLayer=1), not
+- The session is protected only by RDP-layer encryption, not
   TLS + CredSSP which NLA mandates.
 
 ## Affected Service
 - **Service:** `TermService` (Remote Desktop Services)
 - **Port:** 3389/TCP
-- **Registry:**
-  - `HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\fDenyTSConnections`
-  - `HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp\UserAuthentication`
-  - `HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp\SecurityLayer`
-
-## Vulnerable Configuration
-```
-UserAuthentication = 0     # NLA OFF
-SecurityLayer      = 1     # negotiate — effectively RDP-layer, not TLS+CredSSP
-fDenyTSConnections = 0     # RDP enabled
-```

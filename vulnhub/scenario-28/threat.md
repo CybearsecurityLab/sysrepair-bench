@@ -7,8 +7,8 @@
 N/A (configuration weakness)
 
 ## Description
-World-writable staging directories (/tmp/staging, /var/tmp/staging) allow execution of
+World-writable staging directories allow execution of
 arbitrary scripts. Mirrors Brainpan 2 VulnHub VM.
 
 ## Affected Service
-- **Configuration:** /tmp/staging, /var/tmp/staging
+- **Service:** local staging directories

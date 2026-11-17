@@ -10,16 +10,14 @@
 ## Description
 Log4j 2.15.0 was the initial fix for CVE-2021-44228 but its mitigation was
 incomplete. When a logging configuration uses a non-default PatternLayout
-that references the Thread Context Map (for example `${ctx:userId}`) or a
-Thread Context Stack pattern, attacker-controlled values placed into the
-context can still include `${jndi:ldap://...}` expressions and trigger
-remote code execution in vulnerable JNDI environments, or cause information
-disclosure.
+that references the Thread Context Map or a Thread Context Stack pattern,
+attacker-controlled values placed into the context can still include JNDI
+lookup expressions and trigger remote code execution in vulnerable JNDI
+environments, or cause information disclosure.
 
-The bundled application logs a ThreadContext key `q` populated from the HTTP
-query string and its `log4j2.xml` uses a PatternLayout that expands
-`${ctx:q}` at layout time — exactly the affected shape.
+The bundled application logs an HTTP-query-derived ThreadContext value and
+its logging configuration expands it at layout time, which is exactly the
+affected shape.
 
 ## Affected Service
 - **Port:** 8080/TCP
-- **Vulnerable artifact:** `/opt/app/log4j-core-2.15.0.jar`

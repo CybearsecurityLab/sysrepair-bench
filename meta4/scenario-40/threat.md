@@ -1,21 +1,21 @@
-# MongoDB — Zlib Compression Amplification Risk (misconfiguration)
+# MongoDB: Zlib Compression Amplification Risk (misconfiguration)
 
 ## Severity
 **Medium** (CVSS 5.3)
 
 ## CVE / CWE
-- CVE: — (misconfiguration, no assigned CVE)
+- CVE: none (misconfiguration, no assigned CVE)
 - CWE-400: Uncontrolled Resource Consumption
 - CWE-200: Exposure of Sensitive Information to an Unauthorized Actor
 
 ## Description
-MongoDB 4.4 accepts zlib wire-protocol compression by default
-(`net.compression.compressors: zlib`). When an unauthenticated client
-negotiates zlib compression on the wire, two risks arise:
+MongoDB 4.4 accepts zlib wire-protocol compression by default. When an
+unauthenticated client negotiates zlib compression on the wire, two risks
+arise:
 
 1. **Payload amplification.** A small compressed request can expand into a
    much larger BSON document inside the server process, consuming excess CPU
-   and memory — a vector for resource-exhaustion against lightly resourced
+   and memory, a vector for resource-exhaustion against lightly resourced
    instances.
 
 2. **Compression side-channel.** Shared-memory server processes that handle
@@ -26,8 +26,3 @@ negotiates zlib compression on the wire, two risks arise:
 ## Affected Service
 - **Service:** MongoDB 4.4
 - **Port:** 27017/TCP
-- **Vulnerable configuration:** `net.compression.compressors` includes `zlib`
-
-## Vulnerable Configuration
-- `mongod.conf` contains `compressors: zlib` (or `zlib,snappy,zstd`)
-- No explicit exclusion of `zlib` from the compressor list

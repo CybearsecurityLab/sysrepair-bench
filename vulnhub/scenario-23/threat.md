@@ -12,4 +12,4 @@ hijacking. An attacker can create a malicious `curl` in their PATH to execute ar
 code as root. Mirrors Symfonos 1 VulnHub VM.
 
 ## Affected Service
-- **Binary:** /usr/local/bin/statuscheck (SUID)
+- **Binary:** custom SUID status-check binary

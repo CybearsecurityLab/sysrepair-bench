@@ -8,16 +8,12 @@
 - No public CVE (application-specific, bespoke PHP)
 
 ## Category
-Compensating Control — `payroll_app.php` is a third-party binary whose source
+Compensating Control, `payroll_app.php` is a third-party binary whose source
 cannot be modified.
 
 ## Description
 `payroll_app.php` constructs MySQL queries by directly interpolating POST
-parameters without prepared statements or escaping:
-
-```php
-$query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
-```
+parameters without prepared statements or escaping.
 
 An attacker can submit a tautology or UNION-based payload in the `username`
 field to bypass authentication or dump the database.
@@ -28,7 +24,6 @@ policy-protected), the SQLi cannot be patched in code.
 ## Affected Service
 - **Service:** Apache2 + payroll_app.php
 - **Port:** 80/TCP
-- **Path:** `/payroll_app.php`
 
 ## Constraint
 `payroll_app.php` must remain running and must accept legitimate username/password

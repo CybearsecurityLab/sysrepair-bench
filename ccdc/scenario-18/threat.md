@@ -1,7 +1,7 @@
 # Scenario 18: Samba Anonymous Share Access
 
 ## Vulnerability
-Samba is configured with `guest ok = yes` and `map to guest = Bad User`, allowing anonymous/guest access to shares including a private share. This permits unauthenticated users to read and write files.
+Samba allows anonymous/guest access to its shares, including a private share. This permits unauthenticated users to read and write files.
 
 Anonymous (null-session) connections are also accepted, so an unauthenticated client can enumerate the server's shares.
 
@@ -10,20 +10,6 @@ Anonymous (null-session) connections are also accepted, so an unauthenticated cl
 
 ## Affected Service
 Samba (SMB/CIFS)
-
-## Configuration File
-`/etc/samba/smb.conf`
-
-## Vulnerable Settings
-```
-[global]
-    map to guest = Bad User
-
-[private]
-    guest ok = yes
-```
-
-The guest account is `nobody`, the Samba default.
 
 ## Impact
 Any network user can access, read, and modify files on Samba shares without authentication, potentially exposing sensitive data and allowing malicious file placement.

@@ -7,10 +7,9 @@
 N/A (configuration weakness)
 
 ## Description
-System logs (/var/log/auth.log, /var/log/apache2/access.log) have world-readable and
-world-writable (666) permissions. A web user can inject PHP payloads into logs for
+System authentication and web access logs are world-readable and
+world-writable. A web user can inject PHP payloads into logs for
 log poisoning attacks. Mirrors Symfonos 4 VulnHub VM.
 
 ## Affected Service
 - **Service:** rsyslog, Apache
-- **Configuration:** /var/log/ file permissions

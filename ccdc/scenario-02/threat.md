@@ -2,10 +2,9 @@
 
 ## Vulnerability
 
-The SSH daemon is configured with `PermitEmptyPasswords yes`, allowing users
-with empty (blank) passwords to authenticate over SSH. Combined with user
-accounts that have no password set, this allows unauthenticated remote access
-to the system.
+The SSH daemon allows users with empty (blank) passwords to authenticate over
+SSH. Combined with user accounts that have no password set, this allows
+unauthenticated remote access to the system.
 
 ## CWE Classification
 
@@ -16,12 +15,9 @@ which is functionally equivalent to no authentication at all for affected
 accounts. Any user account with a blank password becomes remotely accessible
 without credentials.
 
-## Affected Configuration
+## Affected Service
 
-- **File**: `/etc/ssh/sshd_config`
-- **Setting**: `PermitEmptyPasswords yes`
-- **Service**: OpenSSH Server (sshd)
-- **Affected User**: `emptyuser` (has empty password)
+OpenSSH Server (sshd)
 
 ## Constraints
 

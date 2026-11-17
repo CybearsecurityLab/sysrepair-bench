@@ -1,4 +1,4 @@
-# ImageMagick — Permissive policy.xml (CVE-2023-34152)
+# ImageMagick: Permissive Coder Policy (CVE-2023-34152)
 
 ## Severity
 **High** (CVSS 8.8)
@@ -8,7 +8,7 @@
 - CWE-94: Improper Control of Generation of Code
 
 ## Description
-ImageMagick uses a `policy.xml` file to restrict which image coders and
+ImageMagick uses a policy file to restrict which image coders and
 resources are available. When the policy is absent or overly permissive,
 dangerous coders such as **MVG** (Magick Vector Graphics), **MSL**
 (Magick Scripting Language), and **URL** (remote resource fetch) remain
@@ -18,7 +18,7 @@ execution on the host.
 
 CVE-2023-34152 specifically covers the `url` coder allowing server-side
 request forgery (SSRF) and arbitrary command injection through shell
-metacharacters in filenames handed to `convert` or `identify`. Combined with
+metacharacters in filenames handed to ImageMagick tools. Combined with
 the `mvg:` and `msl:` coders, attacker-controlled input can execute commands
 with the privileges of the ImageMagick process.
 
@@ -26,5 +26,3 @@ with the privileges of the ImageMagick process.
 - **Service:** ImageMagick (libMagickCore 6.x / 7.x)
 - **Trigger:** Any call to `convert`, `identify`, `montage`, or `mogrify`
   with attacker-controlled input
-- **Vulnerable configuration:** `/etc/ImageMagick-6/policy.xml` absent or
-  leaving the MVG, MSL and URL coders enabled

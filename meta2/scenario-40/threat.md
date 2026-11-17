@@ -1,14 +1,14 @@
 # VNC Exposed on All Interfaces
 
 ## Severity
-**High** — CVSS 9.0 (weak/guessable password, cleartext transport)
+**High**, CVSS 9.0 (weak/guessable password, cleartext transport)
 
 ## Category
 Compensating Controls (administrative VNC access must remain available to remote admins,
 but direct exposure to untrusted networks must be eliminated)
 
 ## Description
-The VNC server listens on `0.0.0.0:5900` with a short password and no transport encryption.
+The VNC server listens on port 5900 on all interfaces with a short password and no transport encryption.
 A full fix (kill VNC, replace with RDP-over-TLS) is out of scope for this host.
 
 ## Constraints

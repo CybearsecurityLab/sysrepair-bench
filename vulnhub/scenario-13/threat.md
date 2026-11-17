@@ -15,4 +15,3 @@ Mirrors the DC-7 VulnHub VM.
 ## Affected Service
 - **Service:** Apache + Drupal 8
 - **Port:** 80/TCP
-- **Configuration:** /var/www/html/core/lib/Drupal.php

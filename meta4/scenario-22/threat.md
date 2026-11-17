@@ -12,7 +12,7 @@ A use-after-free in the Linux kernel netfilter `nf_tables`
 `nft_verdict_init()` path lets unprivileged local users with network
 admin capability in their user namespace (the default on most desktop
 distributions) reliably escalate to root. Public PoCs report >99%
-reliability across kernels 5.14–6.6.
+reliability across kernels 5.14 to 6.6.
 
 ## Affected Service
 - **Host kernel:** the container shares the host kernel.

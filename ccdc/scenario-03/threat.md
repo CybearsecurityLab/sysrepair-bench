@@ -2,10 +2,9 @@
 
 ## Vulnerability
 
-The SSH daemon is configured to accept weak and deprecated cryptographic
-ciphers including `3des-cbc` and `aes128-cbc`. These ciphers are vulnerable
-to known cryptographic attacks (e.g., SWEET32 for 3DES, padding oracle
-attacks for CBC-mode ciphers) and should not be used.
+The SSH daemon accepts weak and deprecated cryptographic ciphers. These ciphers
+are vulnerable to known cryptographic attacks (e.g., SWEET32 for 3DES, padding
+oracle attacks for CBC-mode ciphers) and should not be used.
 
 ## CWE Classification
 
@@ -15,12 +14,9 @@ The SSH configuration includes cryptographic ciphers that are known to be
 weak or broken. An attacker performing a man-in-the-middle attack could
 potentially decrypt SSH traffic if weak ciphers are negotiated.
 
-## Affected Configuration
+## Affected Service
 
-- **File**: `/etc/ssh/sshd_config`
-- **Setting**: `Ciphers 3des-cbc,aes128-cbc,aes128-ctr,aes192-ctr,aes256-ctr`
-- **Service**: OpenSSH Server (sshd)
-- **Weak Ciphers**: `3des-cbc`, `aes128-cbc`
+OpenSSH Server (sshd)
 
 ## Constraints
 

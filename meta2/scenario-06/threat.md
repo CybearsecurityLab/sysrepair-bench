@@ -8,7 +8,7 @@ N/A (configuration weakness)
 
 ## Description
 The MySQL database server on this system is configured with an empty password for the root
-account and is listening on all network interfaces (0.0.0.0). This is a critical security
+account and is listening on all network interfaces. This is a critical security
 misconfiguration that replicates the Metasploitable 2 MySQL setup.
 
 An attacker with network access to port 3306 can connect to the MySQL server as root without
@@ -17,22 +17,11 @@ to:
 
 - **Read all data:** Access every database, table, and record on the server.
 - **Modify data:** Insert, update, or delete any data, including user credentials.
-- **Execute system commands:** Using MySQL features like `LOAD DATA INFILE`, `INTO OUTFILE`,
-  or UDF (User Defined Functions) to read/write files or execute OS commands.
+- **Execute system commands:** Using MySQL features to read/write files or execute OS
+  commands.
 - **Escalate privileges:** Create new database users, grant privileges, or use MySQL
   as a pivot point for further attacks on the system.
 
 ## Affected Service
 - **Service:** MySQL Server
 - **Port:** 3306/TCP
-- **Binary:** /usr/sbin/mysqld
-- **Configuration:** /etc/mysql/my.cnf
-
-## Vulnerable Configuration
-```
-# /etc/mysql/my.cnf
-[mysqld]
-bind-address = 0.0.0.0    # Listening on all interfaces
-
-# MySQL root user has no password set
-```

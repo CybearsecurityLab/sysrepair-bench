@@ -16,4 +16,3 @@ Mirrors the DC-4 and DC-8 VulnHub VMs.
 ## Affected Service
 - **Service:** Exim4
 - **Port:** 25/TCP
-- **Binary:** /usr/sbin/exim4

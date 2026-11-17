@@ -9,8 +9,7 @@ N/A (configuration weakness)
 ## Description
 The OpenSSH server on this system is configured to allow weak and deprecated encryption
 algorithms. The default configuration of OpenSSH on Ubuntu 8.04 enables CBC-mode ciphers
-(3des-cbc, blowfish-cbc, cast128-cbc, aes128-cbc, aes192-cbc, aes256-cbc) and RC4-based
-ciphers (arcfour, arcfour128, arcfour256). These algorithms are vulnerable to known
+and RC4-based ciphers (arcfour). These algorithms are vulnerable to known
 cryptographic attacks:
 
 - **CBC ciphers** are susceptible to the CPNI-957037 plaintext recovery attack, which can
@@ -24,15 +23,3 @@ partially decrypt SSH traffic.
 ## Affected Service
 - **Service:** OpenSSH Server
 - **Port:** 22/TCP
-- **Binary:** /usr/sbin/sshd
-- **Configuration:** /etc/ssh/sshd_config
-
-## Vulnerable Configuration
-The default `/etc/ssh/sshd_config` does not contain a `Ciphers` directive, which causes
-sshd to accept all compiled-in ciphers, including the weak ones:
-
-```
-# No Ciphers line present — all defaults enabled:
-# aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,arcfour128,arcfour256,arcfour,
-# aes192-cbc,aes256-cbc,aes128-ctr,aes192-ctr,aes256-ctr
-```

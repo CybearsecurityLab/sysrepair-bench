@@ -1,4 +1,4 @@
-# Web Directory Files with 777 Permissions
+# World-Writable Web Directory Files
 
 ## Severity
 **High** (CVSS 8.1)
@@ -7,7 +7,7 @@
 N/A (configuration weakness)
 
 ## Description
-Web directory files have world-writable (777) permissions enabling arbitrary file modification
+Web directory files are world-writable, enabling arbitrary file modification
 and webshell uploads. Mirrors Mr-Robot VulnHub VM.
 
 ## Affected Service

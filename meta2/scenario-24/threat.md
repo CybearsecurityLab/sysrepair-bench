@@ -14,22 +14,13 @@ Two related vulnerabilities affect TLS implementations that support legacy EXPOR
 
 2. **LogJam**: Allows attackers to downgrade TLS connections to 512-bit Diffie-Hellman groups (DHE_EXPORT), enabling decryption of intercepted traffic.
 
+Ubuntu 8.04's OpenSSL 0.9.8g includes EXPORT cipher suites by default, and Postfix TLS is enabled without restricting them.
+
 ## Affected Service
 
 - **Service:** Postfix SMTP Server with TLS
 - **Port:** 25/tcp
 - **Vulnerable Component:** OpenSSL 0.9.8g (Ubuntu 8.04)
-- **Cipher Suites:** RSA_EXPORT, DHE_EXPORT, DES, RC4
-
-## Vulnerable Configuration
-
-Ubuntu 8.04's OpenSSL 0.9.8g includes EXPORT cipher suites by default:
-
-```
-/etc/postfix/main.cf:
-smtpd_use_tls=yes
-# No smtpd_tls_exclude_ciphers or smtpd_tls_mandatory_ciphers set
-```
 
 ## Impact
 

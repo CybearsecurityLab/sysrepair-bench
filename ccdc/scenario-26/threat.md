@@ -1,6 +1,7 @@
 # Threat: Hacking Tools Installed on System
 
 ## Vulnerability
+
 Multiple offensive security / hacking tools are installed on the system that have no
 legitimate purpose on a production server:
 
@@ -15,14 +16,8 @@ attack, perform lateral movement, crack credentials, and scan for additional vul
 Their presence also indicates poor system hygiene and may violate compliance requirements.
 
 ## CWE Classification
-- **CWE-1104**: Use of Unmaintained Third Party Components
 
-## Affected Packages
-- `nmap`
-- `ncat`
-- `hydra`
-- `john`
-- `nikto`
+- **CWE-1104**: Use of Unmaintained Third Party Components
 
 ## Constraints
 - Legitimate system tools (curl, wget, ssh, ping, ip) must remain functional.

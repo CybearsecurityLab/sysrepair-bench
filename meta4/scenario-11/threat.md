@@ -9,16 +9,13 @@
 
 ## Description
 OpenSSH 8.5p1 through 9.7p1 (and 4.4p1 in some reintroduced configs) have
-a signal-handler race in `sshd(8)`. If a client fails to authenticate
-within `LoginGraceTime` (default 120s), sshd's SIGALRM handler calls
-async-unsafe functions (syslog), causing heap corruption that is
-exploitable for unauthenticated remote code execution as root on glibc
-Linux systems.
+a signal-handler race in sshd. If a client fails to authenticate within the
+login grace time, sshd's SIGALRM handler calls async-unsafe functions
+(syslog), causing heap corruption that is exploitable for unauthenticated
+remote code execution as root on glibc Linux systems.
 
-Debian bookworm's `openssh-server=1:9.2p1-2` is affected.
+The Debian bookworm openssh-server 9.2p1 package is affected.
 
 ## Affected Service
 - **Service:** OpenSSH sshd
 - **Port:** 22/TCP
-- **Vulnerable binary:** `/usr/sbin/sshd` (from package
-  `openssh-server=1:9.2p1-2`)

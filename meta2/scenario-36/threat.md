@@ -1,14 +1,14 @@
 # Distributed Ruby (dRuby) Unrestricted RCE
 
 ## Severity
-**Critical** — CVSS 10.0
+**Critical**, CVSS 10.0
 
 ## Category
-Compensating Controls (dependent local clients rely on the dRuby endpoint — removing it
+Compensating Controls (dependent local clients rely on the dRuby endpoint, removing it
 breaks them; there is no patched upstream "secure-by-default" dRuby)
 
 ## Description
-A dRuby object exposing `exec_command` is listening on `druby://0.0.0.0:8787`. Any remote
+A dRuby object that allows command execution is listening on port 8787 on all interfaces. Any remote
 client can invoke methods on the exposed object and achieve RCE. Removing or rewriting the
 service is out of scope: a local legacy Ruby client depends on the `ping` method and must
 keep working.

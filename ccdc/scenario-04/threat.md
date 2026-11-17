@@ -1,33 +1,30 @@
-# Scenario 04: SSH X11 Forwarding Enabled + High MaxAuthTries
+# Scenario 04: SSH X11 Forwarding Enabled + Excessive Authentication Attempts
 
 ## Vulnerability
 
 Two SSH misconfigurations are present:
 
-1. **X11 Forwarding Enabled**: `X11Forwarding yes` allows forwarding of X11
-   graphical display connections through SSH. This exposes the server to X11
-   security vulnerabilities and can be used as an attack vector if the X11
-   client or server has vulnerabilities.
+1. **X11 Forwarding Enabled**: The SSH daemon allows forwarding of X11
+   graphical display connections. This exposes the server to X11 security
+   vulnerabilities and can be used as an attack vector if the X11 client or
+   server has vulnerabilities.
 
-2. **High MaxAuthTries**: `MaxAuthTries 30` allows up to 30 authentication
-   attempts per connection, greatly facilitating brute-force password attacks.
+2. **Excessive Authentication Attempts**: The daemon allows a very large number
+   of authentication attempts per connection, greatly facilitating brute-force
+   password attacks.
 
 ## CWE Classification
 
 ### CWE-307: Improper Restriction of Excessive Authentication Attempts
 
-The high `MaxAuthTries` value allows an attacker to make many password guesses
+The permissive attempt limit allows an attacker to make many password guesses
 per SSH connection, significantly reducing the time needed for a brute-force
 attack. Combined with the unnecessary X11 forwarding, this represents an
 inadequately hardened SSH configuration.
 
-## Affected Configuration
+## Affected Service
 
-- **File**: `/etc/ssh/sshd_config`
-- **Settings**:
-  - `X11Forwarding yes`
-  - `MaxAuthTries 30`
-- **Service**: OpenSSH Server (sshd)
+OpenSSH Server (sshd)
 
 ## Constraints
 

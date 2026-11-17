@@ -8,20 +8,20 @@
 - CWE-640: Weak Password Recovery Mechanism
 
 ## Description
-GitLab CE/EE 16.1.0–16.7.1 (across several point releases) accept an array of
-addresses in the `user[email]` parameter of the password-reset form and deliver
-the reset link to ALL of them. An unauthenticated attacker who lists a target's
-address alongside one they control receives a working reset token, yielding full
-account takeover — including `root`. Over 5,300 internet-exposed instances were
-vulnerable at disclosure.
+GitLab CE/EE 16.1.0 to 16.7.1 (across several point releases) accept an array
+of addresses in the email field of the password-reset form and deliver the
+reset link to ALL of them. An unauthenticated attacker who lists a target's
+address alongside one they control receives a working reset token, yielding
+full account takeover, including the root account. Over 5,300
+internet-exposed instances were vulnerable at disclosure.
 
 ## This scenario is a SIMULATION
 A real GitLab omnibus upgrade far exceeds the harness timeouts, so this scenario
 runs a faithful **Python/Flask simulation** on port 80 that reproduces the
 CVE's actual takeover primitive: the reset handler delivers the reset token to
-every address in an attacker-supplied `user[email][]` array, and the token can
-then be used to change the victim's password (**real state change**). It is a
-simulation of CVE-2023-7028, not a real GitLab server.
+every address in an attacker-supplied array, and the token can then be used to
+change the victim's password (**real state change**). It is a simulation of
+CVE-2023-7028, not a real GitLab server.
 
 ## Affected Service
 - **Service:** GitLab CE 16.7.0 (simulated with Python/Flask)

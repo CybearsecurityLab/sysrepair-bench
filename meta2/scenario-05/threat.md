@@ -24,13 +24,3 @@ The captured credentials can then be used to:
 ## Affected Service
 - **Service:** vsftpd (Very Secure FTP Daemon)
 - **Port:** 21/TCP
-- **Binary:** /usr/sbin/vsftpd
-- **Configuration:** /etc/vsftpd.conf
-
-## Vulnerable Configuration
-```
-# /etc/vsftpd.conf
-# ssl_enable is not set (defaults to NO)
-# No TLS/SSL configuration present
-# All FTP traffic is transmitted in cleartext
-```

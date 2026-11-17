@@ -1,4 +1,4 @@
-# CouchDB 3.1 — Admin Party (misconfig)
+# CouchDB 3.1: Admin Party (misconfig)
 
 ## Severity
 **Critical** (CVSS 9.8)
@@ -7,10 +7,10 @@
 - CWE-1188: Initialization with Insecure Default
 
 ## Description
-CouchDB has a well-known "Admin Party" state: when the `[admins]` section of
-`local.ini` contains no entries, CouchDB treats every incoming HTTP request
-as if it originates from a server administrator. No username, no password, and
-no authentication header are required.
+CouchDB has a well-known "Admin Party" state: when no administrator accounts
+are defined, CouchDB treats every incoming HTTP request as if it originates
+from a server administrator. No username, no password, and no authentication
+header are required.
 
 Any unauthenticated client that can reach port 5984 can:
 
@@ -25,9 +25,3 @@ The attack surface is the entire HTTP API.
 ## Affected Service
 - **Service:** Apache CouchDB 3.1
 - **Port:** 5984/TCP
-- **Vulnerable configuration:** `[admins]` section empty in `local.ini`
-
-## Vulnerable Configuration
-- `COUCHDB_USER` / `COUCHDB_PASSWORD` not set at container start
-- `local.ini` `[admins]` section contains no entries
-- CouchDB responds to unauthenticated requests with HTTP 200

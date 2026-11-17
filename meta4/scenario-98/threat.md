@@ -1,4 +1,4 @@
-# Apache Druid 0.20.2 — JavaScript Injection RCE (CVE-2021-25646)
+# Apache Druid 0.20.2: JavaScript Injection RCE (CVE-2021-25646)
 
 ## Severity
 **High** (CVSS 8.8)
@@ -8,23 +8,20 @@
 - CWE-94: Improper Control of Generation of Code ('Code Injection')
 
 ## Description
-Apache Druid 0.20.2, when JavaScript is enabled (`druid.javascript.enabled=true`),
-allows users to supply JavaScript function bodies in query filter expressions via
-the DataSource endpoint. These expressions are executed directly by the Druid
-server's JavaScript engine (Rhino) with the privileges of the `druid` process.
+Apache Druid 0.20.2, when JavaScript is enabled, allows users to supply
+JavaScript function bodies in query filter expressions via the DataSource
+endpoint. These expressions are executed directly by the Druid server's
+JavaScript engine (Rhino) with the privileges of the `druid` process.
 
-An attacker with network access to the coordinator (port 8081) can send a crafted
-HTTP POST request with a malicious JavaScript payload in the `filter` field of a
-native query. No authentication is required in default deployments. The payload
-is executed on the server immediately, enabling arbitrary OS command execution.
+An attacker with network access to the coordinator (port 8081) can send a
+crafted HTTP POST request with a malicious JavaScript payload in the `filter`
+field of a native query. No authentication is required in default deployments.
+The payload is executed on the server immediately, enabling arbitrary OS
+command execution.
 
 ## Affected Service
 - **Service:** Apache Druid 0.20.2 (coordinator)
 - **Port:** 8081/TCP
-- **Vulnerable configuration:** `druid.javascript.enabled=true`
-
-## Vulnerable Configuration
-- `druid.javascript.enabled=true` in `runtime.properties`
 
 ## Constraints
 - Apache Druid must not be upgraded to a patched version.

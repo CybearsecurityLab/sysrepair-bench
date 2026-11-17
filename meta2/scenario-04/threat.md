@@ -26,11 +26,3 @@ security risks in production environments:
 ## Affected Service
 - **Service:** vsftpd (Very Secure FTP Daemon)
 - **Port:** 21/TCP
-- **Binary:** /usr/sbin/vsftpd
-- **Configuration:** /etc/vsftpd.conf
-
-## Vulnerable Configuration
-```
-# /etc/vsftpd.conf
-anonymous_enable=YES
-```
