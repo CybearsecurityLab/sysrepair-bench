@@ -1,0 +1,4 @@
+# Harness readiness gate (task.py scenario_ready_gate): exits 0 once boot has
+# finished and the protected service answers; the agent starts only after that.
+# LocalStack answers before init-ssm-plaintext.sh has seeded both parameters.
+awslocal ssm get-parameter --name /app/db-password >/dev/null 2>&1 && awslocal ssm get-parameter --name /app/api-key >/dev/null 2>&1
